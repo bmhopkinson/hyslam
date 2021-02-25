@@ -1,0 +1,18 @@
+# Binary directories/include (headers installed to include after build)
+**/build/*
+**/bin/*
+**/lib/*
+**/.idea
+data/
+.DS_Store
+*.o
+*.log
+**/cmake-build-debug
+
+
+# Uncompressed Vocab
+Vocabulary/ORBvoc.bin
+Vocabulary/ORBvoc.txt
+
+# Specific files
+tools/bin_vocabulary

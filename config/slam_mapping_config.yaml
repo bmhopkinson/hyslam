@@ -1,0 +1,29 @@
+%YAML:1.0
+Jobs: 
+    ProcessNewKF: none
+
+    KeyFrameCuller:
+        LMobservations_thresh: 3
+        frac_redundant: 0.85
+
+    LandMarkCuller:
+        min_lm_observations_mono: 2
+        min_lm_observations_stereo: 3
+        KF_grace_period: 3
+
+    LandMarkTriangulator:
+        match_nnratio: 0.6
+        N_neighborKFs_mono: 15
+        N_neighborKFs_stereo: 10
+        ratio_factor: 1.5
+        min_baseline_depth_ratio: 0.010
+        error_factor_mono: 5.5
+        error_factor_stereo: 7.80
+
+    LandMarkFuser:
+        N_neighborKFs_mono: 15
+        N_neighborKFs_stereo: 10
+        N_secondNeighbors: 5
+
+
+    

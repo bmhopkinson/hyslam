@@ -1,0 +1,111 @@
+%YAML:1.0
+
+
+States:
+    Normal:
+        thresh_init: 10
+        thresh_refine: 30
+        N_tracked_target: 200
+        N_tracked_variance: 50
+        min_KF_interval: 0
+        max_KF_interval: 30
+        min_N_tracked_close: 100
+        thresh_N_nontracked_close: 70
+        min_frac_refKF_mono : 0.9
+        min_frac_refKF_stereo : 0.5
+        Strategies:
+            TrackMotionModel: MotionModel_default
+            TrackReferenceKeyFrame: ReferenceKeyFrame_default
+            TrackLocalMap: LocalMap_default
+            
+    Initialize:
+        N_min_mpts_monoslam : 100 
+        Strategies:
+            Initialize: Initialize_default
+            
+    Relocalize:
+        thresh_init: 50
+        thresh_refine: 35
+        Strategies:
+            TrackPlaceRecognition: PlaceRecognition_default
+            TrackLocalMap : LocalMap_default
+            
+        
+
+Strategies: 
+    Initialize:
+        Mono:
+             N_min_features : 100 
+             N_min_matches : 100
+             sigma : 1.0
+             minTriangulated : 50
+             minFracTriangulated : 0.9
+             MaxIterations : 200
+             match_nnratio : 0.9
+        Stereo:
+             N_min_features : 200
+             new_mpt_protection : 5
+    LocalMap:
+        match_nnratio : 0.8
+        match_radius_threshold : 5.0
+        N_max_local_keyframes : 80
+        N_neighbor_keyframes : 10
+    MotionModel:
+        N_min_matches : 20
+        match_nnratio : 0.9
+        match_radius_threshold_stereo : 15.0
+        match_radius_threshold_other : 7.0
+        match_theshold_inflation_factor : 2.0
+    PlaceRecognition:
+        match_nnratio_1 : 0.75
+        match_nnratio_2 : 0.90
+        N_min_matches_BoW : 15
+        PnPsolver_iterations : 5
+        N_min_matches_PoseOpt : 10
+        N_min_matches_success : 40
+        match_radius_threshold_1 : 10
+        match_radius_threshold_2 : 3
+        ORBdist_1 : 100
+        ORBdist_2 : 64
+    ReferenceKeyFrame:
+        match_nnratio : 0.7
+        N_min_matches_BoW : 15
+    
+    Initialize_default:
+        Mono:
+             N_min_features : 100 
+             N_min_matches : 100
+             sigma : 1.0
+             minTriangulated : 50
+             minFracTriangulated : 0.9
+             MaxIterations : 200
+             match_nnratio : 0.9
+        Stereo:
+             N_min_features : 200
+             new_mpt_protection : 5
+    LocalMap_default:
+        match_nnratio : 0.8
+        match_radius_threshold : 5.0
+        N_max_local_keyframes : 80
+        N_neighbor_keyframes : 10
+    MotionModel_default:
+        N_min_matches : 20
+        match_nnratio : 0.9
+        match_radius_threshold_stereo : 15.0
+        match_radius_threshold_other : 7.0
+        match_theshold_inflation_factor : 2.0
+    PlaceRecognition_default:
+        match_nnratio_1 : 0.75
+        match_nnratio_2 : 0.90
+        N_min_matches_BoW : 15
+        PnPsolver_iterations : 5
+        N_min_matches_PoseOpt : 10
+        N_min_matches_success : 40
+        match_radius_threshold_1 : 10
+        match_radius_threshold_2 : 3
+        ORBdist_1 : 100
+        ORBdist_2 : 64
+    ReferenceKeyFrame_default:
+        match_nnratio : 0.7
+        N_min_matches_BoW : 15
+    
