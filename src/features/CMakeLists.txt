@@ -5,6 +5,8 @@ HYSLAM_ADD_SOURCES(
   ORBmatcher.h ORBmatcher.cc
   ORBstereomatcher.h ORBstereomatcher.cpp
   ORBUtil.h  ORBUtil.cpp
+        FeatureFinder.h FeatureFinder.cpp
+        ORBFinder.h ORBFinder.cpp
 )
 
 set(HYSLAM_PUBLIC_INCLUDE_DIRS ${HYSLAM_PUBLIC_INCLUDE_DIRS} 

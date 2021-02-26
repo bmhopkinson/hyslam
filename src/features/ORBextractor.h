@@ -24,6 +24,7 @@
 #include <vector>
 #include <list>
 #include <opencv/cv.h>
+#include <ORBFinder.h>
 
 
 namespace HYSLAM
@@ -101,8 +102,9 @@ protected:
     std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
 
-    void ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);
     std::vector<cv::Point> pattern;
+
+    ORBFinder orbfinder;
 
     int nfeatures;
     double scaleFactor;

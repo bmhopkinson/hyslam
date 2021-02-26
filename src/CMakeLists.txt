@@ -14,7 +14,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)  #otherwise rpath is not properly set to run f
 
 add_library(${PROJECT_NAME} SHARED
   ${HYSLAM_SOURCES}
-)
+		)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   ${HYSLAM_PUBLIC_INCLUDE_DIRS}
