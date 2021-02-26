@@ -1,11 +1,36 @@
 %YAML:1.0
 
+Cameras:
+    SLAM:
+        Normal: Normal_default
+        Initialize: Initialize_default
+        Relocalize: Relocalize_default
+    Imaging:
+        Normal: Normal_track_lots
+        Initialize: Initialize_default
+        Relocalize: Relocalize_default
 
 States:
-    Normal:
+    Normal_default:
         thresh_init: 10
         thresh_refine: 30
-        N_tracked_target: 200
+        N_tracked_target: 100
+        N_tracked_variance: 25
+        min_KF_interval: 0
+        max_KF_interval: 30
+        min_N_tracked_close: 100
+        thresh_N_nontracked_close: 70
+        min_frac_refKF_mono : 0.9
+        min_frac_refKF_stereo : 0.5
+        Strategies:
+            TrackMotionModel: MotionModel_default
+            TrackReferenceKeyFrame: ReferenceKeyFrame_default
+            TrackLocalMap: LocalMap_default
+            
+    Normal_track_lots:
+        thresh_init: 10
+        thresh_refine: 30
+        N_tracked_target: 250
         N_tracked_variance: 50
         min_KF_interval: 0
         max_KF_interval: 30
@@ -18,12 +43,12 @@ States:
             TrackReferenceKeyFrame: ReferenceKeyFrame_default
             TrackLocalMap: LocalMap_default
             
-    Initialize:
+    Initialize_default:
         N_min_mpts_monoslam : 100 
         Strategies:
             Initialize: Initialize_default
             
-    Relocalize:
+    Relocalize_default:
         thresh_init: 50
         thresh_refine: 35
         Strategies:

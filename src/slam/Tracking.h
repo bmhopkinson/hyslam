@@ -152,7 +152,6 @@ protected:
 
     void UpdateLastFrame();
     KeyFrame* determineReferenceKeyFrame(Frame* pcurrent_frame);
-    bool Relocalization();
 
     //Handlers
     int HandlePostInit(KeyFrame* pKFcurrent, Map* pMap,std::string cam_name );
@@ -161,8 +160,6 @@ protected:
     //Dataloaders
     void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings, std::string &tracking_filename);
     cv::FileStorage config_data;
-
-
 
     // In case of performing only localization, this flag is true when there are no matches to
     // points in the map. Still tracking will continue if there are enough matches with temporal points.
@@ -177,7 +174,7 @@ protected:
 
     // state data
     std::map<std::string, TrackingState*> state;  //camera to state map
-    std::map<std::string, TrackingState*> state_options; //state name to state pointer map
+    std::map<std::string, std::map<std::string, TrackingState*> > state_options; //state name to state pointer map
 
     //ORB
     ORBextractor* mpORBextractorLeft, *mpORBextractorRight;

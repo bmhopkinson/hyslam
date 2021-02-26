@@ -8,7 +8,7 @@ Installation
    make -jX
     sudo make install 
     2. in Third party, compile DBoW2. currently making static library
-    cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
     make -jX
     headers must be handled manually. collect headers (retaining directory structure)  and put in /usr/local/Thirdparty
     3. compile and install hyslam

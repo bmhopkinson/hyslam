@@ -337,7 +337,7 @@ void Tracking::Track()
             HandlePostInit(pKFnew, maps[cam_cur],  cam_cur);
             next_state = OK;
             delete state[cam_cur];
-            pnext_track_state = state_options["NORMAL"];
+            pnext_track_state = state_options[cam_cur]["NORMAL"];
         } else {
             next_state = NOT_INITIALIZED;
             pnext_track_state = state[cam_cur];
@@ -345,16 +345,18 @@ void Tracking::Track()
     }
     else if(mState[cam_cur] == OK) {
         if (bOK) {
-            pnext_track_state = state_options["NORMAL"];
+            pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = OK;
         } else {
             if (cam_cur == "SLAM") {
-                pnext_track_state = state_options["RELOCALIZE"];
+                pnext_track_state = state_options[cam_cur]["RELOCALIZE"];
                 next_state = LOST;
             } else {
                 //  state[cam_cur] = state_options["INITIALIZE"]; //don't try to relocalize accessory cameras - just reinitialize
                 next_state = NOT_INITIALIZED;
-                StateInitializeParameters state_initialize_params(config_data["States"]["Initialize"], config_data["Strategies"]);
+                cv::FileNode cam_states = config_data["Cameras"];
+                cv::FileNode state_config = config_data["States"];
+                StateInitializeParameters state_initialize_params(state_config[cam_states[cam_cur]["Initialize"].string()], config_data["Strategies"]);
                 pnext_track_state = new TrackingStateInitialize(optParams, cam_data[cam_cur], init_data[cam_cur],
                                                                 state_initialize_params, ftracking);
             }
@@ -362,7 +364,7 @@ void Tracking::Track()
     }
     else if(mState[cam_cur] == LOST){
         if(bOK){
-            pnext_track_state = state_options["NORMAL"];
+            pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = OK;
         }
     }
@@ -383,20 +385,29 @@ void Tracking::Track()
 void Tracking::SetupStates(){
   //  std::map<std::string, TrackingState*> state_options;
  // cv::FileStorage config_data(config_file, cv::FileStorage::READ);
+ cv::FileNode cam_states = config_data["Cameras"];
+ cv::FileNode state_config = config_data["States"];
+ cv::FileNode strategy_config = config_data["Strategies"];
 
-  for(auto it = cam_data.begin(); it != cam_data.end(); ++it){
+  for(auto it = cam_data.begin(); it != cam_data.end(); ++it) {
+      std::string cam_name = it->first;
       Camera cam = it->second;
-      StateInitializeParameters state_initialize_params(config_data["States"]["Initialize"], config_data["Strategies"]);
-      state[cam.camName] = new TrackingStateInitialize(optParams, cam, init_data[cam.camName], state_initialize_params,
-                                                    ftracking);
-      mState[cam.camName] = NOT_INITIALIZED;
+      //Initialization
+      StateInitializeParameters state_initialize_params(state_config[cam_states[cam_name]["Initialize"].string()],
+                                                        strategy_config);
+      state[cam_name] = new TrackingStateInitialize(optParams, cam, init_data[cam.camName], state_initialize_params,
+                                                       ftracking);
+      mState[cam_name] = NOT_INITIALIZED;
+
+      //Normal
+      StateNormalParameters state_normal_params(state_config[cam_states[cam_name]["Normal"].string()], strategy_config);
+      state_options[cam_name]["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params, ftracking);
+
+      //Relocalize
+      StateRelocalizeParameters state_relocalize_params(state_config[cam_states[cam_name]["Relocalize"].string()],
+                                                        strategy_config);
+      state_options[cam_name]["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params, ftracking);
   }
-
-  StateNormalParameters state_normal_params(config_data["States"]["Normal"], config_data["Strategies"]);
-  state_options["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params,ftracking);
-
-  StateRelocalizeParameters state_relocalize_params(config_data["States"]["Relocalize"], config_data["Strategies"]);
-  state_options["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params, ftracking);
 }
 
 int Tracking::HandlePostInit(KeyFrame* pKFcurrent,Map* pMap,std::string cam_name ){
