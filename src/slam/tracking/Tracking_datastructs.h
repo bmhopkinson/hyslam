@@ -76,7 +76,7 @@ public:
 class StateNormalParameters{
 public:
     StateNormalParameters();
-    StateNormalParameters(cv::FileStorage data);
+    StateNormalParameters(cv::FileNode state_data,cv::FileNode strategy_data);
     TrackMotionModelParameters tmomo_params;
     TrackReferenceKeyFrameParameters trefkf_params;
     TrackLocalMapParameters tlocalmap_params;
@@ -98,7 +98,7 @@ public:
 class StateInitializeParameters{
 public:
     StateInitializeParameters();
-    StateInitializeParameters(cv::FileStorage data);
+    StateInitializeParameters(cv::FileNode state_data,cv::FileNode strategy_data);
     MonoInitializerParameters mono_params;
     StereoInitializerParameters stereo_params;
 
@@ -108,7 +108,7 @@ public:
 class StateRelocalizeParameters{
 public:
     StateRelocalizeParameters();
-    StateRelocalizeParameters(cv::FileStorage data);
+    StateRelocalizeParameters(cv::FileNode state_data,cv::FileNode strategy_data);
 
     TrackPlaceRecognitionParameters tplacerecog_params;
     TrackLocalMapParameters tlocalmap_params;

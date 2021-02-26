@@ -72,13 +72,13 @@ TrackReferenceKeyFrameParameters::TrackReferenceKeyFrameParameters(cv::FileNode 
 
 StateNormalParameters::StateNormalParameters(){}
 
-StateNormalParameters::StateNormalParameters(cv::FileStorage data){
-    cv::FileNode state_data = data["States"]["Normal"];
-    cv::FileNode config_data_strategies =  data["Strategies"];
+StateNormalParameters::StateNormalParameters(cv::FileNode state_data,cv::FileNode strategy_data){
+  //  cv::FileNode state_data = data["States"]["Normal"];
+  //  cv::FileNode config_data_strategies =  data["Strategies"];
 
-    tmomo_params = TrackMotionModelParameters(config_data_strategies[ state_data["Strategies"]["TrackMotionModel"].string() ]);
-    trefkf_params = TrackReferenceKeyFrameParameters(config_data_strategies[ state_data["Strategies"]["TrackReferenceKeyFrame"].string() ]);
-    tlocalmap_params =  TrackLocalMapParameters(config_data_strategies[ state_data["Strategies"]["TrackLocalMap"].string()  ]);
+    tmomo_params = TrackMotionModelParameters(strategy_data[ state_data["Strategies"]["TrackMotionModel"].string() ]);
+    trefkf_params = TrackReferenceKeyFrameParameters(strategy_data[ state_data["Strategies"]["TrackReferenceKeyFrame"].string() ]);
+    tlocalmap_params =  TrackLocalMapParameters(strategy_data[ state_data["Strategies"]["TrackLocalMap"].string()  ]);
 
     thresh_init = state_data["thresh_init"]; //number of tracked points initially needed
     thresh_refine = state_data["thresh_refine"];
@@ -97,9 +97,9 @@ StateNormalParameters::StateNormalParameters(cv::FileStorage data){
 
 StateInitializeParameters::StateInitializeParameters(){}
 
-StateInitializeParameters::StateInitializeParameters(cv::FileStorage data){
-    cv::FileNode state_data = data["States"]["Initialize"];
-    cv::FileNode config_data_strategies =  data["Strategies"][ state_data["Strategies"]["Initialize"].string() ];
+StateInitializeParameters::StateInitializeParameters(cv::FileNode state_data,cv::FileNode strategy_data){
+ //   cv::FileNode state_data = data["States"]["Initialize"];
+    cv::FileNode config_data_strategies =  strategy_data[ state_data["Strategies"]["Initialize"].string() ];
 
     mono_params = MonoInitializerParameters(config_data_strategies["Mono"]);
     stereo_params = StereoInitializerParameters(config_data_strategies["Stereo"]);
@@ -110,12 +110,12 @@ StateInitializeParameters::StateInitializeParameters(cv::FileStorage data){
 
 StateRelocalizeParameters::StateRelocalizeParameters(){}
 
-StateRelocalizeParameters::StateRelocalizeParameters(cv::FileStorage data){
-    cv::FileNode state_data = data["States"]["Relocalize"];
-    cv::FileNode strategies =  data["Strategies"];
+StateRelocalizeParameters::StateRelocalizeParameters(cv::FileNode state_data,cv::FileNode strategy_data){
+ //   cv::FileNode state_data = data["States"]["Relocalize"];
+  //  cv::FileNode strategies =  data["Strategies"];
 
-    tplacerecog_params = TrackPlaceRecognitionParameters(strategies[ state_data["Strategies"]["TrackPlaceRecognition"].string() ]) ;
-    tlocalmap_params = TrackLocalMapParameters( strategies[ state_data["Strategies"]["TrackLocalMap"].string() ] ) ;
+    tplacerecog_params = TrackPlaceRecognitionParameters(strategy_data[ state_data["Strategies"]["TrackPlaceRecognition"].string() ]) ;
+    tlocalmap_params = TrackLocalMapParameters( strategy_data[ state_data["Strategies"]["TrackLocalMap"].string() ] ) ;
 
     thresh_init = state_data["thresh_init"]; //number of tracked points initially needed
     thresh_refine = state_data["thresh_refine"]; //number of tracked points required after refinement for success

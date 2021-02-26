@@ -354,7 +354,7 @@ void Tracking::Track()
             } else {
                 //  state[cam_cur] = state_options["INITIALIZE"]; //don't try to relocalize accessory cameras - just reinitialize
                 next_state = NOT_INITIALIZED;
-                StateInitializeParameters state_initialize_params(config_data);
+                StateInitializeParameters state_initialize_params(config_data["States"]["Initialize"], config_data["Strategies"]);
                 pnext_track_state = new TrackingStateInitialize(optParams, cam_data[cam_cur], init_data[cam_cur],
                                                                 state_initialize_params, ftracking);
             }
@@ -386,16 +386,16 @@ void Tracking::SetupStates(){
 
   for(auto it = cam_data.begin(); it != cam_data.end(); ++it){
       Camera cam = it->second;
-      StateInitializeParameters state_initialize_params(config_data);
+      StateInitializeParameters state_initialize_params(config_data["States"]["Initialize"], config_data["Strategies"]);
       state[cam.camName] = new TrackingStateInitialize(optParams, cam, init_data[cam.camName], state_initialize_params,
                                                     ftracking);
       mState[cam.camName] = NOT_INITIALIZED;
   }
 
-  StateNormalParameters state_normal_params(config_data);
+  StateNormalParameters state_normal_params(config_data["States"]["Normal"], config_data["Strategies"]);
   state_options["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params,ftracking);
 
-  StateRelocalizeParameters state_relocalize_params(config_data);
+  StateRelocalizeParameters state_relocalize_params(config_data["States"]["Relocalize"], config_data["Strategies"]);
   state_options["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params, ftracking);
 }
 
