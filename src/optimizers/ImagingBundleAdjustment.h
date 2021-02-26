@@ -11,7 +11,7 @@
 
 #include "g2o/core/sparse_optimizer.h"
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 
@@ -52,5 +52,5 @@ private:
   void FindAdditionalMapPointMatches();
   g2o::SparseOptimizer optimizer; //should probably just create this in constructor and std::move to base BundleAdjustment
 };
-} //namespace ORB_SLAM2
+} //namespace HYSLAM
 #endif

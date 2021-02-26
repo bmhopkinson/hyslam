@@ -44,7 +44,7 @@
 #include<mutex>
 #include<vector>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)

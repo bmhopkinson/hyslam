@@ -53,7 +53,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class Viewer;

@@ -44,7 +44,7 @@
 #include <mutex>
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 #define FRAME_GRID_ROWS 48
 #define FRAME_GRID_COLS 64

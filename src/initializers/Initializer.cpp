@@ -1,6 +1,6 @@
 #include <Initializer.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 
 void InitializerData::clear() {
     mvIniMatches.clear();

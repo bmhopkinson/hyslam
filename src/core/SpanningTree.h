@@ -5,7 +5,7 @@
 #include <set>
 #include <mutex>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     class SpanningTreeNode{
     public:
         SpanningTreeNode();

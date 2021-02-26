@@ -8,7 +8,7 @@
 
 #include <vector>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 using FrameBuffer = std::vector<Frame>;
 //using KeyFrameBuffer = std::vector<KeyFrame*>;

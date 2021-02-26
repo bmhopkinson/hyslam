@@ -7,7 +7,7 @@
 #include <Map.h>
 #include <iostream>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     class KeyFrameCuller : public MapJob {
     public:
         KeyFrameCuller(KeyFrame *pKF_, Map *pMap_, KeyFrameCullerParameters params_,  std::ofstream &log_);

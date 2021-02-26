@@ -32,7 +32,7 @@
 #include "g2o/types/sba/Trajectory_g2o.h"
 #include <mutex>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
     Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const string &config_path):

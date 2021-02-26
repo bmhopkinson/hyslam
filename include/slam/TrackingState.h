@@ -8,7 +8,7 @@
 
 #include <TrackingStrategy.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     class LocalMapping;
 
 class TrackingState{

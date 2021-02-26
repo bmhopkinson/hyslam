@@ -25,7 +25,7 @@
 
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 std::vector<double> KeyFrame::RefQuat = {-999.9, -999.9, -999.9,-999.9};

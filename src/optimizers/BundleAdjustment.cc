@@ -25,7 +25,7 @@
 #include<vector>
 #include<math.h>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 BundleAdjustment::BundleAdjustment(Map* pMap_, g2o::Trajectory &trajectory_, optInfo optParams_ ) :

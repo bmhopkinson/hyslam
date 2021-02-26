@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <ORBextractor.h>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 struct Imgdata

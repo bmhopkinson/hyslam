@@ -2,7 +2,7 @@
 #define INITIALIZERDATASTRUCTS_H_
 #include <opencv2/opencv.hpp>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 
 class MonoInitializerParameters {
 public:

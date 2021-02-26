@@ -22,7 +22,7 @@
 #include <KeyFrameDB.h>
 #include <MapPointDB.h>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 Map::Map():mnMaxKFid(0),mnBigChangeIdx(0)

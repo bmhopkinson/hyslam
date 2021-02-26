@@ -1,6 +1,6 @@
 #include <LocalBundleAdjustmentJob.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 LocalBundleAdjustmentJob::LocalBundleAdjustmentJob(KeyFrame *pKF_, Map *pMap_, g2o::Trajectory &trajectory_,optInfo optParams_, std::ofstream &log_) :
 pKF(pKF_), pMap(pMap_)
 {

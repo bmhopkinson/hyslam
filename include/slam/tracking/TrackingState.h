@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     class Mapping;
 
 class TrackingState{

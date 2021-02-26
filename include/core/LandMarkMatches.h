@@ -5,7 +5,7 @@
 #include <vector>
 #include <MapPoint.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 //class MapPoint;  //not sure why i need to do this but i do - even though i'm including MapPoint.h
 

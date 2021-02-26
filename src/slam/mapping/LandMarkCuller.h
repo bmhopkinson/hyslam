@@ -10,7 +10,7 @@
 
 #include <list>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
     class LandMarkCuller : public MapJob {
     public:
         LandMarkCuller(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, LandMarkCullerParameters params_, std::ofstream &log_);

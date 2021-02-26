@@ -2,7 +2,7 @@
 #include <Camera.h>
 #include <Mapping.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 TrackingState::TrackingState(std::ofstream &log)
 {
     pftracking = &log;

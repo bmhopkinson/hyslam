@@ -20,7 +20,7 @@
 #include<vector>
 #include<math.h>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 int GlobalBundleAdjustment::ncalls = 0;  //initialize static member valiable

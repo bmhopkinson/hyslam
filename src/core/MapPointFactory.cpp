@@ -3,7 +3,7 @@
 #include <ORBViews.h>
 #include "ORBSLAM_datastructs.h"
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 MapPointFactory::MapPointFactory(){}
 

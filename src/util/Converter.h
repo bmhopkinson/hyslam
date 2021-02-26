@@ -28,7 +28,7 @@
 #include "g2o/types/sba/types_six_dof_expmap.h"
 #include "g2o/types/sim3/types_seven_dof_expmap.h"
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 typedef Eigen::Transform<double ,3,Eigen::Isometry,Eigen::ColMajor> Isometry3;
 

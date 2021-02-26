@@ -51,7 +51,7 @@
 #include <iostream>
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class Viewer;
@@ -64,7 +64,7 @@ class System;
 
 class Tracking
 {
-
+//
 public:
     // Tracking states
     enum eTrackingState{

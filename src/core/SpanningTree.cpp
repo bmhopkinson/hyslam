@@ -1,7 +1,7 @@
 #include <SpanningTree.h>
 #include <algorithm>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
     /// SPANNING TREE NODE FUNCTIONS ///////////
     SpanningTreeNode::SpanningTreeNode(){}
 

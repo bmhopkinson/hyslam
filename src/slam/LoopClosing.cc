@@ -31,7 +31,7 @@
 #include<thread>
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, ORBVocabulary *pVoc, const bool bFixScale):

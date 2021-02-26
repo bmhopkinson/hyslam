@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 class Camera
 {
 public:

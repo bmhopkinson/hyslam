@@ -2,7 +2,7 @@
 #include <opencv2/opencv.hpp>
 #include<opencv2/core/eigen.hpp>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 void ComputeCentroid(cv::Mat &P, cv::Mat &Pr, cv::Mat &C)

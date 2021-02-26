@@ -5,7 +5,7 @@
 #include <InitializerDataStructs.h>
 #include <GlobalBundleAdjustment.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_,  StateInitializeParameters params_, std::ofstream &log) :
     TrackingState(log), optimizer_info(optimizer_info_), camera(camera_), params(params_)
 {

@@ -15,7 +15,7 @@
 #include <string>
 #include <map>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 // creates an initial map (consisting of two keyframes and associated mappoints) from two succesfully initialized frames 
 // can scale the initial map if desired. 

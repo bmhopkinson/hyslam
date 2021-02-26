@@ -1,6 +1,6 @@
 #include <MappingDataStructs.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 KeyFrameCullerParameters::KeyFrameCullerParameters(cv::FileNode data){
     LMobservations_thresh = data["LMobservations_thresh"];

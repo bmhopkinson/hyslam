@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <limits>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 //LandMark Criteria
 std::vector<MapPoint*> ProjectionCriterion::apply(Frame &frame, std::vector<MapPoint*> &candidate_lms, CriteriaData &data){

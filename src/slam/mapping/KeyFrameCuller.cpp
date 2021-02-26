@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 KeyFrameCuller::KeyFrameCuller(KeyFrame *pKF_, Map *pMap_, KeyFrameCullerParameters params_, std::ofstream &log_) :
 pKF(pKF_), pMap(pMap_), params(params_)

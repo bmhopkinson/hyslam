@@ -1,7 +1,7 @@
 #include <TrackingStateRelocalize.h>
 #include <Tracking_datastructs.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 TrackingStateRelocalize::TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log) :
    TrackingState(log), params(params_)

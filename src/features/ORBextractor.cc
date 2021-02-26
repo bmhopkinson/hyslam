@@ -66,7 +66,7 @@
 using namespace cv;
 using namespace std;
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 const int PATCH_SIZE = 31;

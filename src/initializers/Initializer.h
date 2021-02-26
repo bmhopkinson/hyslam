@@ -6,7 +6,7 @@
 #include <MapPoint.h>
 #include <Trajectory.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 class InitializerData
 {
     //  std::vector<int> mvIniLastMatches;  //doesn't seem to be used

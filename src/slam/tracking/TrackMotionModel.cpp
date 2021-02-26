@@ -4,7 +4,7 @@
 #include <GenUtils.h>
 #include <Camera.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 TrackMotionModel::TrackMotionModel(optInfo optimizer_info_, const TrackMotionModelParameters &params_)
 : optimizer_info(optimizer_info_), params(params_)
 {}

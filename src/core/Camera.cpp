@@ -1,7 +1,7 @@
 #include <Camera.h>
 
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 float PI  = 3.14159265;
 
 int Camera::loadData(const cv::FileNode &data_node){

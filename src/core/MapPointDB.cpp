@@ -2,7 +2,7 @@
 #include <ORBViews.h>
 #include <ORBmatcher.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     // MAPPOINTDBENTRY MEMBER FUNCTIONS ////
     MapPointDBEntry::MapPointDBEntry(){}
     MapPointDBEntry::MapPointDBEntry(MapPoint* pMP, KeyFrame* pKF_ref_, int idx): pMP_entry(pMP) {

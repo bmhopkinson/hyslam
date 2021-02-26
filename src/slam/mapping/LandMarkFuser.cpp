@@ -7,7 +7,7 @@
 #include <vector>
 #include <set>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 LandMarkFuser::LandMarkFuser(KeyFrame* pKF_, Map* pMap_,LandMarkFuserParameters params_, std::ofstream &log_) :
 pKF(pKF_), pMap(pMap_), params(params_)
 {

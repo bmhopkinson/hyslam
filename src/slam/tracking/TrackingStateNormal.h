@@ -10,7 +10,7 @@
 
 #include <opencv2/core/core.hpp>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 class TrackingStateNormal : public TrackingState {
 public:
     TrackingStateNormal(optInfo optimizer_info_, StateNormalParameters params_, std::ofstream &log);

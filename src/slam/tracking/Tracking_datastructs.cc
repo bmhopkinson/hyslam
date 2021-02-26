@@ -8,7 +8,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 TrackLocalMapParameters::TrackLocalMapParameters(){}

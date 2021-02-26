@@ -2,7 +2,7 @@
 #include <MapPoint.h>
 #include <thread>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 ProcessNewKeyFrame::ProcessNewKeyFrame(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, ProcessNewKeyFrameParameters params_):
 pKF(pKF_), pMap(pMap_), new_mpts(new_mpts_), params(params_)
 {}

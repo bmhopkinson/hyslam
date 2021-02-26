@@ -3,7 +3,7 @@
 #include <MapPoint.h>
 #include <list>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     CovisNode::CovisNode(){}//default constructor
     
     CovisNode::CovisNode(KeyFrame* pKF): pKF_node(pKF){  //more typical constructor

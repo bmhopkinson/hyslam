@@ -26,7 +26,7 @@
 #include <opencv/cv.h>
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class ORBextractorSettings{

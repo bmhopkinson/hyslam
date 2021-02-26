@@ -17,7 +17,7 @@
 // can output trajectory in Isometry3 form for use with g2o
 // Velocity class could probably be merged into this class
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 //typedef Eigen::Transform<double ,3,Eigen::Isometry,Eigen::ColMajor> Isometry3;
 

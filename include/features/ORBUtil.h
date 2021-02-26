@@ -3,7 +3,7 @@
 
 #include <ORBextractor.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 
 class ORBUtil{

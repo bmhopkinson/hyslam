@@ -8,7 +8,7 @@
 #include <iostream>
 #include <cmath>
 
-using namespace ORB_SLAM2;
+using namespace HYSLAM;
 
 int main(){
     //V1-V5 are sucsessive camera motions in camera to world convention

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 class ORBViews{
 //ORB keypoints in a frame

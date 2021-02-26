@@ -7,7 +7,7 @@
 #include <map>
 #include <vector>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 //HAD TO DUPLICATE MANY CRITERIA B/C FRAME AND KEYFRAME ARE NOT DERIVED FROM A COMMON BASE CLASS
 

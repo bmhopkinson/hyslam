@@ -26,7 +26,7 @@
 
 //using namespace std;
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 PlaceRecognizer::PlaceRecognizer()

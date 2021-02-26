@@ -23,7 +23,7 @@
 
 #include <mutex>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 Viewer::Viewer(System* pSystem, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer *pMapDrawer, Tracking *pTracking, const string &strSettingPath):

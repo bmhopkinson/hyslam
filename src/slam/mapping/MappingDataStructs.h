@@ -3,7 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 class ProcessNewKeyFrameParameters{  //placeholder
 public:

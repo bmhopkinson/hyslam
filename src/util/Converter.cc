@@ -21,7 +21,7 @@
 
 #include "Converter.h"
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 std::vector<cv::Mat> Converter::toDescriptorVector(const cv::Mat &Descriptors)

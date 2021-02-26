@@ -47,7 +47,7 @@
 
 using namespace std;
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
     Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,

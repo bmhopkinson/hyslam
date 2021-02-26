@@ -34,7 +34,7 @@
 // the criteria being provided as a vector of functions that are executed sequentially narrowing down candidates
 // vector of functions would hold landmark specific criteria but all have a common interface (e.g. func(landmarkset, Frame,..) and return set of landmarks passing the criteria
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class ORBmatcher

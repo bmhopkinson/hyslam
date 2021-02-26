@@ -1,6 +1,6 @@
 #include <ORBViews.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 //copy constructor
 ORBViews::ORBViews(const ORBViews &views){
   is_stereo = views.is_stereo;

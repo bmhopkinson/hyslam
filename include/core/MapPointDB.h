@@ -9,7 +9,7 @@
 #include <map>
 #include <mutex>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     class MapPointDBEntry{
     public:
         MapPointDBEntry();

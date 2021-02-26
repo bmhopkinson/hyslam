@@ -11,7 +11,7 @@
 
 #include <list>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
     class LandMarkTriangulator : public MapJob {
     public:
         LandMarkTriangulator(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, LandMarkTriangulatorParameters params_, std::ofstream &log_ );

@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     class LocalBundleAdjustmentJob : public MapJob {
     public:
         LocalBundleAdjustmentJob(KeyFrame *pKF_, Map *pMap_, g2o::Trajectory &trajectory_,optInfo optParams_, std::ofstream &log_);

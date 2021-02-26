@@ -21,7 +21,7 @@
 #include "MapPoint.h"
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 long unsigned int MapPoint::nNextId=0;

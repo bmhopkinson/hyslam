@@ -2,7 +2,7 @@
 #include <ORBmatcher.h>
 #include <Optimizer.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 TrackLocalMap::TrackLocalMap(optInfo optimizer_info_,  const TrackLocalMapParameters &params_ )
 : optimizer_info(optimizer_info_), params(params_) {}
 

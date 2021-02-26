@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 int GenUtils::Epipole(KeyFrame* pKF1, KeyFrame* pKF2, float& ex, float& ey){
     cv::Mat uv_ur;

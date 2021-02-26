@@ -23,7 +23,7 @@
 #include "Converter.h"
 #include <thread>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 long unsigned int Frame::nNextId=0;

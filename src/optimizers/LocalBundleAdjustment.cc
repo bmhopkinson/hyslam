@@ -22,7 +22,7 @@
 #include <math.h>
 #include <limits>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 int LocalBundleAdjustment::ncalls = 0;  //initialize static member valiable
 
@@ -329,4 +329,4 @@ void LocalBundleAdjustment::ClearLBAFlags(const list<KeyFrame*> &lLocalKeyFrames
 }
 
 
-} // namespace ORB_SLAM2
+} // namespace HYSLAM

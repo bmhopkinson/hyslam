@@ -5,7 +5,7 @@
 #include <GenUtils.h>
 #include <ORBmatcher.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 LandMarkTriangulator::LandMarkTriangulator(KeyFrame *pKF_, Map *pMap_, std::list<MapPoint *> *new_mpts_,LandMarkTriangulatorParameters params_, std::ofstream &log_ ) :
     pKF(pKF_), pMap(pMap_), new_mpts(new_mpts_), params(params_) {
 log = &log_;

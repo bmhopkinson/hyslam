@@ -40,7 +40,7 @@ bool has_suffix(const std::string &str, const std::string &suffix) {
 }
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
@@ -113,11 +113,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
     mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path);
-    mptLocalMapping = new thread(&ORB_SLAM2::Mapping::Run,mpLocalMapper);
+    mptLocalMapping = new thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
     mpLoopCloser = new LoopClosing(maps, mpVocabulary, mSensor!=MONOCULAR);
-    mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
+    mptLoopClosing = new thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
     if(bUseViewer)

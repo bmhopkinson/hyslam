@@ -4,7 +4,7 @@
 #include <KeyFrame.h>
 #include <opencv2/opencv.hpp>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 struct MVGUtils{
     static int Epipole(KeyFrame* pKF1, KeyFrame* pKF2, float& ex, float& ey);  //computes epipole of KF1 camera center in KF2

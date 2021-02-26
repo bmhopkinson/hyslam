@@ -29,7 +29,7 @@
 
 #include<thread>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 MonoEstimator::MonoEstimator(const Frame &ReferenceFrame, MonoEstimatorParams params)

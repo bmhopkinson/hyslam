@@ -52,7 +52,7 @@ using namespace cv;
 using namespace cv::cuda;
 using namespace cv::cuda::device;
 
-namespace ORB_SLAM2 { namespace cuda {
+namespace HYSLAM { namespace cuda {
 
   __constant__ unsigned char c_pattern[sizeof(Point) * 512];
 

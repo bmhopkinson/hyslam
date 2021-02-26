@@ -1,6 +1,6 @@
 #include <Triangulator.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 
     bool Triangulator::DirectLinearTriangulation(cv::Mat uv1, cv::Mat uv2, cv::Mat P1, cv::Mat P2, cv::Mat &x3D) {
         cv::Mat A(4, 4, CV_32F);

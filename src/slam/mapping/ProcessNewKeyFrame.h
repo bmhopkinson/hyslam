@@ -6,7 +6,7 @@
 #include <KeyFrame.h>
 #include <Map.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
  class ProcessNewKeyFrame : public MapJob{
  public:
      ProcessNewKeyFrame(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, ProcessNewKeyFrameParameters params_);

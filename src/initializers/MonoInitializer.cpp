@@ -3,7 +3,7 @@
 #include <ORBViews.h>
 #include <ORBmatcher.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 MonoInitializer::MonoInitializer(MonoInitializerParameters params_): params(params_)
 {
     estimator_params.sigma = params.sigma;

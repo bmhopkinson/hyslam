@@ -42,7 +42,7 @@
 #include <vector>
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class Frame;  //remove eventually - needed due to cyclic dependency between Frame/KeyFrame

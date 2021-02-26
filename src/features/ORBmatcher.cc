@@ -37,7 +37,7 @@
 
 using namespace std;
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 const int ORBmatcher::TH_HIGH = 100;

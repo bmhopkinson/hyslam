@@ -31,7 +31,7 @@
 #include <mutex>
 #include "g2o/types/sim3/types_seven_dof_expmap.h"
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class Tracking;

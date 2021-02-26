@@ -5,7 +5,7 @@
 #include <ORBSLAM_datastructs.h>
 #include <Tracking_datastructs.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
     class TrackPlaceRecognition : public TrackingStrategy{
     public:

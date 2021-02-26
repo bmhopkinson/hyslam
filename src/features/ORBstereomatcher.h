@@ -8,7 +8,7 @@
 #include <ORBViews.h>
 #include <Camera.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 class ORBstereomatcher{
 public:

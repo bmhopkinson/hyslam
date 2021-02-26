@@ -1,7 +1,7 @@
 #ifndef MAPJOB_H_
 #define MAPJOB_H_
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 class MapJob{
 public:
     virtual ~MapJob(){};

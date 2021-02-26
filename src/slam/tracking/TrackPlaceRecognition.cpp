@@ -3,7 +3,7 @@
 #include <Optimizer.h>
 #include <PnPsolver.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 TrackPlaceRecognition::TrackPlaceRecognition(optInfo optimizer_info_,TrackPlaceRecognitionParameters params_)
 : optimizer_info(optimizer_info_), params(params_)
 {}

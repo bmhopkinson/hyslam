@@ -26,7 +26,7 @@
 #include <mutex>
 #include <map>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class KeyFrame;

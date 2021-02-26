@@ -9,7 +9,7 @@
 #include <vector>
 #include <opencv2/core/core.hpp>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
     class TrackingStateInitialize : public TrackingState {
     public:
         TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_, StateInitializeParameters params_,  std::ofstream &log);

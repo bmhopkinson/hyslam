@@ -5,7 +5,7 @@
 #include<opencv2/core/core.hpp>
 #include<Eigen/Core>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 

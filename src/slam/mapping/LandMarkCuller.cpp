@@ -2,7 +2,7 @@
 #include <LandMarkCuller.h>
 #include <Camera.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 LandMarkCuller::LandMarkCuller(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, LandMarkCullerParameters params_, std::ofstream &log_) :
 pKF(pKF_), pMap(pMap_), new_mpts(new_mpts_), params(params_)
 {

@@ -4,7 +4,7 @@
 #include <TrackingStrategy.h>
 #include <ORBSLAM_datastructs.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 class TrackReferenceKeyFrame : public TrackingStrategy{
 public:

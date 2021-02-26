@@ -8,7 +8,7 @@
 #include <mutex>
 #include <memory>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
   class CovisNode{ //right now preserving ORBSLAM2 structure/behavior - node centric graph
     public:
         // Covisibility graph functions

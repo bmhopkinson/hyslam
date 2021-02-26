@@ -8,7 +8,7 @@
 #include <deque>
 
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 class RANSACParameters{
 public:

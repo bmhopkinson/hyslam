@@ -8,7 +8,7 @@
 
 #include <opencv2/core/core.hpp>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     
 class MapPointFactory{
     public:

@@ -7,7 +7,7 @@
 #include <MapPoint.h>
 #include <set>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
     class TrackLocalMap : public TrackingStrategy{
     public:

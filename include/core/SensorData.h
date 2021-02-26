@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
     struct GpsData
     {
         std::string time;

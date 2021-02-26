@@ -39,7 +39,7 @@
 #include "ORBSLAM_datastructs.h"
 #include <SensorData.h>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class Viewer;

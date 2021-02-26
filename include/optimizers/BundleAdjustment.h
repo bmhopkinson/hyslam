@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <map>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 struct OutlierMono {

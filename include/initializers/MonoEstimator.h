@@ -25,7 +25,7 @@
 #include "Tracking_datastructs.h"
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
     
 struct MonoEstimatorParams

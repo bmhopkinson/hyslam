@@ -2,7 +2,7 @@
 #include <ORBViews.h>
 #include <MapPoint.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 StereoInitializer::StereoInitializer(StereoInitializerParameters params_) :  params(params_)
      {}

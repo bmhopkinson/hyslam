@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 
 TrajectoryElement::TrajectoryElement(){

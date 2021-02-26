@@ -29,7 +29,7 @@
 
 
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 class Sim3Solver

@@ -1,6 +1,6 @@
 #include <InitializerDataStructs.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 MonoInitializerParameters::MonoInitializerParameters(){}
 

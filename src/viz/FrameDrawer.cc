@@ -25,7 +25,7 @@
 
 #include<mutex>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 FrameDrawer::FrameDrawer(Map* pMap):mpMap(pMap)

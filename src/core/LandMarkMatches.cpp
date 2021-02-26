@@ -1,7 +1,7 @@
 #include <LandMarkMatches.h>
 #include <iostream>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 MapPoint*  LandMarkMatches::hasAssociation(int i) const{
     LandMarkMatches_t::const_iterator it;

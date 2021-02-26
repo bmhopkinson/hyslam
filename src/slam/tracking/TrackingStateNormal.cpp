@@ -3,7 +3,7 @@
 #include <Camera.h>
 #include <Tracking_datastructs.h>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log) :
     params(params_), TrackingState(log)
 {

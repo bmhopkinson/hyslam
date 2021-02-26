@@ -7,7 +7,7 @@
 #include <KeyFrame.h>
 #include <Map.h>
 
-namespace ORB_SLAM2{
+namespace HYSLAM{
 
 class StereoInitializer : public Initializer {
     public:

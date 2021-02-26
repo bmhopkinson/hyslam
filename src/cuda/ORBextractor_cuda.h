@@ -30,7 +30,7 @@
 #include <cuda/Fast.hpp>
 #include <cuda/Orb.hpp>
 
-namespace ORB_SLAM2 {
+namespace HYSLAM {
 
 class ExtractorNode
 {
@@ -124,6 +124,6 @@ protected:
     cuda::GpuOrb gpuOrb;
 };
 
-}  /* namespace ORB_SLAM2 */
+}  /* namespace HYSLAM */
 
 #endif

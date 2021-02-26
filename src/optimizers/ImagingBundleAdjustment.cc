@@ -15,7 +15,7 @@
 #include <limits>
 #include <thread>
 
-namespace ORB_SLAM2
+namespace HYSLAM
 {
 
 
