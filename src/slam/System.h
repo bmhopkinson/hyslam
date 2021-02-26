@@ -91,6 +91,7 @@ public:
     // This function must be called before saving the trajectory.
     void Shutdown();
 
+
     //for BH mapping
     void SaveTrajectoryMapping(const string &filename);
 
