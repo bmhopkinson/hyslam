@@ -16,7 +16,8 @@ public:
 
     virtual double getThreshold() = 0;
 
-    virtual void detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints) = 0;
+    virtual void detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints) = 0; //detect features
+    virtual void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat& descriptors) = 0; //compute descriptors
 
 };
 

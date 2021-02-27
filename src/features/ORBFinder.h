@@ -11,7 +11,7 @@ namespace HYSLAM {
 
 class ORBFinder : public FeatureFinder {
 public:
-    ORBFinder() {};
+    ORBFinder();
     ORBFinder(double threshold_, bool non_max_suppression_);
 
     void setThreshold(double threshold_);
@@ -20,10 +20,15 @@ public:
     void setNonMaxSuppression(bool set){non_max_suppression = set;}
 
     void detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints);
+    void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat& descriptors);
 
 private:
     int threshold = 20;
     bool non_max_suppression = true;
+    std::vector<cv::Point> pattern;
+
+    void createPattern();
+    void computeOrbDescriptor(const cv::KeyPoint& kpt, const cv::Mat& img, const cv::Point* pattern, uchar* desc);
 
 };
 
