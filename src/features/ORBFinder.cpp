@@ -8,14 +8,49 @@
 
 
 namespace HYSLAM {
+
+const int _HALF_PATCH_SIZE = 15;
+
+static float intensityCentroidAngle(const cv::Mat& image, cv::Point2f pt,  const std::vector<int> & u_max)
+{
+    int m_01 = 0, m_10 = 0;
+
+    const uchar* center = &image.at<uchar> (cvRound(pt.y), cvRound(pt.x));
+
+    // Treat the center line differently, v=0
+    for (int u = -_HALF_PATCH_SIZE; u <= _HALF_PATCH_SIZE; ++u)
+        m_10 += u * center[u];
+
+    // Go line by line in the circular patch
+    int step = (int)image.step1();
+    for (int v = 1; v <= _HALF_PATCH_SIZE; ++v)
+    {
+        // Proceed over the two lines
+        int v_sum = 0;
+        int d = u_max[v];
+        for (int u = -d; u <= d; ++u)
+        {
+            int val_plus = center[u + v*step], val_minus = center[u - v*step];
+            v_sum += (val_plus - val_minus);
+            m_10 += u * (val_plus + val_minus);
+        }
+        m_01 += v * v_sum;
+    }
+
+    return cv::fastAtan2((float)m_01, (float)m_10);
+}
+
 ORBFinder::ORBFinder(){
     createPattern();
+    orientationSetup();
 }
 
 ORBFinder::ORBFinder(double threshold_, bool non_max_suppression_) : non_max_suppression(non_max_suppression_)
 {
     setThreshold(threshold_);
     createPattern();
+    orientationSetup();
+
 }
 
 void ORBFinder::setThreshold(double threshold_){
@@ -33,8 +68,20 @@ void ORBFinder::detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints){
 void ORBFinder::compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat& descriptors){
     descriptors = cv::Mat::zeros((int)keypoints.size(), 32, CV_8UC1);
 
-    for (size_t i = 0; i < keypoints.size(); i++)
-        computeOrbDescriptor(keypoints[i], image, &pattern[0], descriptors.ptr((int)i));
+    computeOrientation(image, keypoints, umax);
+
+    for (size_t i = 0; i < keypoints.size(); i++) {
+        computeOrbDescriptor(keypoints[i], image, &pattern[0], descriptors.ptr((int) i));
+    }
+}
+
+void ORBFinder::computeOrientation(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const std::vector<int>& umax)
+{
+    for (std::vector<cv::KeyPoint>::iterator keypoint = keypoints.begin(),
+                 keypointEnd = keypoints.end(); keypoint != keypointEnd; ++keypoint)
+    {
+        keypoint->angle = intensityCentroidAngle(image, keypoint->pt, umax);
+    }
 }
 
 void ORBFinder::computeOrbDescriptor(const cv::KeyPoint& kpt,
@@ -79,6 +126,25 @@ void ORBFinder::computeOrbDescriptor(const cv::KeyPoint& kpt,
 #undef GET_VALUE
 }
 
+void ORBFinder::orientationSetup() {
+    //This is for orientation
+    // pre-compute the end of a row in a circular patch
+    umax.resize(_HALF_PATCH_SIZE + 1);
+
+    int v, v0, vmax = cvFloor(_HALF_PATCH_SIZE * sqrt(2.f) / 2 + 1);
+    int vmin = cvCeil(_HALF_PATCH_SIZE * sqrt(2.f) / 2);
+    const double hp2 = _HALF_PATCH_SIZE * _HALF_PATCH_SIZE;
+    for (v = 0; v <= vmax; ++v)
+        umax[v] = cvRound(sqrt(hp2 - v * v));
+
+    // Make sure we are symmetric
+    for (v = _HALF_PATCH_SIZE, v0 = 0; v >= vmin; --v) {
+        while (umax[v0] == umax[v0 + 1])
+            ++v0;
+        umax[v] = v0;
+        ++v0;
+    }
+}
 
 static int bit_pattern_31_[256*4] =
 {

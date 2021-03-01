@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <opencv2/opencv.hpp>
-#include <ORBextractor.h>
+#include <FeatureExtractor.h>
 
 namespace HYSLAM
 {

@@ -26,8 +26,11 @@ private:
     int threshold = 20;
     bool non_max_suppression = true;
     std::vector<cv::Point> pattern;
+    std::vector<int> umax;
 
     void createPattern();
+    void orientationSetup();
+    void computeOrientation(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const std::vector<int>& umax);
     void computeOrbDescriptor(const cv::KeyPoint& kpt, const cv::Mat& img, const cv::Point* pattern, uchar* desc);
 
 };

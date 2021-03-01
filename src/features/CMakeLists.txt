@@ -1,6 +1,6 @@
 
 HYSLAM_ADD_SOURCES(
-  ORBextractor.h ORBextractor.cc
+        FeatureExtractor.h FeatureExtractor.cc
         MatchCriteria.h MatchCriteria.cpp
   ORBmatcher.h ORBmatcher.cc
   ORBstereomatcher.h ORBstereomatcher.cpp

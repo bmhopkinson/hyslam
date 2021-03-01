@@ -6,7 +6,7 @@ In this document we list all the pieces of code included  by ORB-SLAM2 and linke
 
 #####Code in **src** and **include** folders
 
-* *ORBextractor.cc*.
+* *FeatureExtractor.cc*.
 This is a modified version of orb.cpp of OpenCV library. The original code is BSD licensed.
 
 * *PnPsolver.h, PnPsolver.cc*.

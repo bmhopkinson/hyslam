@@ -33,7 +33,7 @@
 #include "LoopClosing.h"
 #include "Frame.h"
 #include "ORBVocabulary.h"
-#include "ORBextractor.h"
+#include "FeatureExtractor.h"
 #include <MonoInitializer.h>
 #include "MapDrawer.h"
 #include "System.h"

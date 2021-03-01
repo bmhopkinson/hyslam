@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <opencv2/opencv.hpp>
-#include <ORBextractor.h>
+#include <FeatureExtractor.h>
 
 namespace HYSLAM
 {
@@ -36,8 +36,8 @@ struct optInfo{
 
 struct ORBExtractorParams{
   ORBExtractorParams(){};
-  ORBExtractorParams(ORBextractor* extractor);
-  void setParams(ORBextractor* extractor);
+  ORBExtractorParams(FeatureExtractor* extractor);
+  void setParams(FeatureExtractor* extractor);
   int mnScaleLevels;
   float mfScaleFactor;
   float mfLogScaleFactor;

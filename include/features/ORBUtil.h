@@ -1,7 +1,7 @@
 #ifndef ORBUTIL_H_
 #define ORBUTIL_H_
 
-#include <ORBextractor.h>
+#include <FeatureExtractor.h>
 
 namespace HYSLAM{
 

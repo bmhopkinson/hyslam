@@ -54,15 +54,15 @@ public:
     bool bNoMore;
 };
 
-class ORBextractor
+class FeatureExtractor
 {
 public:
     
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };
 
-    ORBextractor(ORBextractorSettings settings);
+    FeatureExtractor(ORBextractorSettings settings);
 
-    ~ORBextractor(){}
+    ~FeatureExtractor(){}
 
     // Compute the ORB features and descriptors on an image.
     // ORB are dispersed on the image using an octree.

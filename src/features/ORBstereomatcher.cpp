@@ -4,7 +4,7 @@
 namespace HYSLAM{
 
 
-ORBstereomatcher::ORBstereomatcher(ORBextractor* mpORBextractorLeft_, ORBextractor* mpORBextractorRight_, std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_ , cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, Camera cam_data, ORBExtractorParams orb_params_)
+ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_ , cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, Camera cam_data, ORBExtractorParams orb_params_)
 {
   mpORBextractorLeft  = mpORBextractorLeft_;
   mpORBextractorRight = mpORBextractorRight_;
@@ -23,7 +23,7 @@ ORBstereomatcher::ORBstereomatcher(ORBextractor* mpORBextractorLeft_, ORBextract
 
 }
 
-ORBstereomatcher::ORBstereomatcher(ORBextractor* mpORBextractorLeft_, ORBextractor* mpORBextractorRight_,  ORBViews views, Camera cam_data){
+ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, ORBViews views, Camera cam_data){
   mpORBextractorLeft  = mpORBextractorLeft_;
   mpORBextractorRight = mpORBextractorRight_;
   mvKeys = views.getKeys();

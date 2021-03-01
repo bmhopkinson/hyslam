@@ -69,16 +69,16 @@ namespace HYSLAM
     std::string tracking_config_file;
     LoadSettings(strSettingPath, ORBextractor_settings, tracking_config_file);
 
-    mpORBextractorLeft = new ORBextractor(ORBextractor_settings);
+    mpORBextractorLeft = new FeatureExtractor(ORBextractor_settings);
 
     if(mSensor["SLAM"]==System::STEREO)
-        mpORBextractorRight = new ORBextractor(ORBextractor_settings);
+        mpORBextractorRight = new FeatureExtractor(ORBextractor_settings);
 
    // if(mSensor["SLAM"]==System::MONOCULAR)
    ORBextractorSettings ORBextractor_settings_init;
    ORBextractor_settings_init = ORBextractor_settings;
    ORBextractor_settings_init.nFeatures = 3*ORBextractor_settings.nFeatures;
-   mpIniORBextractor = new ORBextractor(ORBextractor_settings_init);
+   mpIniORBextractor = new FeatureExtractor(ORBextractor_settings_init);
 
    SetupStates();
 
@@ -102,11 +102,11 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
 
     // Load ORB parameters
 
-    ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
-    ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
-    ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];
-    ORBext_settings.fIniThFAST = fSettings["ORBextractor.iniThFAST"];
-    ORBext_settings.fMinThFAST = fSettings["ORBextractor.minThFAST"];
+    ORBext_settings.nFeatures = fSettings["FeatureExtractor.nFeatures"];
+    ORBext_settings.fScaleFactor = fSettings["FeatureExtractor.scaleFactor"];
+    ORBext_settings.nLevels = fSettings["FeatureExtractor.nLevels"];
+    ORBext_settings.fIniThFAST = fSettings["FeatureExtractor.iniThFAST"];
+    ORBext_settings.fMinThFAST = fSettings["FeatureExtractor.minThFAST"];
     std::cout << std::endl  << "ORB Extractor Parameters: " << std::endl;
     std::cout << "- Number of Features: " << ORBext_settings.nFeatures << std::endl;
     std::cout << "- Scale Levels: " << ORBext_settings.nLevels << std::endl;
@@ -214,7 +214,7 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const Imgdata img_data, 
     cam_data_cur.mnMaxY = mImGray.rows;
 
     // ORB extraction
-    ORBextractor* extractor;
+    FeatureExtractor* extractor;
     if(mState[cam_cur]==NOT_INITIALIZED || mState[cam_cur]==NO_IMAGES_YET){
         extractor = mpIniORBextractor;
     }

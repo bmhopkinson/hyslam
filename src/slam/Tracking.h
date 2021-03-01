@@ -33,7 +33,7 @@
 #include "LoopClosing.h"
 #include "Frame.h"
 #include "ORBVocabulary.h"
-#include "ORBextractor.h"
+#include "FeatureExtractor.h"
 #include <MonoInitializer.h>
 #include "MapDrawer.h"
 #include "System.h"
@@ -177,8 +177,8 @@ protected:
     std::map<std::string, std::map<std::string, TrackingState*> > state_options; //state name to state pointer map
 
     //ORB
-    ORBextractor* mpORBextractorLeft, *mpORBextractorRight;
-    ORBextractor* mpIniORBextractor;
+    FeatureExtractor* mpORBextractorLeft, *mpORBextractorRight;
+    FeatureExtractor* mpIniORBextractor;
 
     //BoW
     ORBVocabulary* mpORBVocabulary;
