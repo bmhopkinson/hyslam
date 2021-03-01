@@ -28,6 +28,7 @@
 #include "System.h"
 
 #include <mutex>
+#include <string>
 
 namespace HYSLAM
 {
@@ -40,7 +41,7 @@ class System;
 class Viewer
 {
 public:
-    Viewer(System* pSystem, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath);
+    Viewer(System* pSystem, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, Tracking *pTracking, const std::string &strSettingPath);
 
     // Main thread function. Draw points, keyframes, the current camera pose and the last processed
     // frame. Drawing is refreshed according to the camera fps. We use Pangolin.

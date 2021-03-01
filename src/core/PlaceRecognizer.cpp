@@ -20,7 +20,7 @@
 
 #include <PlaceRecognizer.h>
 #include "KeyFrame.h"
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+#include <DBoW2/BowVector.h>
 
 #include <mutex>
 
@@ -79,7 +79,7 @@ void PlaceRecognizer::clear()
 }
 
 
-vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float minScore, std::set<KeyFrame*> KFs_excluded)
+std::vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float minScore, std::set<KeyFrame*> KFs_excluded)
 {
     //set<KeyFrame*> spConnectedKeyFrames = pKF->GetConnectedKeyFrames();  //a bit tricky to replace this right now
     std::set<KeyFrame*> spConnectedKeyFrames = KFs_excluded;
@@ -92,8 +92,8 @@ vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float min
         std::unique_lock<std::mutex> lock(mMutex);
         for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
         {
-            list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
-            for(list<KeyFrame*>::iterator lit=lKFs.begin(), lend= lKFs.end(); lit!=lend; lit++)
+            std::list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
+            for(std::list<KeyFrame*>::iterator lit=lKFs.begin(), lend= lKFs.end(); lit!=lend; lit++)
             {
                 KeyFrame* pKFi=*lit;
                 if(!spConnectedKeyFrames.count(pKFi)){
@@ -138,12 +138,12 @@ vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float min
 
             bow_scores[pKFi] = si;
             if(si>=minScore)
-                lScoreAndMatch.push_back(make_pair(si,pKFi));
+                lScoreAndMatch.push_back(std::make_pair(si,pKFi));
         }
     }
 
     if(lScoreAndMatch.empty())
-        return vector<KeyFrame*>();
+        return std::vector<KeyFrame*>();
 
     std::list<std::pair<float,KeyFrame*> > lAccScoreAndMatch;
     float bestAccScore = minScore;
@@ -171,7 +171,7 @@ vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float min
             }
         }
 
-        lAccScoreAndMatch.push_back(make_pair(accScore,pBestKF));
+        lAccScoreAndMatch.push_back(std::make_pair(accScore,pBestKF));
         if(accScore>bestAccScore)
             bestAccScore=accScore;
     }
@@ -252,12 +252,12 @@ std::vector<KeyFrame*> PlaceRecognizer::detectRelocalizationCandidates(Frame *F)
             nscores++;
             float si = mpVoc->score(F->mBowVec,pKFi->mBowVec);
             pKFi->mRelocScore=si;
-            lScoreAndMatch.push_back(make_pair(si,pKFi));
+            lScoreAndMatch.push_back(std::make_pair(si,pKFi));
         }
     }
 
     if(lScoreAndMatch.empty())
-        return vector<KeyFrame*>();
+        return std::vector<KeyFrame*>();
 
     std::list<std::pair<float,KeyFrame*> > lAccScoreAndMatch;
     float bestAccScore = 0;
@@ -285,7 +285,7 @@ std::vector<KeyFrame*> PlaceRecognizer::detectRelocalizationCandidates(Frame *F)
             }
 
         }
-        lAccScoreAndMatch.push_back(make_pair(accScore,pBestKF));
+        lAccScoreAndMatch.push_back(std::make_pair(accScore,pBestKF));
         if(accScore>bestAccScore)
             bestAccScore=accScore;
     }

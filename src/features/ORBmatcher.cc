@@ -28,7 +28,7 @@
 #include <MapPointDB.h>//long term - eliminate this dependency
 
 #include <opencv2/core/core.hpp>
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#include "DBoW2/FeatureVector.h"
 
 #include <algorithm>
 #include <iterator>

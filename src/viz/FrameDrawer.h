@@ -31,6 +31,7 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include <mutex>
+#include <vector>
 
 
 namespace HYSLAM
@@ -59,9 +60,9 @@ protected:
 
     bool mbOnlyTracking;
     int mnTracked;
-    vector<cv::KeyPoint> mvCurrentKeys;
-    vector<cv::KeyPoint> mvIniKeys;
-    vector<int> mvIniMatches;
+    std::vector<cv::KeyPoint> mvCurrentKeys;
+    std::vector<cv::KeyPoint> mvIniKeys;
+    std::vector<int> mvIniMatches;
     ORBViews views;
     LandMarkMatches lm_matches;
     int mState;

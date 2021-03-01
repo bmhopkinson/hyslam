@@ -27,7 +27,8 @@ ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
 ${G2O_LIBS}
 ${G2O_TYPES_SLAM3D}
-${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.a
+#${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.a
+/usr/local/lib/libDBoW2.so
 ${CUDA_LIBRARIES}
 )
 

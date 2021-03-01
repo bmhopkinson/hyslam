@@ -135,7 +135,7 @@ class Velocity{
   //  Velocity();
     bool empty(){ return velocities.empty(); }
     void addElement(const cv::Mat vel, double &time, bool valid);
-    int timeRange(const double t_start, const double t_stop, vector<cv::Mat> &vels, std::vector<double> &times);
+    int timeRange(const double t_start, const double t_stop, std::vector<cv::Mat> &vels, std::vector<double> &times);
     int integrate(const double t_start, const double t_stop, cv::Mat &vel_integrated);
     cv::Mat operator[](const int i);
     bool getLastValid() {return last_valid;}

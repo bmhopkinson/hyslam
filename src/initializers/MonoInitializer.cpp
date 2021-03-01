@@ -87,7 +87,7 @@ int MonoInitializer::secondFrame(Frame &frame){//,  MonoInitialMatch &match_data
 
     cv::Mat Rcw; // Current Camera Rotation
     cv::Mat tcw; // Current Camera Translation
-    vector<bool> vbTriangulated; // Triangulated Correspondences (mvIniMatches)
+    std::vector<bool> vbTriangulated; // Triangulated Correspondences (mvIniMatches)
     
     init_success = mpInitializer->Initialize(second_frame, mvIniMatches, Rcw, tcw, mvIniP3D, vbTriangulated);
 
@@ -277,7 +277,7 @@ void MonoInitializer::clear(){
     
     if(mpInitializer){
         delete mpInitializer; 
-        mpInitializer = static_cast<MonoEstimator*>(NULL);
+        mpInitializer = static_cast<MonoEstimator*>(nullptr);
     }
 
  //   fill(mvIniMatches.begin(), mvIniMatches.end(),-1);

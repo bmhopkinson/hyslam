@@ -17,7 +17,7 @@ namespace HYSLAM{
     }
 
     void MapPointDBEntry::addObservation(KeyFrame* pKF, size_t idx){
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         if(observations.count(pKF)) //don't allow replacement
             return;
         observations[pKF]=idx;
@@ -37,7 +37,7 @@ namespace HYSLAM{
         bool is_bad=false;
         KeyFrame* pRefKF_new = nullptr ;
         {
-            std::unique_lock<mutex> lock(entry_mutex);
+            std::unique_lock<std::mutex> lock(entry_mutex);
             if(observations.count(pKF))
             {
                 int idx = observations[pKF];
@@ -70,7 +70,7 @@ namespace HYSLAM{
     }
 
     void MapPointDBEntry::eraseAllObservations(){
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         for(auto it = observations.begin(); it != observations.end(); ++it){
              KeyFrame* pKF = it->first;
              size_t idx = it->second;
@@ -82,12 +82,12 @@ namespace HYSLAM{
     }
 
     bool MapPointDBEntry::isInKeyFrame(KeyFrame* pKF){
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         return observations.count(pKF);
     }
 
     void MapPointDBEntry::setBestDescriptor(cv::Mat bd){
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         best_descriptor = bd.clone();
         pMP_entry->setDescriptor(bd);
     }
@@ -97,14 +97,14 @@ namespace HYSLAM{
             computeDistinctiveDescriptor();
             desc_needs_update = false;
         }
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         return best_descriptor.clone();
         
     }
 
 
     void MapPointDBEntry::addDescriptor(KeyFrame* pKF, cv::Mat d){
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         if(descriptors.count(pKF)) //don't allow replacement
             return;
         descriptors[pKF] = d.clone();
@@ -112,7 +112,7 @@ namespace HYSLAM{
     }
 
     void MapPointDBEntry::eraseDescriptor(KeyFrame* pKF){
-        std::unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         if(descriptors.count(pKF)){
             descriptors.erase(pKF);
             desc_needs_update = true;
@@ -122,9 +122,9 @@ namespace HYSLAM{
 
     void MapPointDBEntry::computeDistinctiveDescriptor(){
         // Compute distances between them -
-        vector<cv::Mat> descriptor_vec;
+        std::vector<cv::Mat> descriptor_vec;
         {
-            std::unique_lock<mutex> lock(entry_mutex);
+            std::unique_lock<std::mutex> lock(entry_mutex);
             for(auto it = descriptors.begin(); it != descriptors.end(); ++it){
                 if(!it->first->isBad()){
                     descriptor_vec.push_back(it->second);
@@ -155,7 +155,7 @@ namespace HYSLAM{
         int BestIdx = 0;
         for(size_t i=0;i<N;i++)
         {
-            vector<int> vDists(Distances[i],Distances[i]+N);
+            std::vector<int> vDists(Distances[i],Distances[i]+N);
             sort(vDists.begin(),vDists.end());
             int median = vDists[0.5*(N-1)];
 
@@ -175,7 +175,7 @@ namespace HYSLAM{
     }
 
     void MapPointDBEntry::setNormal(cv::Mat norm){
-        unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         normal_vector = norm.clone();
         pMP_entry->setNormal(norm);
 
@@ -185,35 +185,35 @@ namespace HYSLAM{
         if(normdepth_needs_update){
             UpdateNormalAndDepth();
         }
-        unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         return normal_vector.clone();
     }
 
     void MapPointDBEntry::setMaxDist(float maxd){
-        unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         max_distance = maxd;
         pMP_entry->setMaxDistanceInvariance(maxd);
 
     }
     void MapPointDBEntry::setMinDist(float mind){
-        unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         min_distance = mind;
         pMP_entry->setMinDistanceInvariance(mind);
     }
 
     void MapPointDBEntry::setRefKF(KeyFrame* pKF){
-        unique_lock<mutex> lock(entry_mutex);
+        std::unique_lock<std::mutex> lock(entry_mutex);
         pKF_ref = pKF;
         pMP_entry->setReferenceKeyFrame(pKF);
     }
 
     void MapPointDBEntry::UpdateNormalAndDepth(){
-        map<KeyFrame*,size_t> observations_cur;
+        std::map<KeyFrame*,size_t> observations_cur;
         KeyFrame* pRefKF;
         cv::Mat Pos;
 
         {
-            unique_lock<mutex> lock1(entry_mutex);
+            std::unique_lock<std::mutex> lock1(entry_mutex);
             observations_cur=observations;
             pRefKF=pKF_ref;
             Pos = pMP_entry->GetWorldPos();
@@ -224,7 +224,7 @@ namespace HYSLAM{
 
         cv::Mat normal = cv::Mat::zeros(3,1,CV_32F);
         int n=0;
-        for(map<KeyFrame*,size_t>::iterator mit=observations_cur.begin(), mend=observations_cur.end(); mit!=mend; mit++)
+        for(std::map<KeyFrame*,size_t>::iterator mit=observations_cur.begin(), mend=observations_cur.end(); mit!=mend; mit++)
         {
             KeyFrame* pKF = mit->first;
             cv::Mat Owi = pKF->GetCameraCenter();
@@ -344,7 +344,7 @@ namespace HYSLAM{
 
         std::map<KeyFrame *, size_t> obs;
         {
-            unique_lock<mutex> lock1(db_mutex);
+            std::unique_lock<std::mutex> lock1(db_mutex);
             obs = mappoint_db[pMP_old]->getObservations();
             pMP_old->setBad();
             pMP_old->setReplaced(pMP_new);

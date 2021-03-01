@@ -625,7 +625,7 @@ std::vector<unsigned int> PreviouslyMatchedIndexCriterion::apply(KeyFrame* pKF, 
 }
 
 
-std::vector<unsigned int>  StereoIndexCriterion::apply(KeyFrame* pKF, vector<unsigned int> cand_idxs ){
+std::vector<unsigned int>  StereoIndexCriterion::apply(KeyFrame* pKF, std::vector<unsigned int> cand_idxs ){
     std::vector<unsigned int> idxs_passed;
 
     Camera camera = pKF->getCamera();

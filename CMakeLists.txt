@@ -45,21 +45,13 @@ ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
 ${G2O_INCLUDE_DIR}
 )
-#message(STATUS "G2O_FOUND: ${G2O_FOUND}")
-#message(STATUS "G2O include: ${G2O_INCLUDE_DIR} " )
-#message(STATUS "G2O libs: ${G2O_LIBS} " )
-#message(STATUS "CV libs: ${OpenCV_LIBS} " )
-#message(STATUS "G2O slam3 lib: ${G2O_TYPES_SLAM3D}")
+
 
 add_subdirectory(src) #HYSLAM IS ADDED HERE
 
 # Install 
 set(INSTALL_LIBDIR "/usr/local/lib")
 set(INSTALL_INCLUDEDIR "/usr/local/include")
-#install(DIRECTORY src/
-#        DESTINATION ${PROJECT_SOURCE_DIR}/include
-#        FILES_MATCHING PATTERN "*.h")
-
 
  
 unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)

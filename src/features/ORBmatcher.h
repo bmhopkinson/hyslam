@@ -22,14 +22,14 @@
 #ifndef ORBMATCHER_H
 #define ORBMATCHER_H
 
-#include<vector>
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
+#include <vector>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include <MatchCriteria.h>
-#include"MapPoint.h"
-#include"KeyFrame.h"
-#include"Frame.h"
+#include "MapPoint.h"
+#include "KeyFrame.h"
+#include "Frame.h"
 //LONG TERM: can think about the landmark matcher as assessing a flexible set of criteria on  matches
 // the criteria being provided as a vector of functions that are executed sequentially narrowing down candidates
 // vector of functions would hold landmark specific criteria but all have a common interface (e.g. func(landmarkset, Frame,..) and return set of landmarks passing the criteria
@@ -74,17 +74,17 @@ public:
 
     // Matching to triangulate new MapPoints. Check Epipolar Constraint.
     int SearchForTriangulation(KeyFrame *pKF1, KeyFrame* pKF2, cv::Mat F12,
-                               std::vector<pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo);
+                               std::vector<std::pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo);
 
     // Search matches between MapPoints seen in KF1 and KF2 transforming by a Sim3 [s12*R12|t12]
     // In the stereo and RGB-D case, s12=1
     int SearchBySim3(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint *> &vpMatches12, const float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th);
 
     // Project MapPoints into KeyFrame and search for duplicated MapPoints.
-    int Fuse(KeyFrame* pKF, const vector<MapPoint *> &vpMapPoints, std::map<std::size_t, MapPoint*> &fuse_matches, const float th=3.0, const float reprojection_err = 5.99);
+    int Fuse(KeyFrame* pKF, const std::vector<MapPoint *> &vpMapPoints, std::map<std::size_t, MapPoint*> &fuse_matches, const float th=3.0, const float reprojection_err = 5.99);
 
     // Project MapPoints into KeyFrame using a given Sim3 and search for duplicated MapPoints.
-    int Fuse(KeyFrame* pKF, cv::Mat Scw, const std::vector<MapPoint*> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint);
+    int Fuse(KeyFrame* pKF, cv::Mat Scw, const std::vector<MapPoint*> &vpPoints, float th, std::vector<MapPoint *> &vpReplacePoint);
 
 public:
 

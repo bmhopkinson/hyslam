@@ -37,7 +37,7 @@ void Map::setKeyFrameDB(KeyFrameDB* pKFDB){
 void Map::AddKeyFrame(KeyFrame *pKF)
 {
 //    std::cout << "to map, adding KF: " << pKF->mnId << " from cam: " << pKF->camera.camName << std::endl;
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
    // pkeyframe_db->add(pKF);
    pKF->setMap(this);
    keyframe_db.add(pKF);
@@ -50,7 +50,7 @@ void Map::AddKeyFrame(KeyFrame *pKF)
 
 void Map::EraseKeyFrame(KeyFrame *pKF)
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
   //  pkeyframe_db->erase(pKF, "All");  
     keyframe_db.erase(pKF, "All");
     mspKeyFrames.erase(pKF);
@@ -92,21 +92,21 @@ void Map::SetBadKeyFrame(KeyFrame* pKF){
 }
 
 
-void Map::SetReferenceMapPoints(const vector<MapPoint *> &vpMPs)
+void Map::SetReferenceMapPoints(const std::vector<MapPoint *> &vpMPs)
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     mvpReferenceMapPoints = vpMPs;
 }
 
 void Map::InformNewBigChange()
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     mnBigChangeIdx++;
 }
 
 int Map::GetLastBigChangeIdx()
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     return mnBigChangeIdx;
 }
 
@@ -114,10 +114,10 @@ void Map::setKeyFrameDBVocab(ORBVocabulary* pVoc){
   //  pkeyframe_db->setVocab(pVoc);
    keyframe_db.setVocab(pVoc);
 }
-vector<KeyFrame*> Map::GetAllKeyFrames()
+std::vector<KeyFrame*> Map::GetAllKeyFrames()
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return vector<KeyFrame*>(mspKeyFrames.begin(),mspKeyFrames.end());
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    return std::vector<KeyFrame*>(mspKeyFrames.begin(),mspKeyFrames.end());
 }
 /*
 void Map::setMapPointDB(MapPointDB* pMPDB){
@@ -126,8 +126,8 @@ void Map::setMapPointDB(MapPointDB* pMPDB){
 */
 void Map::AddMapPoint(MapPoint *pMP,KeyFrame* pKF_ref, int idx)
 {
-    pKF_ref->associateLandMark(idx, pMP, true);  
-    unique_lock<mutex> lock(mMutexMap);
+    pKF_ref->associateLandMark(idx, pMP, true);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     mappoint_db.addEntry(pMP, pKF_ref, idx);
 }
 
@@ -149,7 +149,7 @@ int Map::replaceMapPoint(MapPoint* pMP_old, MapPoint* pMP_new){
      return mappoint_db.replace(pMP_old, pMP_new);
 }
 
-vector<MapPoint*> Map::GetAllMapPoints()
+std::vector<MapPoint*> Map::GetAllMapPoints()
 {
     return mappoint_db.getAllMapPoints();
 }
@@ -161,7 +161,7 @@ long unsigned int Map::MapPointsInMap()
 
 long unsigned int Map::KeyFramesInMap()
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     return mspKeyFrames.size();
 }
 
@@ -203,15 +203,15 @@ int  Map::eraseAssociation(KeyFrame* pKF,  int idx){
   return -1;
 }
 */
-vector<MapPoint*> Map::GetReferenceMapPoints()
+std::vector<MapPoint*> Map::GetReferenceMapPoints()
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     return mvpReferenceMapPoints;
 }
 
 long unsigned int Map::GetMaxKFid()
 {
-    unique_lock<mutex> lock(mMutexMap);
+    std::unique_lock<std::mutex> lock(mMutexMap);
     return mnMaxKFid;
 }
 
@@ -222,7 +222,7 @@ void Map::clear()
         delete *sit;
     }
 
-    for(set<KeyFrame*>::iterator sit=mspKeyFrames.begin(), send=mspKeyFrames.end(); sit!=send; sit++) {
+    for(std::set<KeyFrame*>::iterator sit=mspKeyFrames.begin(), send=mspKeyFrames.end(); sit!=send; sit++) {
         delete *sit;
     }
 

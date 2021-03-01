@@ -46,6 +46,7 @@
 #include <TrackingState.h>
 
 #include <mutex>
+#include <string>
 #include <memory>
 #include <map>
 #include <iostream>
@@ -76,7 +77,7 @@ public:
     };
 
     Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
-             const string &strSettingPath);
+             const std::string &strSettingPath);
     ~Tracking();
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.

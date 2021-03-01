@@ -21,13 +21,14 @@
 #ifndef MAPDRAWER_H
 #define MAPDRAWER_H
 
-#include"Map.h"
-#include"MapPoint.h"
-#include"KeyFrame.h"
+#include "Map.h"
+#include "MapPoint.h"
+#include "KeyFrame.h"
 #include <Trajectory.h>
-#include<pangolin/pangolin.h>
+#include <pangolin/pangolin.h>
 
-#include<mutex>
+#include <mutex>
+#include <string>
 
 namespace HYSLAM
 {
@@ -41,7 +42,7 @@ struct KeyFrameDrawData{
 class MapDrawer
 {
 public:
-    MapDrawer(std::map<std::string, Map*> &_maps, const string &strSettingPath);
+    MapDrawer(std::map<std::string, Map*> &_maps, const std::string &strSettingPath);
 
     std::map<std::string, Map*> maps;
 

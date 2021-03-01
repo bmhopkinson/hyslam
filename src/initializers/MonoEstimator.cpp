@@ -19,12 +19,9 @@
 */
 
 #include "MonoEstimator.h"
-
-#include "Thirdparty/DBoW2/DUtils/Random.h"
-
+#include "DBoW2/Random.h"
 #include "Optimizer.h"
 #include "ORBmatcher.h"
-#include <ORBViews.h>
 #include <ORBSLAM_datastructs.h>
 
 #include<thread>

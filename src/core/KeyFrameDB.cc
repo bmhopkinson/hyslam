@@ -19,7 +19,7 @@
 */
 
 #include <KeyFrameDB.h>
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+#include <DBoW2/BowVector.h>
 
 
 
@@ -108,7 +108,7 @@ bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
             std::vector<KeyFrame*> vpConnected = covis_graph.GetVectorCovisibleKeyFrames( pKF_child);
             for(size_t i=0, iend=vpConnected.size(); i<iend; i++)
             {
-                for(set<KeyFrame*>::iterator spcit=sParentCandidates.begin(), spcend=sParentCandidates.end(); spcit!=spcend; spcit++)
+                for(std::set<KeyFrame*>::iterator spcit=sParentCandidates.begin(), spcend=sParentCandidates.end(); spcit!=spcend; spcit++)
                 {
                     if(vpConnected[i]->mnId == (*spcit)->mnId)
                     {
@@ -137,7 +137,7 @@ bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
 
     // If a child has no covisibility links with any parent candidate, assign to the original parent of this KF
     if(children.empty()) {
-        for (set<KeyFrame *>::iterator sit =children.begin(); sit != children.end(); sit++) {
+        for (std::set<KeyFrame *>::iterator sit =children.begin(); sit != children.end(); sit++) {
             spanning_tree.changeParent(*sit, mpParent);
         }
     }
@@ -195,17 +195,17 @@ bool KeyFrameDB::isChild(KeyFrame* pKF_node, KeyFrame* pKF_query){
 
 }
 
-vector<KeyFrame*> KeyFrameDB::DetectLoopCandidates(KeyFrame* pKF, float minScore) {
+std::vector<KeyFrame*> KeyFrameDB::DetectLoopCandidates(KeyFrame* pKF, float minScore) {
     if (covis_graph.inGraph(pKF)){
       std::set<KeyFrame *> KFs_excluded = covis_graph.GetConnectedKeyFrames(pKF);
       KFs_excluded.insert(pKF);
       return place_recog.detectLoopCandidates(pKF, minScore, KFs_excluded);
     } else {
-        return vector<KeyFrame*>();
+        return std::vector<KeyFrame*>();
     }
 }
 
-vector<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
+std::vector<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
 {
    return place_recog.detectRelocalizationCandidates(F);
 }

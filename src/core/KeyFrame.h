@@ -31,8 +31,8 @@
 #include <SensorData.h>
 
 
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#include <DBoW2/BowVector.h>
+#include <DBoW2/FeatureVector.h>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -99,7 +99,7 @@ public:
     void ComputeBoW();
 
     // Corresponding Frame or Image name
-    string kfImgName;
+    std::string kfImgName;
 
     // Covisibility graph functions - data set by KeyFrameDB
     void setCovisibleKeyFrames(std::vector<KeyFrame*> & KFs_covis){mvpOrderedConnectedKeyFrames = KFs_covis;};

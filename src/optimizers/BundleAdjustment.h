@@ -9,6 +9,7 @@
 #include "g2o/types/sba/Trajectory_g2o.h"
 #include <unordered_set>
 #include <map>
+#include <list>
 
 namespace HYSLAM
 {
@@ -34,15 +35,15 @@ public:
   virtual void Run() = 0;
   void setOptimizer(g2o::SparseOptimizer* optimizer_) { optimizer = optimizer_; };
 
-  void SetKeyFrameVertices(const list<KeyFrame*> &lKeyFrames, bool fixed);
-  void SetIMUEdges( const list<KeyFrame*> &lKeyFrames );
-  void SetDepthEdges( const list<KeyFrame*> &lKeyFrames );
-  void SetGPSEdges( const list<KeyFrame*> &lKeyFrames );
-  void SetMapPointVerticesEdges( const list<MapPoint*> lMapPoints, bool trackEdges, bool bRobust );
-  void SetImagingVertices(const list<KeyFrame*> &lKeyFrames);
-  void SetImagingEdges(const list<KeyFrame*> &lKeyFrames);
-  vector<OutlierMono>   FindOutliersMono(const double thresh);
-  vector<OutlierStereo>  FindOutliersStereo(const double thresh);
+  void SetKeyFrameVertices(const std::list<KeyFrame*> &lKeyFrames, bool fixed);
+  void SetIMUEdges( const std::list<KeyFrame*> &lKeyFrames );
+  void SetDepthEdges( const std::list<KeyFrame*> &lKeyFrames );
+  void SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames );
+  void SetMapPointVerticesEdges( const std::list<MapPoint*> lMapPoints, bool trackEdges, bool bRobust );
+  void SetImagingVertices(const std::list<KeyFrame*> &lKeyFrames);
+  void SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames);
+  std::vector<OutlierMono>   FindOutliersMono(const double thresh);
+  std::vector<OutlierStereo>  FindOutliersStereo(const double thresh);
 
 protected:
   Map* pMap;
@@ -55,13 +56,13 @@ protected:
   int vertex_id = 0;
   std::map<std::string, int> vertex_map;
 
-  vector<g2o::EdgeSE3ProjectXYZ*> vpEdgesMono;
-  vector<KeyFrame*> vpEdgeKFMono;
-  vector<MapPoint*> vpMapPointEdgeMono;
-  vector<g2o::EdgeStereoSE3ProjectXYZ*> vpEdgesStereo;
-  vector<KeyFrame*> vpEdgeKFStereo;
-  vector<MapPoint*> vpMapPointEdgeStereo;
-  unordered_set<std::string> sExcludedMPs;
+  std::vector<g2o::EdgeSE3ProjectXYZ*> vpEdgesMono;
+  std::vector<KeyFrame*> vpEdgeKFMono;
+  std::vector<MapPoint*> vpMapPointEdgeMono;
+  std::vector<g2o::EdgeStereoSE3ProjectXYZ*> vpEdgesStereo;
+  std::vector<KeyFrame*> vpEdgeKFStereo;
+  std::vector<MapPoint*> vpMapPointEdgeStereo;
+  std::unordered_set<std::string> sExcludedMPs;
 
   bool CheckForImagingCamera(const std::list<KeyFrame*> &lKeyFrames);
 

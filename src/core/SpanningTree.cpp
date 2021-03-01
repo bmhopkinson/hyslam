@@ -6,33 +6,33 @@ namespace HYSLAM {
     SpanningTreeNode::SpanningTreeNode(){}
 
     SpanningTreeNode::SpanningTreeNode(KeyFrame* pKF){
-        unique_lock<std::mutex> lock(node_mutex);
+        std::unique_lock<std::mutex> lock(node_mutex);
         pKF_node = pKF;
     }
 
     void SpanningTreeNode::setParent(KeyFrame* pKF){
-        unique_lock<std::mutex> lock(node_mutex);
+        std::unique_lock<std::mutex> lock(node_mutex);
         parent = pKF;
         pKF_node->setParent(parent);
     }
 
     void SpanningTreeNode::addChild(KeyFrame * pKF){
-        unique_lock<std::mutex> lock(node_mutex);
+        std::unique_lock<std::mutex> lock(node_mutex);
         children.insert(pKF);
     }
 
     void SpanningTreeNode::eraseChild(KeyFrame * pKF){
-        unique_lock<std::mutex> lock(node_mutex);
+        std::unique_lock<std::mutex> lock(node_mutex);
         children.erase(pKF);
     }
 
     std::set<KeyFrame*> SpanningTreeNode::getChildren(){
-        unique_lock<std::mutex> lock(node_mutex);
+        std::unique_lock<std::mutex> lock(node_mutex);
         return children;
     }
 
     bool SpanningTreeNode::isChild(KeyFrame * pKF){
-        unique_lock<std::mutex> lock(node_mutex);
+        std::unique_lock<std::mutex> lock(node_mutex);
         return children.count(pKF);
     }
 
@@ -47,7 +47,7 @@ namespace HYSLAM {
         }
         else{
             {
-                unique_lock<std::mutex> lock(tree_mutex);
+                std::unique_lock<std::mutex> lock(tree_mutex);
                 spanning_tree.insert({pKF, std::make_unique<SpanningTreeNode>(pKF)});
             }
             return 0;
@@ -60,7 +60,7 @@ namespace HYSLAM {
         }
         else{
             {
-                unique_lock<std::mutex> lock(tree_mutex);
+                std::unique_lock<std::mutex> lock(tree_mutex);
                 spanning_tree.insert({pKF_node, std::make_unique<SpanningTreeNode>(pKF_node)});
                 spanning_tree[pKF_node]->setParent(parent);
 
@@ -76,7 +76,7 @@ namespace HYSLAM {
             return -1;
         }
         {
-            unique_lock<std::mutex> lock(tree_mutex);
+            std::unique_lock<std::mutex> lock(tree_mutex);
             KeyFrame* parent = spanning_tree[pKF]->getParent();
             if(inTree(parent)){
                 spanning_tree[parent]->eraseChild(pKF);
@@ -112,7 +112,7 @@ namespace HYSLAM {
         if(!inTree(pKF_node)){
             return -1;
         }
-        unique_lock<std::mutex> lock(tree_mutex);
+        std::unique_lock<std::mutex> lock(tree_mutex);
         KeyFrame* old_parent = spanning_tree[pKF_node]->getParent();
         spanning_tree[pKF_node]->setParent(new_parent);
         spanning_tree[old_parent]->eraseChild(pKF_node);

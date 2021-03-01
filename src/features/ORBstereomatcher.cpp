@@ -60,7 +60,7 @@ void ORBstereomatcher::computeStereoMatches()
     const int nRows = mpORBextractorLeft->mvImagePyramid[0].rows;
 
     //Assign keypoints to row table
-    vector<vector<size_t> > vRowIndices(nRows,vector<size_t>());
+    std::vector<std::vector<size_t> > vRowIndices(nRows,std::vector<size_t>());
 
     for(int i=0; i<nRows; i++)
       vRowIndices[i].reserve(200);
@@ -85,7 +85,7 @@ void ORBstereomatcher::computeStereoMatches()
     const float maxD = mbf/minZ;
 
     // For each left keypoint search a match in the right image
-    vector<pair<int, int> > vDistIdx;
+    std::vector<std::pair<int, int> > vDistIdx;
     vDistIdx.reserve(N);
 
     for(int iL=0; iL<N; iL++)
@@ -95,7 +95,7 @@ void ORBstereomatcher::computeStereoMatches()
         const float &vL = kpL.pt.y;
         const float &uL = kpL.pt.x;
 
-        const vector<size_t> &vCandidates = vRowIndices[vL];
+        const std::vector<size_t> &vCandidates = vRowIndices[vL];
 
         if(vCandidates.empty())
             continue;
@@ -154,7 +154,7 @@ void ORBstereomatcher::computeStereoMatches()
               int bestDist = INT_MAX;
               int bestincR = 0;
               const int L = 5;
-              vector<float> vDists;
+              std::vector<float> vDists;
               vDists.resize(2*L+1);
 
               const float iniu = scaleduR0+L-w;
@@ -205,7 +205,7 @@ void ORBstereomatcher::computeStereoMatches()
                   }
                   mvDepth[iL]=mbf/disparity;
                   mvuRight[iL] = bestuR;
-                  vDistIdx.push_back(pair<int,int>(bestDist,iL));
+                  vDistIdx.push_back(std::pair<int,int>(bestDist,iL));
               }
           }
       }

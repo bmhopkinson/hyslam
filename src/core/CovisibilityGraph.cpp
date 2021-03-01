@@ -104,7 +104,7 @@ namespace HYSLAM{
             }
             if(mit->second>=th)
             {
-                vPairs.push_back(make_pair(mit->second,mit->first));
+                vPairs.push_back(std::make_pair(mit->second,mit->first));
                 symmetric_updates.insert(*mit);
               //  (mit->first)->AddConnection(pKF_node,mit->second);
             }
@@ -112,7 +112,7 @@ namespace HYSLAM{
         //   std::cout << "finished adding connections" << std::endl;
         if(vPairs.empty())
         {
-            vPairs.push_back(make_pair(nmax,pKFmax));
+            vPairs.push_back(std::make_pair(nmax,pKFmax));
             //pKFmax->AddConnection(pKF_node ,nmax);
             symmetric_updates.insert({pKFmax, nmax});
         }
@@ -131,9 +131,9 @@ namespace HYSLAM{
 
             // mspConnectedKeyFrames = spConnectedKeyFrames;
             mConnectedKeyFrameWeights = KFcounter;
-            mvpOrderedConnectedKeyFrames = vector<KeyFrame*>(lKFs.begin(),lKFs.end());
+            mvpOrderedConnectedKeyFrames = std::vector<KeyFrame*>(lKFs.begin(),lKFs.end());
             pKF_node->setCovisibleKeyFrames(mvpOrderedConnectedKeyFrames); //push down to keyframes where the data is needed sometimes
-            mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());
+            mvOrderedWeights = std::vector<int>(lWs.begin(), lWs.end());
 
         }
         //  std::cout << "finished updating connections" << std::endl;
@@ -145,7 +145,7 @@ namespace HYSLAM{
         std::vector<std::pair<int,KeyFrame*> > vPairs;
         vPairs.reserve(mConnectedKeyFrameWeights.size());
         for(std::map<KeyFrame*,int>::iterator mit=mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
-            vPairs.push_back(make_pair(mit->second,mit->first));
+            vPairs.push_back(std::make_pair(mit->second,mit->first));
 
         sort(vPairs.begin(),vPairs.end());
         std::list<KeyFrame*> lKFs;
@@ -156,12 +156,12 @@ namespace HYSLAM{
             lWs.push_front(vPairs[i].first);
         }
 
-        mvpOrderedConnectedKeyFrames = vector<KeyFrame*>(lKFs.begin(),lKFs.end());
+        mvpOrderedConnectedKeyFrames = std::vector<KeyFrame*>(lKFs.begin(),lKFs.end());
         pKF_node->setCovisibleKeyFrames(mvpOrderedConnectedKeyFrames); //push down to keyframes where the data is needed sometimes
-        mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());
+        mvOrderedWeights = std::vector<int>(lWs.begin(), lWs.end());
     }
 
-    set<KeyFrame*> CovisNode::GetConnectedKeyFrames()
+    std::set<KeyFrame*> CovisNode::GetConnectedKeyFrames()
     {
         std::unique_lock<std::mutex> lock(node_mutex);
         std::set<KeyFrame*> s;
@@ -182,7 +182,7 @@ namespace HYSLAM{
         if((int)mvpOrderedConnectedKeyFrames.size()<N)
             return mvpOrderedConnectedKeyFrames;
         else
-            return vector<KeyFrame*>(mvpOrderedConnectedKeyFrames.begin(),mvpOrderedConnectedKeyFrames.begin()+N);
+            return std::vector<KeyFrame*>(mvpOrderedConnectedKeyFrames.begin(),mvpOrderedConnectedKeyFrames.begin()+N);
 
     }
 
