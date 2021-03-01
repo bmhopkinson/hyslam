@@ -102,11 +102,11 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
 
     // Load ORB parameters
 
-    ORBext_settings.nFeatures = fSettings["FeatureExtractor.nFeatures"];
-    ORBext_settings.fScaleFactor = fSettings["FeatureExtractor.scaleFactor"];
-    ORBext_settings.nLevels = fSettings["FeatureExtractor.nLevels"];
-    ORBext_settings.fIniThFAST = fSettings["FeatureExtractor.iniThFAST"];
-    ORBext_settings.fMinThFAST = fSettings["FeatureExtractor.minThFAST"];
+    ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
+    ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
+    ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];
+    ORBext_settings.fIniThFAST = fSettings["ORBextractor.iniThFAST"];
+    ORBext_settings.fMinThFAST = fSettings["ORBextractor.minThFAST"];
     std::cout << std::endl  << "ORB Extractor Parameters: " << std::endl;
     std::cout << "- Number of Features: " << ORBext_settings.nFeatures << std::endl;
     std::cout << "- Scale Levels: " << ORBext_settings.nLevels << std::endl;
