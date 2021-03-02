@@ -1,10 +1,3 @@
-echo "Configuring and building Thirdparty/DBoW2 ..."
-
-cd Thirdparty/DBoW2
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCUDA_USE_STATIC_CUDA_RUNTIME=OFF
-make
 
 cd ../../g2o
 

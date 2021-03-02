@@ -11,7 +11,7 @@ pKF(pKF_), pMap(pMap_), new_mpts(new_mpts_), params(params_)
 
 void LandMarkCuller::run(){
     // Check Recent Added MapPoints
-    list<MapPoint*>::iterator lit = new_mpts->begin();
+    std::list<MapPoint*>::iterator lit = new_mpts->begin();
     const unsigned long int nCurrentKFid = pKF->mnId;
 
     Camera camera = pKF->getCamera();
