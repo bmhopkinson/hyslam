@@ -6,6 +6,7 @@ HYSLAM_ADD_SOURCES(
   ORBstereomatcher.h ORBstereomatcher.cpp
   ORBUtil.h  ORBUtil.cpp
         FeatureFinder.h FeatureFinder.cpp
+        SURFFinder.h    SURFFinder.cpp
         ORBFinder.h ORBFinder.cpp
 )
 
