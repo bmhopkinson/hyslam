@@ -63,9 +63,9 @@ void LocalBundleAdjustment::Run(){
  //   std::cout << "running localBA w centralKF" << pCentralKF->mnId << std::endl;
 
     //collect local keyframes and mappoints
-    list<KeyFrame*> lLocalKeyFrames = FindLocalKFs( pCentralKF );
-    list<MapPoint*>  lLocalMapPoints  = FindLocalMapPoints( lLocalKeyFrames, pCentralKF );
-    list<KeyFrame*> lFixedKeyFrames = FindFixedKFs( lLocalMapPoints, pCentralKF);
+    std::list<KeyFrame*> lLocalKeyFrames = FindLocalKFs( pCentralKF );
+    std::list<MapPoint*>  lLocalMapPoints  = FindLocalMapPoints( lLocalKeyFrames, pCentralKF );
+    std::list<KeyFrame*> lFixedKeyFrames = FindFixedKFs( lLocalMapPoints, pCentralKF);
 
     //check if there's imaging cam data in the local KeyFrames
     imaging_camera_exists = CheckForImagingCamera(lLocalKeyFrames);
@@ -73,7 +73,7 @@ void LocalBundleAdjustment::Run(){
 
  //   std::cout << "found Keyframes" << std::endl;
   //  std::cout << "in LocalBundleAdjustment() " << std::endl;
-    list<KeyFrame*>::iterator lit = lLocalKeyFrames.begin();
+    std::list<KeyFrame*>::iterator lit = lLocalKeyFrames.begin();
     while( lit != lLocalKeyFrames.end()) {
         KeyFrame *pKFi = *lit;
         //      std::cout << "local KF: "<< pKFi->mnId << std::endl;
@@ -141,15 +141,15 @@ void LocalBundleAdjustment::Run(){
 
     // Check outlier observations
 
-    vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
-    vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
+    std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
+    std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
 
-    for(vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
+    for(std::vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
          g2o::EdgeSE3ProjectXYZ* e = (*vit).e;
          e->setLevel(1); //remove outliers from optimization
     }
 
-    for(vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
+    for(std::vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
          g2o::EdgeStereoSE3ProjectXYZ* e = (*vit).e;
          e->setLevel(1); //remove outliers from optimization
     }
@@ -170,13 +170,13 @@ void LocalBundleAdjustment::Run(){
     }
   //      std::cout << "finished 2nd round of optimization" << std::endl;
     //find outliers after 2nd round of optimization and erase those observations
-    vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
-    vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
+    std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
+    std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
 
     //lock map for removal of observations and update of  keyframe and points
-    unique_lock<mutex> lock(pMap->mMutexMapUpdate);
+    std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
 
-    for(vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
+    for(std::vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
          OutlierMono outlier = *vit;
          KeyFrame* pKFi = outlier.pKF;
          MapPoint* pMPi = outlier.pMP;
@@ -185,7 +185,7 @@ void LocalBundleAdjustment::Run(){
 
     }
 
-    for(vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
+    for(std::vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
          OutlierStereo outlier = *vit;
          KeyFrame* pKFi = outlier.pKF;
          MapPoint* pMPi = outlier.pMP;
@@ -197,7 +197,7 @@ void LocalBundleAdjustment::Run(){
 
     // Recover optimized data
     //Keyframes
-    for(list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin(), lend=lLocalKeyFrames.end(); lit!=lend; lit++)
+    for(std::list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin(), lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
         KeyFrame* pKFi = *lit;
         std::string vertex_name = "VertexSE3Expmap" + std::to_string(pKFi->mnId);
@@ -208,7 +208,7 @@ void LocalBundleAdjustment::Run(){
     }
 
     //Points
-    for(list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
+    for(std::list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
     {
         MapPoint* pMP = *lit;
     //    unsigned long id = pMP->mnId+maxKFid+1;
@@ -230,14 +230,14 @@ void LocalBundleAdjustment::Run(){
 }
 
 
-list<KeyFrame*> LocalBundleAdjustment::FindLocalKFs(KeyFrame *pCentralKF){
+std::list<KeyFrame*> LocalBundleAdjustment::FindLocalKFs(KeyFrame *pCentralKF){
     // Local KeyFrames: First Breath Search from Current Keyframe
-    list<KeyFrame*> lLocalKeyFrames;
+    std::list<KeyFrame*> lLocalKeyFrames;
     lLocalKeyFrames.push_back(pCentralKF);
     pCentralKF->mnBALocalForKF = pCentralKF->mnId;
 
     //const vector<KeyFrame*> vNeighKFs = pCentralKF->GetVectorCovisibleKeyFrames();
-    const vector<KeyFrame*> vNeighKFs = pMap->getKeyFrameDB()->GetVectorCovisibleKeyFrames(pCentralKF);
+    const std::vector<KeyFrame*> vNeighKFs = pMap->getKeyFrameDB()->GetVectorCovisibleKeyFrames(pCentralKF);
     for(int i=0, iend=vNeighKFs.size(); i<iend; i++)
     {
         KeyFrame* pKFi = vNeighKFs[i];
@@ -250,15 +250,15 @@ list<KeyFrame*> LocalBundleAdjustment::FindLocalKFs(KeyFrame *pCentralKF){
 
 }
 
-list<MapPoint*> LocalBundleAdjustment::FindLocalMapPoints(const list<KeyFrame*> &lLocalKeyFrames, KeyFrame *pCentralKF){
+std::list<MapPoint*> LocalBundleAdjustment::FindLocalMapPoints(const std::list<KeyFrame*> &lLocalKeyFrames, KeyFrame *pCentralKF){
 
     // Local MapPoints seen in Local KeyFrames
     int i = 0;
-    list<MapPoint*> lLocalMapPoints;
-    for(list<KeyFrame*>::const_iterator lit=lLocalKeyFrames.begin() , lend=lLocalKeyFrames.end(); lit!=lend; lit++)
+    std::list<MapPoint*> lLocalMapPoints;
+    for(std::list<KeyFrame*>::const_iterator lit=lLocalKeyFrames.begin() , lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
-        vector<MapPoint*> vpMPs = (*lit)->GetMapPointMatches();
-        for(vector<MapPoint*>::iterator vit=vpMPs.begin(), vend=vpMPs.end(); vit!=vend; vit++)
+        std::vector<MapPoint*> vpMPs = (*lit)->GetMapPointMatches();
+        for(std::vector<MapPoint*>::iterator vit=vpMPs.begin(), vend=vpMPs.end(); vit!=vend; vit++)
         {
             MapPoint* pMP = *vit;
             if(pMP)
@@ -279,14 +279,14 @@ list<MapPoint*> LocalBundleAdjustment::FindLocalMapPoints(const list<KeyFrame*> 
 
 }
 
-list<KeyFrame*> LocalBundleAdjustment::FindFixedKFs( const list<MapPoint*> lLocalMapPoints, KeyFrame *pCentralKF){
+std::list<KeyFrame*> LocalBundleAdjustment::FindFixedKFs( const std::list<MapPoint*> lLocalMapPoints, KeyFrame *pCentralKF){
 
   // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
-    list<KeyFrame*> lFixedCameras;
-    for(list<MapPoint*>::const_iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
+    std::list<KeyFrame*> lFixedCameras;
+    for(std::list<MapPoint*>::const_iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
     {
-        map<KeyFrame*,size_t> observations = (*lit)->GetObservations();
-        for(map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+        std::map<KeyFrame*,size_t> observations = (*lit)->GetObservations();
+        for(std::map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
         {
             KeyFrame* pKFi = mit->first;
 
@@ -305,22 +305,22 @@ list<KeyFrame*> LocalBundleAdjustment::FindFixedKFs( const list<MapPoint*> lLoca
 
 
 
-void LocalBundleAdjustment::ClearLBAFlags(const list<KeyFrame*> &lLocalKeyFrames, const list<KeyFrame*> &lFixedKeyFrames, const list<MapPoint*> lLocalMapPoints){
+void LocalBundleAdjustment::ClearLBAFlags(const std::list<KeyFrame*> &lLocalKeyFrames, const std::list<KeyFrame*> &lFixedKeyFrames, const std::list<MapPoint*> lLocalMapPoints){
 //clear mnBALocalForKF and mnBAFixedForKF flags
-   for(list<KeyFrame*>::const_iterator lit=lLocalKeyFrames.begin() , lend=lLocalKeyFrames.end(); lit!=lend; lit++)
+   for(std::list<KeyFrame*>::const_iterator lit=lLocalKeyFrames.begin() , lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
          KeyFrame* pKFi = *lit;
          pKFi->mnBALocalForKF = std::numeric_limits<unsigned long>::max();
     }
 
-   for(list<KeyFrame*>::const_iterator lit=lFixedKeyFrames.begin() , lend=lFixedKeyFrames.end(); lit!=lend; lit++)
+   for(std::list<KeyFrame*>::const_iterator lit=lFixedKeyFrames.begin() , lend=lFixedKeyFrames.end(); lit!=lend; lit++)
     {
          KeyFrame* pKFi = *lit;
          pKFi->mnBAFixedForKF = std::numeric_limits<unsigned long>::max();
     }
 
 
-   for(list<MapPoint*>::const_iterator lit=lLocalMapPoints.begin() , lend=lLocalMapPoints.end(); lit!=lend; lit++)
+   for(std::list<MapPoint*>::const_iterator lit=lLocalMapPoints.begin() , lend=lLocalMapPoints.end(); lit!=lend; lit++)
     {
          MapPoint* pMPi = *lit;
          pMPi->mnBALocalForKF = std::numeric_limits<unsigned long>::max();

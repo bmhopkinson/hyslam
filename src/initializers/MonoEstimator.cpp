@@ -24,7 +24,7 @@
 #include "ORBmatcher.h"
 #include <ORBSLAM_datastructs.h>
 
-#include<thread>
+#include <thread>
 
 namespace HYSLAM
 {
@@ -43,8 +43,8 @@ MonoEstimator::MonoEstimator(const Frame &ReferenceFrame, MonoEstimatorParams pa
     minFracTriangulated = params.minFracTriangulated;
 }
 
-bool MonoEstimator::Initialize(const Frame &CurrentFrame, const vector<int> &vMatches12, cv::Mat &R21, cv::Mat &t21,
-                             vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated)
+bool MonoEstimator::Initialize(const Frame &CurrentFrame, const std::vector<int> &vMatches12, cv::Mat &R21, cv::Mat &t21,
+                               std::vector<cv::Point3f> &vP3D, std::vector<bool> &vbTriangulated)
 {
     // Fill structures with current keypoints and matches with reference frame
     // Reference Frame: 1, Current Frame: 2
@@ -57,7 +57,7 @@ bool MonoEstimator::Initialize(const Frame &CurrentFrame, const vector<int> &vMa
     {
         if(vMatches12[i]>=0)
         {
-            mvMatches12.push_back(make_pair(i,vMatches12[i]));
+            mvMatches12.push_back(std::make_pair(i,vMatches12[i]));
             mvbMatched1[i]=true;
         }
         else
@@ -67,9 +67,9 @@ bool MonoEstimator::Initialize(const Frame &CurrentFrame, const vector<int> &vMa
     const int N = mvMatches12.size();
 
     // Indices for minimum set selection
-    vector<size_t> vAllIndices;
+    std::vector<size_t> vAllIndices;
     vAllIndices.reserve(N);
-    vector<size_t> vAvailableIndices;
+    std::vector<size_t> vAvailableIndices;
 
     for(int i=0; i<N; i++)
     {
@@ -77,7 +77,7 @@ bool MonoEstimator::Initialize(const Frame &CurrentFrame, const vector<int> &vMa
     }
 
     // Generate sets of 8 points for each RANSAC iteration
-    mvSets = vector< vector<size_t> >(mMaxIterations,vector<size_t>(8,0));
+    mvSets = std::vector< std::vector<size_t> >(mMaxIterations,std::vector<size_t>(8,0));
 
     DUtils::Random::SeedRandOnce(0);
 
@@ -99,12 +99,12 @@ bool MonoEstimator::Initialize(const Frame &CurrentFrame, const vector<int> &vMa
     }
 
     // Launch threads to compute in parallel a fundamental matrix and a homography
-    vector<bool> vbMatchesInliersH, vbMatchesInliersF;
+    std::vector<bool> vbMatchesInliersH, vbMatchesInliersF;
     float SH, SF;
     cv::Mat H, F;
 
-    thread threadH(&MonoEstimator::FindHomography,this,ref(vbMatchesInliersH), ref(SH), ref(H));
-    thread threadF(&MonoEstimator::FindFundamental,this,ref(vbMatchesInliersF), ref(SF), ref(F));
+    std::thread threadH(&MonoEstimator::FindHomography,this,ref(vbMatchesInliersH), std::ref(SH), std::ref(H));
+    std::thread threadF(&MonoEstimator::FindFundamental,this,ref(vbMatchesInliersF), std::ref(SF), std::ref(F));
 
     // Wait until both threads have finished
     threadH.join();
@@ -135,13 +135,13 @@ bool MonoEstimator::Initialize(const Frame &CurrentFrame, const vector<int> &vMa
 }
 
 
-void MonoEstimator::FindHomography(vector<bool> &vbMatchesInliers, float &score, cv::Mat &H21)
+void MonoEstimator::FindHomography(std::vector<bool> &vbMatchesInliers, float &score, cv::Mat &H21)
 {
     // Number of putative matches
     const int N = mvMatches12.size();
 
     // Normalize coordinates
-    vector<cv::Point2f> vPn1, vPn2;
+    std::vector<cv::Point2f> vPn1, vPn2;
     cv::Mat T1, T2;
     Normalize(mvKeys1,vPn1, T1);
     Normalize(mvKeys2,vPn2, T2);
@@ -149,13 +149,13 @@ void MonoEstimator::FindHomography(vector<bool> &vbMatchesInliers, float &score,
 
     // Best Results variables
     score = 0.0;
-    vbMatchesInliers = vector<bool>(N,false);
+    vbMatchesInliers = std::vector<bool>(N,false);
 
     // Iteration variables
-    vector<cv::Point2f> vPn1i(8);
-    vector<cv::Point2f> vPn2i(8);
+    std::vector<cv::Point2f> vPn1i(8);
+    std::vector<cv::Point2f> vPn2i(8);
     cv::Mat H21i, H12i;
-    vector<bool> vbCurrentInliers(N,false);
+    std::vector<bool> vbCurrentInliers(N,false);
     float currentScore;
 
     // Perform all RANSAC iterations and save the solution with highest score
@@ -186,13 +186,13 @@ void MonoEstimator::FindHomography(vector<bool> &vbMatchesInliers, float &score,
 }
 
 
-void MonoEstimator::FindFundamental(vector<bool> &vbMatchesInliers, float &score, cv::Mat &F21)
+void MonoEstimator::FindFundamental(std::vector<bool> &vbMatchesInliers, float &score, cv::Mat &F21)
 {
     // Number of putative matches
     const int N = vbMatchesInliers.size();
 
     // Normalize coordinates
-    vector<cv::Point2f> vPn1, vPn2;
+    std::vector<cv::Point2f> vPn1, vPn2;
     cv::Mat T1, T2;
     Normalize(mvKeys1,vPn1, T1);
     Normalize(mvKeys2,vPn2, T2);
@@ -200,13 +200,13 @@ void MonoEstimator::FindFundamental(vector<bool> &vbMatchesInliers, float &score
 
     // Best Results variables
     score = 0.0;
-    vbMatchesInliers = vector<bool>(N,false);
+    vbMatchesInliers = std::vector<bool>(N,false);
 
     // Iteration variables
-    vector<cv::Point2f> vPn1i(8);
-    vector<cv::Point2f> vPn2i(8);
+    std::vector<cv::Point2f> vPn1i(8);
+    std::vector<cv::Point2f> vPn2i(8);
     cv::Mat F21i;
-    vector<bool> vbCurrentInliers(N,false);
+    std::vector<bool> vbCurrentInliers(N,false);
     float currentScore;
 
     // Perform all RANSAC iterations and save the solution with highest score
@@ -237,7 +237,7 @@ void MonoEstimator::FindFundamental(vector<bool> &vbMatchesInliers, float &score
 }
 
 
-cv::Mat MonoEstimator::ComputeH21(const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2)
+cv::Mat MonoEstimator::ComputeH21(const std::vector<cv::Point2f> &vP1, const std::vector<cv::Point2f> &vP2)
 {
     const int N = vP1.size();
 
@@ -279,7 +279,7 @@ cv::Mat MonoEstimator::ComputeH21(const vector<cv::Point2f> &vP1, const vector<c
     return vt.row(8).reshape(0, 3);
 }
 
-cv::Mat MonoEstimator::ComputeF21(const vector<cv::Point2f> &vP1,const vector<cv::Point2f> &vP2)
+cv::Mat MonoEstimator::ComputeF21(const std::vector<cv::Point2f> &vP1,const std::vector<cv::Point2f> &vP2)
 {
     const int N = vP1.size();
 
@@ -316,7 +316,7 @@ cv::Mat MonoEstimator::ComputeF21(const vector<cv::Point2f> &vP1,const vector<cv
     return  u*cv::Mat::diag(w)*vt;
 }
 
-float MonoEstimator::CheckHomography(const cv::Mat &H21, const cv::Mat &H12, vector<bool> &vbMatchesInliers, float sigma)
+float MonoEstimator::CheckHomography(const cv::Mat &H21, const cv::Mat &H12, std::vector<bool> &vbMatchesInliers, float sigma)
 {   
     const int N = mvMatches12.size();
 
@@ -401,7 +401,7 @@ float MonoEstimator::CheckHomography(const cv::Mat &H21, const cv::Mat &H12, vec
     return score;
 }
 
-float MonoEstimator::CheckFundamental(const cv::Mat &F21, vector<bool> &vbMatchesInliers, float sigma)
+float MonoEstimator::CheckFundamental(const cv::Mat &F21, std::vector<bool> &vbMatchesInliers, float sigma)
 {
     const int N = mvMatches12.size();
 
@@ -481,8 +481,8 @@ float MonoEstimator::CheckFundamental(const cv::Mat &F21, vector<bool> &vbMatche
     return score;
 }
 
-bool MonoEstimator::ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, cv::Mat &K,
-                            cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated)
+bool MonoEstimator::ReconstructF(std::vector<bool> &vbMatchesInliers, cv::Mat &F21, cv::Mat &K,
+                            cv::Mat &R21, cv::Mat &t21, std::vector<cv::Point3f> &vP3D, std::vector<bool> &vbTriangulated, float minParallax, int minTriangulated)
 {
     int N=0;
     for(size_t i=0, iend = vbMatchesInliers.size() ; i<iend; i++)
@@ -501,8 +501,8 @@ bool MonoEstimator::ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, c
     cv::Mat t2=-t;
 
     // Reconstruct with the 4 hyphoteses and check
-    vector<cv::Point3f> vP3D1, vP3D2, vP3D3, vP3D4;
-    vector<bool> vbTriangulated1,vbTriangulated2,vbTriangulated3, vbTriangulated4;
+    std::vector<cv::Point3f> vP3D1, vP3D2, vP3D3, vP3D4;
+    std::vector<bool> vbTriangulated1,vbTriangulated2,vbTriangulated3, vbTriangulated4;
     float parallax1,parallax2, parallax3, parallax4;
 
     int nGood1 = CheckRT(R1,t1,mvKeys1,mvKeys2,mvMatches12,vbMatchesInliers,K, vP3D1, 4.0*mSigma2, vbTriangulated1, parallax1);
@@ -510,7 +510,7 @@ bool MonoEstimator::ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, c
     int nGood3 = CheckRT(R1,t2,mvKeys1,mvKeys2,mvMatches12,vbMatchesInliers,K, vP3D3, 4.0*mSigma2, vbTriangulated3, parallax3);
     int nGood4 = CheckRT(R2,t2,mvKeys1,mvKeys2,mvMatches12,vbMatchesInliers,K, vP3D4, 4.0*mSigma2, vbTriangulated4, parallax4);
 
-    int maxGood = max(nGood1,max(nGood2,max(nGood3,nGood4)));
+    int maxGood = std::max(nGood1,std::max(nGood2,std::max(nGood3,nGood4)));
     
  //   std::cout << "F maxGood: " << maxGood << std::endl;
  //   std::cout << "F nGood1: " << nGood1 << std::endl;
@@ -521,7 +521,7 @@ bool MonoEstimator::ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, c
     R21 = cv::Mat();
     t21 = cv::Mat();
 
-    int nMinGood = max(static_cast<int>(minFracTriangulated*N),minTriangulated);
+    int nMinGood = std::max(static_cast<int>(minFracTriangulated*N),minTriangulated);
 
     int nsimilar = 0;
     if(nGood1>0.7*maxGood)
@@ -591,8 +591,8 @@ bool MonoEstimator::ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, c
     return false;
 }
 
-bool MonoEstimator::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, cv::Mat &K,
-                      cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated)
+bool MonoEstimator::ReconstructH(std::vector<bool> &vbMatchesInliers, cv::Mat &H21, cv::Mat &K,
+                      cv::Mat &R21, cv::Mat &t21, std::vector<cv::Point3f> &vP3D, std::vector<bool> &vbTriangulated, float minParallax, int minTriangulated)
 {
     int N=0;
     for(size_t i=0, iend = vbMatchesInliers.size() ; i<iend; i++)
@@ -622,7 +622,7 @@ bool MonoEstimator::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, c
         return false;
     }
 
-    vector<cv::Mat> vR, vt, vn;
+    std::vector<cv::Mat> vR, vt, vn;
     vR.reserve(8);
     vt.reserve(8);
     vn.reserve(8);
@@ -713,16 +713,16 @@ bool MonoEstimator::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, c
     int secondBestGood = 0;    
     int bestSolutionIdx = -1;
     float bestParallax = -1;
-    vector<cv::Point3f> bestP3D;
-    vector<bool> bestTriangulated;
+    std::vector<cv::Point3f> bestP3D;
+    std::vector<bool> bestTriangulated;
 
     // Instead of applying the visibility constraints proposed in the Faugeras' paper (which could fail for points seen with low parallax)
     // We reconstruct all hypotheses and check in terms of triangulated points and parallax
     for(size_t i=0; i<8; i++)
     {
         float parallaxi;
-        vector<cv::Point3f> vP3Di;
-        vector<bool> vbTriangulatedi;
+        std::vector<cv::Point3f> vP3Di;
+        std::vector<bool> vbTriangulatedi;
         int nGood = CheckRT(vR[i],vt[i],mvKeys1,mvKeys2,mvMatches12,vbMatchesInliers,K,vP3Di, 4.0*mSigma2, vbTriangulatedi, parallaxi);
         
   //      std::cout << "H: nGood" << i << ": " << nGood << std::endl;
@@ -771,7 +771,7 @@ void MonoEstimator::Triangulate(const cv::KeyPoint &kp1, const cv::KeyPoint &kp2
     x3D = x3D.rowRange(0,3)/x3D.at<float>(3);
 }
 
-void MonoEstimator::Normalize(const vector<cv::KeyPoint> &vKeys, vector<cv::Point2f> &vNormalizedPoints, cv::Mat &T)
+void MonoEstimator::Normalize(const std::vector<cv::KeyPoint> &vKeys, std::vector<cv::Point2f> &vNormalizedPoints, cv::Mat &T)
 {
     float meanX = 0;
     float meanY = 0;
@@ -820,9 +820,9 @@ void MonoEstimator::Normalize(const vector<cv::KeyPoint> &vKeys, vector<cv::Poin
 }
 
 
-int MonoEstimator::CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::KeyPoint> &vKeys1, const vector<cv::KeyPoint> &vKeys2,
-                       const vector<Match> &vMatches12, vector<bool> &vbMatchesInliers,
-                       const cv::Mat &K, vector<cv::Point3f> &vP3D, float th2, vector<bool> &vbGood, float &parallax)
+int MonoEstimator::CheckRT(const cv::Mat &R, const cv::Mat &t, const std::vector<cv::KeyPoint> &vKeys1, const std::vector<cv::KeyPoint> &vKeys2,
+                       const std::vector<Match> &vMatches12, std::vector<bool> &vbMatchesInliers,
+                       const cv::Mat &K, std::vector<cv::Point3f> &vP3D, float th2, std::vector<bool> &vbGood, float &parallax)
 {
     // Calibration parameters
     const float fx = K.at<float>(0,0);
@@ -830,10 +830,10 @@ int MonoEstimator::CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::
     const float cx = K.at<float>(0,2);
     const float cy = K.at<float>(1,2);
 
-    vbGood = vector<bool>(vKeys1.size(),false);
+    vbGood = std::vector<bool>(vKeys1.size(),false);
     vP3D.resize(vKeys1.size());
 
-    vector<float> vCosParallax;
+    std::vector<float> vCosParallax;
     vCosParallax.reserve(vKeys1.size());
 
     // Camera 1 Projection Matrix K[I|0]
@@ -924,7 +924,7 @@ int MonoEstimator::CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::
     {
         sort(vCosParallax.begin(),vCosParallax.end());
 
-        size_t idx = min(minTriangulated,int(vCosParallax.size()-1));
+        size_t idx = std::min(minTriangulated,int(vCosParallax.size()-1));
         parallax = acos(vCosParallax[idx])*180/CV_PI;
     }
     else

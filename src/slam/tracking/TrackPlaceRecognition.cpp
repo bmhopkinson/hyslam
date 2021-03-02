@@ -15,7 +15,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
     //  vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectRelocalizationCandidates(&mCurrentFrame);
-    vector<KeyFrame*> vpCandidateKFs = pMap->getKeyFrameDB()->DetectRelocalizationCandidates(&current_frame);
+    std::vector<KeyFrame*> vpCandidateKFs = pMap->getKeyFrameDB()->DetectRelocalizationCandidates(&current_frame);
     if(vpCandidateKFs.empty())
         return -1;
 
@@ -25,13 +25,13 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     // If enough matches are found we setup a PnP solver
     ORBmatcher matcher(params.match_nnratio_1 ,true);
 
-    vector<PnPsolver*> vpPnPsolvers;
+    std::vector<PnPsolver*> vpPnPsolvers;
     vpPnPsolvers.resize(nKFs);
 
-    vector<vector<MapPoint*> > vvpMapPointMatches;
+    std::vector<std::vector<MapPoint*> > vvpMapPointMatches;
     vvpMapPointMatches.resize(nKFs);
 
-    vector<bool> vbDiscarded;
+    std::vector<bool> vbDiscarded;
     vbDiscarded.resize(nKFs);
 
     int nCandidates=0;
@@ -86,7 +86,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
                 continue;
 
             // Perform 5 Ransac Iterations
-            vector<bool> vbInliers;
+            std::vector<bool> vbInliers;
             int nInliers;
             bool bNoMore;
 
@@ -107,7 +107,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
                // std::cout << "candidate KF has pose via PnP, try to optimize: " << vpCandidateKFs[i]->mnId << std::endl;
                 Tcw.copyTo(current_frame.mTcw);
 
-                set<MapPoint*> sFound;
+                std::set<MapPoint*> sFound;
 
                 const int np = vbInliers.size();
 

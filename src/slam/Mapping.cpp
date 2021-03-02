@@ -35,7 +35,7 @@
 namespace HYSLAM
 {
 
-    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const string &config_path):
+    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path):
     mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), mbFinished(true), maps(_maps),
     mbAbortBA(false), abortJobs(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true)
 {
@@ -141,7 +141,7 @@ void Mapping::Run()
 //std::vector<MapJob*> Mapping::SetupMandatoryJobs(){
 void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandatory_jobs){
     {
-        unique_lock<mutex> lock(mMutexNewKFs);
+        std::unique_lock<std::mutex> lock(mMutexNewKFs);
         mpCurrentKeyFrame = mlNewKeyFrames.front();
         curKF_cam = mpCurrentKeyFrame->camera.camName;
        // std::cout << "processing new KF:" << mpCurrentKeyFrame->mnId << " from cam: " << curKF_cam << std::endl;
@@ -245,7 +245,7 @@ else {
 
 void Mapping::InsertKeyFrame(KeyFrame *pKF)
 {
-    unique_lock<mutex> lock(mMutexNewKFs);
+    std::unique_lock<std::mutex> lock(mMutexNewKFs);
     mlNewKeyFrames.push_back(pKF);
     mbAbortBA=true;
 }
@@ -253,26 +253,26 @@ void Mapping::InsertKeyFrame(KeyFrame *pKF)
 
 bool Mapping::CheckNewKeyFrames()
 {
-    unique_lock<mutex> lock(mMutexNewKFs);
+    std::unique_lock<std::mutex> lock(mMutexNewKFs);
     return(!mlNewKeyFrames.empty());
 }
 
 
 void Mapping::RequestStop()
 {
-    unique_lock<mutex> lock(mMutexStop);
+    std::unique_lock<std::mutex> lock(mMutexStop);
     mbStopRequested = true;
-    unique_lock<mutex> lock2(mMutexNewKFs);
+    std::unique_lock<std::mutex> lock2(mMutexNewKFs);
     mbAbortBA = true;
 }
 
 bool Mapping::Stop()
 {
-    unique_lock<mutex> lock(mMutexStop);
+    std::unique_lock<std::mutex> lock(mMutexStop);
     if(mbStopRequested && !mbNotStop)
     {
         mbStopped = true;
-        cout << "Local Mapping STOP" << endl;
+        std::cout << "Local Mapping STOP" << std::endl;
         return true;
     }
 
@@ -281,46 +281,46 @@ bool Mapping::Stop()
 
 bool Mapping::isStopped()
 {
-    unique_lock<mutex> lock(mMutexStop);
+    std::unique_lock<std::mutex> lock(mMutexStop);
     return mbStopped;
 }
 
 bool Mapping::stopRequested()
 {
-    unique_lock<mutex> lock(mMutexStop);
+    std::unique_lock<std::mutex> lock(mMutexStop);
     return mbStopRequested;
 }
 
 void Mapping::Release()
 {
-    unique_lock<mutex> lock(mMutexStop);
-    unique_lock<mutex> lock2(mMutexFinish);
+    std::unique_lock<std::mutex> lock(mMutexStop);
+    std::unique_lock<std::mutex> lock2(mMutexFinish);
     if(mbFinished)
         return;
     mbStopped = false;
     mbStopRequested = false;
-    for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
+    for(std::list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
         delete *lit;
     mlNewKeyFrames.clear();
 
-    cout << "Local Mapping RELEASE" << endl;
+    std::cout << "Local Mapping RELEASE" << std::endl;
 }
 
 bool Mapping::AcceptKeyFrames()
 {
-    unique_lock<mutex> lock(mMutexAccept);
+    std::unique_lock<std::mutex> lock(mMutexAccept);
     return mbAcceptKeyFrames;
 }
 
 void Mapping::SetAcceptKeyFrames(bool flag)
 {
-    unique_lock<mutex> lock(mMutexAccept);
+    std::unique_lock<std::mutex> lock(mMutexAccept);
     mbAcceptKeyFrames=flag;
 }
 
 bool Mapping::SetNotStop(bool flag)
 {
-    unique_lock<mutex> lock(mMutexStop);
+    std::unique_lock<std::mutex> lock(mMutexStop);
 
     if(flag && mbStopped)
         return false;
@@ -337,7 +337,7 @@ void Mapping::InterruptBA()
 
 void Mapping::RunGlobalBA(){
 
-   cout << "starting global BA" << endl;
+    std::cout << "starting global BA" << std::endl;
    mpTracker->optParams.GBAtype = 1; //periodic GBA
    KeyFrame* pRefKF = mpTracker->GetReferenceKF();
     while(pRefKF->isBad())
@@ -345,7 +345,7 @@ void Mapping::RunGlobalBA(){
          pRefKF = pRefKF->GetParent();
      }
     //vector<KeyFrame*> vpKFfixed = pRefKF->GetBestCovisibilityKeyFrames(4); // fix reference keyframe and 4 most covisible - this is to prevent loss of tracking upon return from GBA - ultimately may be better to deal with Tracking thread to handle this
-    vector<KeyFrame*> vpKFfixed =  maps[curKF_cam]->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pRefKF, 4);
+    std::vector<KeyFrame*> vpKFfixed =  maps[curKF_cam]->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pRefKF, 4);
     vpKFfixed.push_back(pRefKF);
 
     bool mbStopGBA = false;
@@ -355,21 +355,21 @@ void Mapping::RunGlobalBA(){
     GlobalBundleAdjustment globalBA(vpKFfixed,  0, nIter ,  bRobust, &mbStopGBA, maps[pRefKF->camera.camName], traj_g2o, mpTracker->optParams);
     globalBA.Run();
 
-     cout << "finished global BA" << endl;
+    std::cout << "finished global BA" << std::endl;
 
 }
 
 void Mapping::RequestReset()
 {
     {
-        unique_lock<mutex> lock(mMutexReset);
+        std::unique_lock<std::mutex> lock(mMutexReset);
         mbResetRequested = true;
     }
 
     while(1)
     {
         {
-            unique_lock<mutex> lock2(mMutexReset);
+            std::unique_lock<std::mutex> lock2(mMutexReset);
             if(!mbResetRequested)
                 break;
         }
@@ -379,7 +379,7 @@ void Mapping::RequestReset()
 
 void Mapping::ResetIfRequested()
 {
-    unique_lock<mutex> lock(mMutexReset);
+    std::unique_lock<std::mutex> lock(mMutexReset);
     if(mbResetRequested)
     {
         mlNewKeyFrames.clear();
@@ -390,27 +390,27 @@ void Mapping::ResetIfRequested()
 
 void Mapping::RequestFinish()
 {
-    unique_lock<mutex> lock(mMutexFinish);
+    std::unique_lock<std::mutex> lock(mMutexFinish);
     mbFinishRequested = true;
 }
 
 bool Mapping::CheckFinish()
 {
-    unique_lock<mutex> lock(mMutexFinish);
+    std::unique_lock<std::mutex> lock(mMutexFinish);
     return mbFinishRequested;
 }
 
 void Mapping::SetFinish()
 {
-    unique_lock<mutex> lock(mMutexFinish);
+    std::unique_lock<std::mutex> lock(mMutexFinish);
     mbFinished = true;
-    unique_lock<mutex> lock2(mMutexStop);
+    std::unique_lock<std::mutex> lock2(mMutexStop);
     mbStopped = true;
 }
 
 bool Mapping::isFinished()
 {
-    unique_lock<mutex> lock(mMutexFinish);
+    std::unique_lock<std::mutex> lock(mMutexFinish);
     return mbFinished;
 }
 

@@ -24,6 +24,7 @@
 #include "Frame.h"
 #include "Tracking_datastructs.h"
 
+#include <vector>
 
 namespace HYSLAM
 {
@@ -105,9 +106,6 @@ private:
 
     // Ransac sets
     std::vector<std::vector<size_t> > mvSets;
-    
-
-     
 
 };
 

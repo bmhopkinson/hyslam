@@ -31,11 +31,11 @@ private:
   static int ncalls;
 
   //helper functions
-  list<KeyFrame*> FindLocalKFs(KeyFrame *pCentralKF);  //should probably convert these returned lists to vectors for better correspondence with globalBa and i don't see any need for them to be lists
-  list<MapPoint*>  FindLocalMapPoints(const list<KeyFrame*> &lLocalKeyFrames, KeyFrame *pCentralKF);
-  list<KeyFrame*> FindFixedKFs( const list<MapPoint*> lLocalMapPoints, KeyFrame *pCentralKF);
+    std::list<KeyFrame*> FindLocalKFs(KeyFrame *pCentralKF);  //should probably convert these returned lists to vectors for better correspondence with globalBa and i don't see any need for them to be lists
+    std::list<MapPoint*>  FindLocalMapPoints(const std::list<KeyFrame*> &lLocalKeyFrames, KeyFrame *pCentralKF);
+    std::list<KeyFrame*> FindFixedKFs( const std::list<MapPoint*> lLocalMapPoints, KeyFrame *pCentralKF);
 
-  void ClearLBAFlags(const list<KeyFrame*> &lLocalKeyFrames, const list<KeyFrame*> &lFixedKeyFrames, const list<MapPoint*> lLocalMapPoints);
+  void ClearLBAFlags(const std::list<KeyFrame*> &lLocalKeyFrames, const std::list<KeyFrame*> &lFixedKeyFrames, const std::list<MapPoint*> lLocalMapPoints);
 
 };
 } // namespace ORB_SLAM

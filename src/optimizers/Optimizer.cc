@@ -73,13 +73,13 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
     const ORBViews views = pFrame->getViews();
     ORBExtractorParams  orb_params = views.orbParams();
 
-    vector<g2o::EdgeSE3ProjectXYZOnlyPose*> vpEdgesMono;
-    vector<size_t> vnIndexEdgeMono;
+    std::vector<g2o::EdgeSE3ProjectXYZOnlyPose*> vpEdgesMono;
+    std::vector<size_t> vnIndexEdgeMono;
     vpEdgesMono.reserve(N);
     vnIndexEdgeMono.reserve(N);
 
-    vector<g2o::EdgeStereoSE3ProjectXYZOnlyPose*> vpEdgesStereo;
-    vector<size_t> vnIndexEdgeStereo;
+    std::vector<g2o::EdgeStereoSE3ProjectXYZOnlyPose*> vpEdgesStereo;
+    std::vector<size_t> vnIndexEdgeStereo;
     vpEdgesStereo.reserve(N);
     vnIndexEdgeStereo.reserve(N);
 
@@ -88,7 +88,7 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
 
 
     {
-    unique_lock<mutex> lock(MapPoint::mGlobalMutex);
+    std::unique_lock<std::mutex> lock(MapPoint::mGlobalMutex);
     
     //calculate number of mono and stereo vertices
     int nMonoVert = 0;  // number of monocular visual vertices in graph - for normalization
@@ -290,7 +290,7 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
 void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* pCurKF,
                                        const LoopClosing::KeyFrameAndPose &NonCorrectedSim3,
                                        const LoopClosing::KeyFrameAndPose &CorrectedSim3,
-                                       const map<KeyFrame *, set<KeyFrame *> > &LoopConnections, const bool &bFixScale)
+                                       const std::map<KeyFrame *, std::set<KeyFrame *> > &LoopConnections, const bool &bFixScale)
 {
     // Setup optimizer
 
@@ -305,14 +305,14 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
     solver->setUserLambdaInit(1e-16);
     optimizer.setAlgorithm(solver);
 
-    const vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
-    const vector<MapPoint*> vpMPs = pMap->GetAllMapPoints();
+    const std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
+    const std::vector<MapPoint*> vpMPs = pMap->GetAllMapPoints();
 
     const unsigned int nMaxKFid = pMap->GetMaxKFid();
 
-    vector<g2o::Sim3,Eigen::aligned_allocator<g2o::Sim3> > vScw(nMaxKFid+1);
-    vector<g2o::Sim3,Eigen::aligned_allocator<g2o::Sim3> > vCorrectedSwc(nMaxKFid+1);
-    vector<g2o::VertexSim3Expmap*> vpVertices(nMaxKFid+1);
+    std::vector<g2o::Sim3,Eigen::aligned_allocator<g2o::Sim3> > vScw(nMaxKFid+1);
+    std::vector<g2o::Sim3,Eigen::aligned_allocator<g2o::Sim3> > vCorrectedSwc(nMaxKFid+1);
+    std::vector<g2o::VertexSim3Expmap*> vpVertices(nMaxKFid+1);
 
     const int minFeat = 100;
 
@@ -355,20 +355,20 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
     }
 
 
-    set<pair<long unsigned int,long unsigned int> > sInsertedEdges;
+    std::set<std::pair<long unsigned int,long unsigned int> > sInsertedEdges;
 
     const Eigen::Matrix<double,7,7> matLambda = Eigen::Matrix<double,7,7>::Identity();
 
     // Set Loop edges
-    for(map<KeyFrame *, set<KeyFrame *> >::const_iterator mit = LoopConnections.begin(), mend=LoopConnections.end(); mit!=mend; mit++)
+    for(std::map<KeyFrame *, std::set<KeyFrame *> >::const_iterator mit = LoopConnections.begin(), mend=LoopConnections.end(); mit!=mend; mit++)
     {
         KeyFrame* pKF = mit->first;
         const long unsigned int nIDi = pKF->mnId;
-        const set<KeyFrame*> &spConnections = mit->second;
+        const std::set<KeyFrame*> &spConnections = mit->second;
         const g2o::Sim3 Siw = vScw[nIDi];
         const g2o::Sim3 Swi = Siw.inverse();
 
-        for(set<KeyFrame*>::const_iterator sit=spConnections.begin(), send=spConnections.end(); sit!=send; sit++)
+        for(std::set<KeyFrame*>::const_iterator sit=spConnections.begin(), send=spConnections.end(); sit!=send; sit++)
         {
             const long unsigned int nIDj = (*sit)->mnId;
             if((nIDi!=pCurKF->mnId || nIDj!=pLoopKF->mnId) && pMap->getKeyFrameDB()->GetWeight(pKF,*sit)  <minFeat)
@@ -386,7 +386,7 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
 
             optimizer.addEdge(e);
 
-            sInsertedEdges.insert(make_pair(min(nIDi,nIDj),max(nIDi,nIDj)));
+            sInsertedEdges.insert(std::make_pair(std::min(nIDi,nIDj),std::max(nIDi,nIDj)));
         }
     }
 
@@ -435,8 +435,8 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
         }
 
         // Loop edges
-        const set<KeyFrame*> sLoopEdges = pKF->GetLoopEdges();
-        for(set<KeyFrame*>::const_iterator sit=sLoopEdges.begin(), send=sLoopEdges.end(); sit!=send; sit++)
+        const std::set<KeyFrame*> sLoopEdges = pKF->GetLoopEdges();
+        for(std::set<KeyFrame*>::const_iterator sit=sLoopEdges.begin(), send=sLoopEdges.end(); sit!=send; sit++)
         {
             KeyFrame* pLKF = *sit;
             if(pLKF->mnId<pKF->mnId)
@@ -462,15 +462,15 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
 
         // Covisibility graph edges
         //const vector<KeyFrame*> vpConnectedKFs = pKF->GetCovisiblesByWeight(minFeat);
-        const vector<KeyFrame*> vpConnectedKFs = pMap->getKeyFrameDB()->GetCovisiblesByWeight(pKF, minFeat);
-        for(vector<KeyFrame*>::const_iterator vit=vpConnectedKFs.begin(); vit!=vpConnectedKFs.end(); vit++)
+        const std::vector<KeyFrame*> vpConnectedKFs = pMap->getKeyFrameDB()->GetCovisiblesByWeight(pKF, minFeat);
+        for(std::vector<KeyFrame*>::const_iterator vit=vpConnectedKFs.begin(); vit!=vpConnectedKFs.end(); vit++)
         {
             KeyFrame* pKFn = *vit;
             if(pKFn && pKFn!=pParentKF && !pMap->getKeyFrameDB()->isChild(pKF, pKFn)  && !sLoopEdges.count(pKFn))
             {
                 if(!pKFn->isBad() && pKFn->mnId<pKF->mnId)
                 {
-                    if(sInsertedEdges.count(make_pair(min(pKF->mnId,pKFn->mnId),max(pKF->mnId,pKFn->mnId))))
+                    if(sInsertedEdges.count(std::make_pair(std::min(pKF->mnId,pKFn->mnId),std::max(pKF->mnId,pKFn->mnId))))
                         continue;
 
                     g2o::Sim3 Snw;
@@ -499,7 +499,7 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
     optimizer.initializeOptimization();
     optimizer.optimize(20);
 
-    unique_lock<mutex> lock(pMap->mMutexMapUpdate);
+    std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
 
     // SE3 Pose Recovering. Sim3:[sR t;0 1] -> SE3:[R t/s;0 1]
     for(size_t i=0;i<vpKFs.size();i++)
@@ -557,7 +557,7 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
     }
 }
 
-int Optimizer::OptimizeSim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &vpMatches1, g2o::Sim3 &g2oS12, const float th2, const bool bFixScale)
+int Optimizer::OptimizeSim3(KeyFrame *pKF1, KeyFrame *pKF2, std::vector<MapPoint *> &vpMatches1, g2o::Sim3 &g2oS12, const float th2, const bool bFixScale)
 {
 /*
 typedef g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType> SlamLinearSolver;
@@ -611,10 +611,10 @@ TEST(Slam3D, OptimizationEdgeSE3Translation)
 
     // Set MapPoint vertices
     const int N = vpMatches1.size();
-    const vector<MapPoint*> vpMapPoints1 = pKF1->GetMapPointMatches();
-    vector<g2o::EdgeSim3ProjectXYZ*> vpEdges12;
-    vector<g2o::EdgeInverseSim3ProjectXYZ*> vpEdges21;
-    vector<size_t> vnIndexEdge;
+    const std::vector<MapPoint*> vpMapPoints1 = pKF1->GetMapPointMatches();
+    std::vector<g2o::EdgeSim3ProjectXYZ*> vpEdges12;
+    std::vector<g2o::EdgeInverseSim3ProjectXYZ*> vpEdges21;
+    std::vector<size_t> vnIndexEdge;
 
     vnIndexEdge.reserve(2*N);
     vpEdges12.reserve(2*N);

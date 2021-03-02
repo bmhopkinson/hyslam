@@ -9,6 +9,9 @@
 #include "g2o/types/sba/types_six_dof_expmap.h"
 #include "g2o/types/sba/Trajectory_g2o.h"
 
+#include <vector>
+#include <list>
+
 namespace HYSLAM
 {
 class GlobalBundleAdjustment : public BundleAdjustment {
@@ -30,8 +33,8 @@ private:
   static int ncalls;
 
   //helper functions
-  void RecoverOptimizedKeyFrames( list<KeyFrame*> lKeyFrames);
-  void RecoverOptimizedMapPoints(  list<MapPoint*>  lMapPoints);
+  void RecoverOptimizedKeyFrames( std::list<KeyFrame*> lKeyFrames);
+  void RecoverOptimizedMapPoints(  std::list<MapPoint*>  lMapPoints);
 };
 
 } //end ORB_SLAM2 namespace

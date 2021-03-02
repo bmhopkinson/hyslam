@@ -19,7 +19,7 @@ void LandMarkTriangulator::run() {
     int nn = params.N_neighborKFs_stereo;
     if(is_mono) //monocular
         nn = params.N_neighborKFs_mono;
-    const vector<KeyFrame*> vpNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, nn);
+    const std::vector<KeyFrame*> vpNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, nn);
 
     const ORBViews KFcur_views = pKF->getViews();
     ORBExtractorParams orb_params_KFcur = KFcur_views.orbParams();
@@ -109,7 +109,7 @@ void LandMarkTriangulator::run() {
                 cosParallaxStereo2 = cos(2*atan2(mb_KF2/2, KF2views.depth(idx2) ));
             }
 
-            cosParallaxStereo = min(cosParallaxStereo1,cosParallaxStereo2);
+            cosParallaxStereo = std::min(cosParallaxStereo1,cosParallaxStereo2);
 
             cv::Mat P1 = pKF->getCameraMatrix();
             cv::Mat P2 = pKF2->getCameraMatrix();

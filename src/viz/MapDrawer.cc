@@ -29,7 +29,7 @@ namespace HYSLAM
 {
 
 
-MapDrawer::MapDrawer(std::map<std::string, Map*> &_maps, const string &strSettingPath):maps(_maps)
+MapDrawer::MapDrawer(std::map<std::string, Map*> &_maps, const std::string &strSettingPath):maps(_maps)
 {
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
@@ -47,10 +47,10 @@ void MapDrawer::DrawMapPoints()
   for(std::map<std::string, Map*>::const_iterator mit= maps.begin(); mit != maps.end(); ++mit){
     std::string cam_name = (*mit).first;
     Map* mpMap = (*mit).second;
-    const vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
-    const vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints();
+    const std::vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
+    const std::vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints();
 
-    set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
+      std::set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
 
     if(vpMPs.empty())
         continue;
@@ -72,7 +72,7 @@ void MapDrawer::DrawMapPoints()
     glBegin(GL_POINTS);
     glColor3f(1.0,0.0,0.0);
 
-    for(set<MapPoint*>::iterator sit=spRefMPs.begin(), send=spRefMPs.end(); sit!=send; sit++)
+    for(std::set<MapPoint*>::iterator sit=spRefMPs.begin(), send=spRefMPs.end(); sit!=send; sit++)
     {
         if((*sit)->isBad())
             continue;
@@ -95,7 +95,7 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
       std::string cam_name = (*mit).first;
       Map* mpMap = (*mit).second;
 
-      const vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+      const std::vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
 
       if(draw_data.KFs)
       {
@@ -150,10 +150,10 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
             // Connectivity Graph
             if(draw_data.connectivity_graph) {
                 glColor4f(0.0f, 1.0f, 0.0f, 0.6f);
-                const vector<KeyFrame *> vCovKFs = mpMap->getKeyFrameDB()->GetCovisiblesByWeight(vpKFs[i], 100);  //segfault here
+                const std::vector<KeyFrame *> vCovKFs = mpMap->getKeyFrameDB()->GetCovisiblesByWeight(vpKFs[i], 100);  //segfault here
 
                 if (!vCovKFs.empty()) {
-                    for (vector<KeyFrame *>::const_iterator vit = vCovKFs.begin(), vend = vCovKFs.end();
+                    for (std::vector<KeyFrame *>::const_iterator vit = vCovKFs.begin(), vend = vCovKFs.end();
                          vit != vend; vit++) {
                         if ((*vit)->mnId < vpKFs[i]->mnId)
                             continue;
@@ -176,8 +176,8 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
             }
 
             // Loops
-            set<KeyFrame*> sLoopKFs = vpKFs[i]->GetLoopEdges();
-            for(set<KeyFrame*>::iterator sit=sLoopKFs.begin(), send=sLoopKFs.end(); sit!=send; sit++)
+            std::set<KeyFrame*> sLoopKFs = vpKFs[i]->GetLoopEdges();
+            for(std::set<KeyFrame*>::iterator sit=sLoopKFs.begin(), send=sLoopKFs.end(); sit!=send; sit++)
             {
                 if((*sit)->mnId<vpKFs[i]->mnId)
                     continue;
@@ -269,7 +269,7 @@ void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix &Twc)
 
 void MapDrawer::SetCurrentCameraPose(const cv::Mat &Tcw)
 {
-    unique_lock<mutex> lock(mMutexCamera);
+    std::unique_lock<std::mutex> lock(mMutexCamera);
     mCameraPose = Tcw.clone();
 }
 
@@ -280,7 +280,7 @@ void MapDrawer::GetCurrentOpenGLCameraMatrix(pangolin::OpenGlMatrix &M)
         cv::Mat Rwc(3,3,CV_32F);
         cv::Mat twc(3,1,CV_32F);
         {
-            unique_lock<mutex> lock(mMutexCamera);
+            std::unique_lock<std::mutex> lock(mMutexCamera);
             Rwc = mCameraPose.rowRange(0,3).colRange(0,3).t();
             twc = -Rwc*mCameraPose.rowRange(0,3).col(3);
         }

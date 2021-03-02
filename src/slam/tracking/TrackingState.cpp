@@ -34,7 +34,7 @@ KeyFrame*  TrackingState::createNewKeyFrame(Frame &current_frame, Map* pMap, Map
         // We sort points by the measured depth by the stereo/RGBD sensor.
         // We create all those MapPoints whose depth < thDepth.
         // If there are less than 100 close points we create the 100 closest.
-        vector<pair<float,int> > vDepthIdx;
+        std::vector<std::pair<float,int> > vDepthIdx;
         vDepthIdx.reserve(current_frame.N);
         const ORBViews views = current_frame.getViews();
         for(int i=0; i<current_frame.N; i++)
@@ -42,7 +42,7 @@ KeyFrame*  TrackingState::createNewKeyFrame(Frame &current_frame, Map* pMap, Map
             float z = views.depth(i);
             if(z>0)
             {
-                vDepthIdx.push_back(make_pair(z,i));
+                vDepthIdx.push_back(std::make_pair(z,i));
             }
         }
 

@@ -90,7 +90,7 @@ KeyFrame* TrackingStateInitialize::createNewKeyFrame(Frame &current_frame, Map* 
 }
 
 int TrackingStateInitialize::HandlePostMonoInitSLAM(KeyFrame* pKFini, KeyFrame* pKFcur, Map* pMap, Trajectory* trajectory){
-    cout << "New Map created with " << pMap->MapPointsInMap() << " points" << endl;
+    std::cout << "New Map created with " << pMap->MapPointsInMap() << " points" << std::endl;
     optimizer_info.GBAtype = 1; //routine GBA
     std::vector<KeyFrame*> vpKFfixed;  //fix KeyFrame 0
     std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
@@ -114,7 +114,7 @@ int TrackingStateInitialize::HandlePostMonoInitSLAM(KeyFrame* pKFini, KeyFrame* 
 
     if(medianDepth<0 || pKFcur->TrackedMapPoints(1)<100)
     {
-        cout << "Wrong initialization, should reset!!!!..." << endl;
+        std::cout << "Wrong initialization, should reset!!!!..." << std::endl;
       //  Reset();
         return -1;
     }

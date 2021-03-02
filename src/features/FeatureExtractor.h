@@ -102,7 +102,6 @@ protected:
     std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
 
-    std::vector<cv::Point> pattern;
 
     ORBFinder orbfinder;
 
@@ -114,7 +113,6 @@ protected:
 
     std::vector<int> mnFeaturesPerLevel;
 
-    std::vector<int> umax;
 
     std::vector<float> mvScaleFactor;
     std::vector<float> mvInvScaleFactor;    

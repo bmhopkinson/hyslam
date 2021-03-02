@@ -109,15 +109,15 @@ void ImagingBundleAdjustment::Run(){
     std::cout << "finished first optimization" << std::endl;
   // Check outlier observations and remove from BA
 
-  vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
-  vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
+  std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
+  std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
 
-  for(vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
+  for(std::vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
        g2o::EdgeSE3ProjectXYZ* e = (*vit).e;
        e->setLevel(1); //remove outliers from optimization
   }
 
-  for(vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
+  for(std::vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
        g2o::EdgeStereoSE3ProjectXYZ* e = (*vit).e;
        e->setLevel(1); //remove outliers from optimization
   }
@@ -138,7 +138,7 @@ void ImagingBundleAdjustment::Run(){
 
   // Recover optimized data
   //Keyframes
-  for(list<KeyFrame*>::iterator lit=KFs_to_optimize.begin(), lend=KFs_to_optimize.end(); lit!=lend; lit++)
+  for(std::list<KeyFrame*>::iterator lit=KFs_to_optimize.begin(), lend=KFs_to_optimize.end(); lit!=lend; lit++)
   {
     KeyFrame* pKFi = *lit;
     std::string vertex_name = "VertexSE3Expmap" + std::to_string(pKFi->mnId);
@@ -153,14 +153,14 @@ void ImagingBundleAdjustment::Run(){
   g2o::VertexSE3* Tcam_vert = static_cast<g2o::VertexSE3*>(optimizer.vertex(vertex_map[Tcam_vertex_name] ));
   cv::Mat Tcam_opt = Converter::Iso3tocvMat(Tcam_vert->estimate());
   Tcam_opt = Tcam_opt.inv();
-  for(list<KeyFrame*>::iterator lit=KFs_to_optimize.begin(), lend=KFs_to_optimize.end(); lit!=lend; lit++)
+  for(std::list<KeyFrame*>::iterator lit=KFs_to_optimize.begin(), lend=KFs_to_optimize.end(); lit!=lend; lit++)
   {
     KeyFrame* pKFi = *lit;
     pKFi->camera.Tcam_opt = Tcam_opt.clone();
   }
 
   //Points
-  for(list<MapPoint*>::iterator lit=mpts_to_optimize.begin(), lend=mpts_to_optimize.end(); lit!=lend; lit++)
+  for(std::list<MapPoint*>::iterator lit=mpts_to_optimize.begin(), lend=mpts_to_optimize.end(); lit!=lend; lit++)
   {
     MapPoint* pMP = *lit;
     std::string vertex_name = "VertexSBAPointXYZ" + std::to_string(pMP->mnId);
@@ -308,7 +308,7 @@ void ImagingBundleAdjustment::ApplySimilarityTransforms(){ //KFs and mpts to whi
       KFs_to_optimize.push_back(pKFi);
 
       //now collect mappoints
-      set<MapPoint*> vpMPs = pKFi->GetMapPoints();
+      std::set<MapPoint*> vpMPs = pKFi->GetMapPoints();
       for(std::set<MapPoint*>::iterator mpit = vpMPs.begin(); mpit != vpMPs.end(); ++mpit){
         segment_mappts_all.insert(*mpit);
     //    std::cout << "(*mpit)->mnId: " << (*mpit)->mnId << std::endl;

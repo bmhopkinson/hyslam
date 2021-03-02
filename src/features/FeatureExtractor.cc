@@ -67,40 +67,9 @@ using namespace std;
 
 namespace HYSLAM
 {
-
+const int N_CELLS = 14;
 const int PATCH_SIZE = 31;
-const int HALF_PATCH_SIZE = 15;
 const int EDGE_THRESHOLD = 19;
-
-
-static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max)
-{
-    int m_01 = 0, m_10 = 0;
-
-    const uchar* center = &image.at<uchar> (cvRound(pt.y), cvRound(pt.x));
-
-    // Treat the center line differently, v=0
-    for (int u = -HALF_PATCH_SIZE; u <= HALF_PATCH_SIZE; ++u)
-        m_10 += u * center[u];
-
-    // Go line by line in the circular patch
-    int step = (int)image.step1();
-    for (int v = 1; v <= HALF_PATCH_SIZE; ++v)
-    {
-        // Proceed over the two lines
-        int v_sum = 0;
-        int d = u_max[v];
-        for (int u = -d; u <= d; ++u)
-        {
-            int val_plus = center[u + v*step], val_minus = center[u - v*step];
-            v_sum += (val_plus - val_minus);
-            m_10 += u * (val_plus + val_minus);
-        }
-        m_01 += v * v_sum;
-    }
-
-    return fastAtan2((float)m_01, (float)m_10);
-}
 
 FeatureExtractor::FeatureExtractor(ORBextractorSettings settings)
 {
@@ -142,37 +111,7 @@ FeatureExtractor::FeatureExtractor(ORBextractorSettings settings)
     }
     mnFeaturesPerLevel[nlevels-1] = std::max(nfeatures - sumFeatures, 0);
 
-  //  const int npoints = 512;
-  //  const Point* pattern0 = (const Point*)bit_pattern_31_;
-  //  std::copy(pattern0, pattern0 + npoints, std::back_inserter(pattern));
 
-    //This is for orientation
-    // pre-compute the end of a row in a circular patch
-    umax.resize(HALF_PATCH_SIZE + 1);
-
-    int v, v0, vmax = cvFloor(HALF_PATCH_SIZE * sqrt(2.f) / 2 + 1);
-    int vmin = cvCeil(HALF_PATCH_SIZE * sqrt(2.f) / 2);
-    const double hp2 = HALF_PATCH_SIZE*HALF_PATCH_SIZE;
-    for (v = 0; v <= vmax; ++v)
-        umax[v] = cvRound(sqrt(hp2 - v * v));
-
-    // Make sure we are symmetric
-    for (v = HALF_PATCH_SIZE, v0 = 0; v >= vmin; --v)
-    {
-        while (umax[v0] == umax[v0 + 1])
-            ++v0;
-        umax[v] = v0;
-        ++v0;
-    }
-}
-
-static void computeOrientation(const Mat& image, vector<KeyPoint>& keypoints, const vector<int>& umax)
-{
-    for (vector<KeyPoint>::iterator keypoint = keypoints.begin(),
-         keypointEnd = keypoints.end(); keypoint != keypointEnd; ++keypoint)
-    {
-        keypoint->angle = IC_Angle(image, keypoint->pt, umax);
-    }
 }
 
 void ExtractorNode::DivideNode(ExtractorNode &n1, ExtractorNode &n2, ExtractorNode &n3, ExtractorNode &n4)
@@ -462,8 +401,8 @@ vector<cv::KeyPoint> FeatureExtractor::DistributeOctTree(const vector<cv::KeyPoi
 void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
 {
     allKeypoints.resize(nlevels);
-
-    const float W = 30;
+    
+    const float W = N_CELLS;
 
     for (int level = 0; level < nlevels; ++level)
     {
@@ -553,9 +492,6 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
         }
     }
 
-    // compute orientations
-  //  for (int level = 0; level < nlevels; ++level)
-  //      computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
 }
 
 void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<KeyPoint>& _keypoints,

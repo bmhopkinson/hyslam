@@ -49,21 +49,21 @@ vpKFfix(vpKFfix_) , nLoopKF(nLoopKF_), nIterations(nIterations_), bRobust(bRobus
 void GlobalBundleAdjustment::Run(){
 	ncalls++;
 
-    vector<KeyFrame*> vpAllKFs = pMap->GetAllKeyFrames();
-    vector<MapPoint*> vpAllMPs = pMap->GetAllMapPoints();
+    std::vector<KeyFrame*> vpAllKFs = pMap->GetAllKeyFrames();
+    std::vector<MapPoint*> vpAllMPs = pMap->GetAllMapPoints();
 
     //convert to list - probably should just swap all the BundleAdjustment functions to take vectors
-    list<KeyFrame*> lAllKFs( vpAllKFs.begin(), vpAllKFs.end() );
-    list<KeyFrame*> lFixedKFs( vpKFfix.begin(), vpKFfix.end() );
-    list<MapPoint*>  lAllMPs( vpAllMPs.begin(), vpAllMPs.end() );
+    std::list<KeyFrame*> lAllKFs( vpAllKFs.begin(), vpAllKFs.end() );
+    std::list<KeyFrame*> lFixedKFs( vpKFfix.begin(), vpKFfix.end() );
+    std::list<MapPoint*>  lAllMPs( vpAllMPs.begin(), vpAllMPs.end() );
 
 
-    list<KeyFrame*> lVariableKFs;
-    for(list<KeyFrame*>::iterator lit = lAllKFs.begin(); lit != lAllKFs.end(); ++lit){
+    std::list<KeyFrame*> lVariableKFs;
+    for(std::list<KeyFrame*>::iterator lit = lAllKFs.begin(); lit != lAllKFs.end(); ++lit){
            KeyFrame* pKFi = *lit;
 
            bool variable = true;
-           for(list<KeyFrame*>::iterator lit_f = lFixedKFs.begin(); lit_f != lFixedKFs.end(); ++lit_f){
+           for(std::list<KeyFrame*>::iterator lit_f = lFixedKFs.begin(); lit_f != lFixedKFs.end(); ++lit_f){
                if(pKFi->mnId == (*lit_f)->mnId){
                    variable = false;
                }
@@ -96,9 +96,9 @@ void GlobalBundleAdjustment::Run(){
 } //end Run()
 
 
-void GlobalBundleAdjustment::RecoverOptimizedKeyFrames( list<KeyFrame*> lKeyFrames)
+void GlobalBundleAdjustment::RecoverOptimizedKeyFrames( std::list<KeyFrame*> lKeyFrames)
 {
-  for(list<KeyFrame*>::iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); ++lit){
+  for(std::list<KeyFrame*>::iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); ++lit){
       KeyFrame* pKFi = *lit;
       if(pKFi->isBad())
             continue;
@@ -120,9 +120,9 @@ void GlobalBundleAdjustment::RecoverOptimizedKeyFrames( list<KeyFrame*> lKeyFram
 }
 
 
-void GlobalBundleAdjustment::RecoverOptimizedMapPoints( list<MapPoint*> lMapPoints)
+void GlobalBundleAdjustment::RecoverOptimizedMapPoints( std::list<MapPoint*> lMapPoints)
 {
-  for(list<MapPoint*>::iterator lit = lMapPoints.begin(); lit != lMapPoints.end(); ++lit){
+  for(std::list<MapPoint*>::iterator lit = lMapPoints.begin(); lit != lMapPoints.end(); ++lit){
        MapPoint* pMPi = *lit;
        //unsigned long id = pMPi->mnId+maxKFid+1;
 

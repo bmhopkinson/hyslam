@@ -36,8 +36,8 @@ BundleAdjustment::BundleAdjustment(Map* pMap_, g2o::Trajectory &trajectory_, opt
 BundleAdjustment::~BundleAdjustment()
 {}
 
-void BundleAdjustment::SetKeyFrameVertices(const list<KeyFrame*> &lKeyFrames, bool fixed  ){
-   for(list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
+void BundleAdjustment::SetKeyFrameVertices(const std::list<KeyFrame*> &lKeyFrames, bool fixed  ){
+   for(std::list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
     {
         KeyFrame* pKFi = *lit;
         if(pKFi->isBad())
@@ -60,9 +60,9 @@ void BundleAdjustment::SetKeyFrameVertices(const list<KeyFrame*> &lKeyFrames, bo
 }
 
 
-void BundleAdjustment::SetIMUEdges( const list<KeyFrame*> &lKeyFrames ){
+void BundleAdjustment::SetIMUEdges( const std::list<KeyFrame*> &lKeyFrames ){
 
-    for(list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
+    for(std::list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
     {
         KeyFrame* pKFi = *lit;
         if(pKFi->isBad())
@@ -87,9 +87,9 @@ void BundleAdjustment::SetIMUEdges( const list<KeyFrame*> &lKeyFrames ){
 
 }
 
-void BundleAdjustment::SetDepthEdges( const list<KeyFrame*> &lKeyFrames ){
+void BundleAdjustment::SetDepthEdges( const std::list<KeyFrame*> &lKeyFrames ){
 
- for(list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
+ for(std::list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
     {
         KeyFrame* pKFi = *lit;
         if(pKFi->isBad())
@@ -112,14 +112,14 @@ void BundleAdjustment::SetDepthEdges( const list<KeyFrame*> &lKeyFrames ){
 
 }
 
-void BundleAdjustment::SetGPSEdges( const list<KeyFrame*> &lKeyFrames ){
+void BundleAdjustment::SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames ){
     //add GPS constraints
     //first estimate optimal GPS to ORB_SLAM2 coordinate system transform using Horn 1987 algorithm - use all available keyframe data
-    vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
+    std::vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
     cv::Mat P1;
     cv::Mat P2;
     int nGPSdata = 0;
-    for(vector<KeyFrame*>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); vit++){
+    for(std::vector<KeyFrame*>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); vit++){
         KeyFrame* pKFi = *vit;
         if(pKFi->getSensorData().isGPSValid()){
             nGPSdata++;
@@ -156,7 +156,7 @@ void BundleAdjustment::SetGPSEdges( const list<KeyFrame*> &lKeyFrames ){
 
     //create GPS to Pose edges
       if(validSim3){
-          for(list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
+          for(std::list<KeyFrame*>::const_iterator lit=lKeyFrames.begin(), lend=lKeyFrames.end(); lit!=lend; lit++)
           {
             KeyFrame* pKFi = *lit;
             if(pKFi->isBad())
@@ -189,12 +189,12 @@ void BundleAdjustment::SetGPSEdges( const list<KeyFrame*> &lKeyFrames ){
 
 }
 
-void BundleAdjustment::SetMapPointVerticesEdges( const list<MapPoint*> lMapPoints, bool trackEdges, bool bRobust ){
+void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMapPoints, bool trackEdges, bool bRobust ){
     const float thHuberMono = sqrt(5.991);
     const float thHuberStereo = sqrt(7.815);
 
     int i  = 0;
-    for(list<MapPoint*>::const_iterator lit=lMapPoints.begin(), lend=lMapPoints.end(); lit!=lend; lit++)
+    for(std::list<MapPoint*>::const_iterator lit=lMapPoints.begin(), lend=lMapPoints.end(); lit!=lend; lit++)
     {
         MapPoint* pMP = *lit;
         if(pMP->isBad())
@@ -211,12 +211,12 @@ void BundleAdjustment::SetMapPointVerticesEdges( const list<MapPoint*> lMapPoint
         vPoint->setMarginalized(true);
         optimizer->addVertex(vPoint);
 
-        const map<KeyFrame*,size_t> observations = pMP->GetObservations();
+        const std::map<KeyFrame*,size_t> observations = pMP->GetObservations();
 		int n_mono = 0;
 		int n_stereo = 0;
         int nEdges = 0;
         //Set edges
-        for(map<KeyFrame*,size_t>::const_iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+        for(std::map<KeyFrame*,size_t>::const_iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
         {
 
             KeyFrame* pKFi = mit->first;
@@ -252,13 +252,6 @@ void BundleAdjustment::SetMapPointVerticesEdges( const list<MapPoint*> lMapPoint
                    e->setRobustKernel(rk);
                    rk->setDelta(thHuberMono);
                 }
-                
-                /*
-                e->fx = pKFi->fx;
-                e->fy = pKFi->fy;
-                e->cx = pKFi->cx;
-                e->cy = pKFi->cy;
-*/
 
                 e->fx = camera.fx();
                 e->fy = camera.fy();
@@ -298,14 +291,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const list<MapPoint*> lMapPoint
                    e->setRobustKernel(rk);
                    rk->setDelta(thHuberStereo);
                 }
-                
-                /*
-                e->fx = pKFi->fx;
-                e->fy = pKFi->fy;
-                e->cx = pKFi->cx;
-                e->cy = pKFi->cy;
-                e->bf = pKFi->mbf;
-*/
+
                 e->fx = camera.fx();
                 e->fy = camera.fy();
                 e->cx = camera.cx();
@@ -340,11 +326,11 @@ void BundleAdjustment::SetMapPointVerticesEdges( const list<MapPoint*> lMapPoint
 
 
 
-void BundleAdjustment::SetImagingVertices(const list<KeyFrame*> &lKeyFrames){
+void BundleAdjustment::SetImagingVertices(const std::list<KeyFrame*> &lKeyFrames){
   bool Tcam_set = false;
 
 
-  for(list<KeyFrame*>::const_iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); lit++){
+  for(std::list<KeyFrame*>::const_iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); lit++){
     KeyFrame* pKFi = *lit;
     if(pKFi->camera.camName == "Imaging"){
 
@@ -375,10 +361,10 @@ void BundleAdjustment::SetImagingVertices(const list<KeyFrame*> &lKeyFrames){
 
 }
 
-void BundleAdjustment::SetImagingEdges(const list<KeyFrame*> &lKeyFrames){
+void BundleAdjustment::SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames){
   bool Tcam_set = false;
 
-  for(list<KeyFrame*>::const_iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); lit++){
+  for(std::list<KeyFrame*>::const_iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); lit++){
     KeyFrame* pKFi = *lit;
 //    std::cout << "pKFi->mnId: " << pKFi->mnId << std::endl;
     if(pKFi->camera.camName == "Imaging"){
@@ -422,8 +408,8 @@ void BundleAdjustment::SetImagingEdges(const list<KeyFrame*> &lKeyFrames){
   }
 }
 
-vector<OutlierMono> BundleAdjustment::FindOutliersMono(const double thresh){
-    vector<OutlierMono>  vpOutliersMono;
+std::vector<OutlierMono> BundleAdjustment::FindOutliersMono(const double thresh){
+    std::vector<OutlierMono>  vpOutliersMono;
 
     for(size_t i=0, iend=vpEdgesMono.size(); i<iend;i++)
     {
@@ -446,8 +432,8 @@ vector<OutlierMono> BundleAdjustment::FindOutliersMono(const double thresh){
    return vpOutliersMono;
 }
 
-vector<OutlierStereo> BundleAdjustment::FindOutliersStereo(const double thresh){
-   vector<OutlierStereo> vpOutliersStereo;
+std::vector<OutlierStereo> BundleAdjustment::FindOutliersStereo(const double thresh){
+    std::vector<OutlierStereo> vpOutliersStereo;
 
     for(size_t i=0, iend=vpEdgesStereo.size(); i<iend;i++)
     {

@@ -81,7 +81,7 @@ void TrackLocalMap::SearchLocalPoints(){
 
 void TrackLocalMap::UpdateLocalKeyFrames(){
     // Each map point vote for the keyframes in which it has been observed
-    map<KeyFrame*,int> keyframeCounter;
+    std::map<KeyFrame*,int> keyframeCounter;
     const LandMarkMatches matches = pcurrent_frame->getLandMarkMatches();
     for(auto it = matches.cbegin(); it != matches.cend(); ++it) {
         int LMid = it->first;
@@ -89,8 +89,8 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
         if(!pMP){continue;}
         if(!pMP->isBad())
         {
-            const map<KeyFrame*,size_t> observations = pMP->GetObservations();
-            for(map<KeyFrame*,size_t>::const_iterator it=observations.begin(), itend=observations.end(); it!=itend; it++)
+            const std::map<KeyFrame*,size_t> observations = pMP->GetObservations();
+            for(std::map<KeyFrame*,size_t>::const_iterator it=observations.begin(), itend=observations.end(); it!=itend; it++)
                 keyframeCounter[it->first]++;
         }
         else
@@ -103,12 +103,12 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
         return;
 
     int max=0;
-    KeyFrame* pKFmax= static_cast<KeyFrame*>(NULL);
+    KeyFrame* pKFmax= static_cast<KeyFrame*>(nullptr);
 
     local_key_frames.clear();
 
     // All keyframes that observe a map point are included in the local map. Also check which keyframe shares most points
-    for(map<KeyFrame*,int>::const_iterator it=keyframeCounter.begin(), itEnd=keyframeCounter.end(); it!=itEnd; it++)
+    for(std::map<KeyFrame*,int>::const_iterator it=keyframeCounter.begin(), itEnd=keyframeCounter.end(); it!=itEnd; it++)
     {
         KeyFrame* pKF = it->first;
 
@@ -137,9 +137,9 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
         KeyFrame* pKF = *itKF;
 
        // const vector<KeyFrame*> vNeighs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, 10);
-        const vector<KeyFrame*> vNeighs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, params.N_neighbor_keyframes);
+        const std::vector<KeyFrame*> vNeighs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, params.N_neighbor_keyframes);
 
-        for(vector<KeyFrame*>::const_iterator itNeighKF=vNeighs.begin(), itEndNeighKF=vNeighs.end(); itNeighKF!=itEndNeighKF; itNeighKF++)
+        for(std::vector<KeyFrame*>::const_iterator itNeighKF=vNeighs.begin(), itEndNeighKF=vNeighs.end(); itNeighKF!=itEndNeighKF; itNeighKF++)
         {
             KeyFrame* pNeighKF = *itNeighKF;
             if(!pNeighKF->isBad())
@@ -151,8 +151,8 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
 
         //can probably eliminate inclusion of children and parents  - seems like overkill and shouldn't they be in the covis graph if they're useful
         //const set<KeyFrame*> spChilds = pKF->GetChilds();
-        const set<KeyFrame*> spChilds =  pMap->getKeyFrameDB()->getChildren(pKF);
-        for(set<KeyFrame*>::const_iterator sit=spChilds.begin(), send=spChilds.end(); sit!=send; sit++)
+        const std::set<KeyFrame*> spChilds =  pMap->getKeyFrameDB()->getChildren(pKF);
+        for(std::set<KeyFrame*>::const_iterator sit=spChilds.begin(), send=spChilds.end(); sit!=send; sit++)
         {
             KeyFrame* pChildKF = *sit;
             if(!pChildKF->isBad())

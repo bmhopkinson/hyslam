@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <mutex>
+#include <string>
 
 
 namespace HYSLAM
@@ -42,7 +43,7 @@ class Map;
 class Mapping
 {
 public:
-    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const string &config_path);
+    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path);
 
     void SetLoopCloser(LoopClosing* pLoopCloser);
 

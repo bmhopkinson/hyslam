@@ -43,35 +43,35 @@ bool has_suffix(const std::string &str, const std::string &suffix) {
 namespace HYSLAM
 {
 
-System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
+System::System(const std::string &strVocFile, const std::string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false)
 {
     // Output welcome message
-    cout << endl <<
-    "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl <<
-    "This program comes with ABSOLUTELY NO WARRANTY;" << endl  <<
-    "This is free software, and you are welcome to redistribute it" << endl <<
-    "under certain conditions. See LICENSE.txt." << endl << endl;
+    std::cout << std::endl <<
+    "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << std::endl <<
+    "This program comes with ABSOLUTELY NO WARRANTY;" << std::endl  <<
+    "This is free software, and you are welcome to redistribute it" <<std::endl <<
+    "under certain conditions. See LICENSE.txt." << std::endl << std::endl;
 
-    cout << "Input sensor was set to: ";
+    std::cout << "Input sensor was set to: ";
 
     if(mSensor==MONOCULAR)
-        cout << "Monocular" << endl;
+        std::cout << "Monocular" << std::endl;
     else if(mSensor==STEREO)
-        cout << "Stereo" << endl;
+        std::cout << "Stereo" << std::endl;
     else if(mSensor==RGBD)
-        cout << "RGB-D" << endl;
+        std::cout << "RGB-D" << std::endl;
 
     //Check settings file
     cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
     if(!fsSettings.isOpened())
     {
-       cerr << "Failed to open settings file at: " << strSettingsFile << endl;
+        std::cerr << "Failed to open settings file at: " << strSettingsFile << std::endl;
        exit(-1);
     }
 
     //Load ORB Vocabulary
-    cout << endl << "Loading ORB Vocabulary. This could take a while...MODIFIED" << endl;
+    std::cout << std::endl << "Loading ORB Vocabulary. This could take a while...MODIFIED" << std::endl;
 
     clock_t tStart = clock();
     mpVocabulary = new ORBVocabulary();
@@ -82,8 +82,8 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         bVocLoad = mpVocabulary->loadFromBinaryFile(strVocFile);
     if(!bVocLoad)
     {
-        cerr << "Wrong path to vocabulary. " << endl;
-        cerr << "Failed to open at: " << strVocFile << endl;
+        std::cerr << "Wrong path to vocabulary. " << std::endl;
+        std::cerr << "Failed to open at: " << strVocFile << std::endl;
         exit(-1);
     }
     printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
@@ -113,17 +113,17 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
     mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path);
-    mptLocalMapping = new thread(&HYSLAM::Mapping::Run,mpLocalMapper);
+    mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
     mpLoopCloser = new LoopClosing(maps, mpVocabulary, mSensor!=MONOCULAR);
-    mptLoopClosing = new thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
+    mptLoopClosing = new std::thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
     if(bUseViewer)
     {
         mpViewer = new Viewer(this, mpFrameDrawers,mpMapDrawer,mpTracker,strSettingsFile);
-        mptViewer = new thread(&Viewer::Run, mpViewer);
+        mptViewer = new std::thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
     }
 
@@ -144,7 +144,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 
     // Check reset
     {
-    unique_lock<mutex> lock(mMutexReset);
+    std::unique_lock<std::mutex> lock(mMutexReset);
     if(mbReset)
     {
         mpTracker->Reset();
@@ -154,7 +154,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 
     cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight, img_info, sensor_data);
 
-    unique_lock<mutex> lock2(mMutexState);
+    std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackingState = mpTracker->GetCurrentTrackingState();
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
@@ -167,7 +167,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 
     // Check reset
     {
-    unique_lock<mutex> lock(mMutexReset);
+    std::unique_lock<std::mutex> lock(mMutexReset);
     if(mbReset)
     {
         mpTracker->Reset();
@@ -177,7 +177,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 
     cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
 
-    unique_lock<mutex> lock2(mMutexState);
+    std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackingState = mpTracker->GetCurrentTrackingState();
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
@@ -192,7 +192,7 @@ void System::RunImagingBundleAdjustment(){
 
 void System::Reset()
 {
-    unique_lock<mutex> lock(mMutexReset);
+    std::unique_lock<std::mutex> lock(mMutexReset);
     mbReset = true;
 }
 
@@ -219,7 +219,7 @@ void System::Shutdown()
 
 std::vector<int> System::ValidImagingKeyFrames(){
   std::vector<int> KF_frame_numbers;
-  vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
+  std::vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
   for(std::vector<KeyFrame*>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); ++vit){
     KeyFrame* pKF = *vit;
     if(pKF->isBad()){
@@ -235,20 +235,20 @@ std::vector<int> System::ValidImagingKeyFrames(){
 }
 
 
-void System::SaveTrajectoryMapping(const string &filename)
+void System::SaveTrajectoryMapping(const std::string &filename)
 {
-    cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
+    std::cout << std::endl << "Saving camera trajectory to " << filename << " ..." << std::endl;
 
-    vector<KeyFrame*> vpKFs = maps["SLAM"]->GetAllKeyFrames();
+    std::vector<KeyFrame*> vpKFs = maps["SLAM"]->GetAllKeyFrames();
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
     cv::Mat Two = vpKFs[0]->GetPoseInverse();
 
-    ofstream f;
+    std::ofstream f;
     f.open(filename.c_str());
-    f << fixed;
+    f << std::fixed;
 
     std::vector<cv::Mat> poses = mpTracker->trajectories["SLAM"]->getPoses(true);
     std::vector<cv::Mat>::iterator pit = poses.begin();
@@ -261,17 +261,17 @@ void System::SaveTrajectoryMapping(const string &filename)
         std::string name = (*it).name;
         double time = (*it).time_stamp;
   /////WORKIGN HERE - verified this all looks correct. need to add frame number and timestamp for each frame
-        f << name << "\t"  << setprecision(9) <<  time <<"\t" << Rwc.at<float>(0,0) << "\t" << Rwc.at<float>(0,1)  << "\t" << Rwc.at<float>(0,2) << "\t"  << twc.at<float>(0) << "\t" <<
+        f << name << "\t"  << std::setprecision(9) <<  time <<"\t" << Rwc.at<float>(0,0) << "\t" << Rwc.at<float>(0,1)  << "\t" << Rwc.at<float>(0,2) << "\t"  << twc.at<float>(0) << "\t" <<
              Rwc.at<float>(1,0) << "\t" << Rwc.at<float>(1,1)  << "\t" << Rwc.at<float>(1,2) << "\t"  << twc.at<float>(1) << "\t" <<
-             Rwc.at<float>(2,0) << "\t" << Rwc.at<float>(2,1)  << "\t" << Rwc.at<float>(2,2) << "\t"  << twc.at<float>(2) << endl;
+             Rwc.at<float>(2,0) << "\t" << Rwc.at<float>(2,1)  << "\t" << Rwc.at<float>(2,2) << "\t"  << twc.at<float>(2) << std::endl;
     }
     f.close();
-    cout << endl << "trajectory saved!" << endl;
+    std::cout << std::endl << "trajectory saved!" << std::endl;
 
 }
 
 
-void System::ExportCOLMAP(const string &foldername){
+void System::ExportCOLMAP(const std::string &foldername){
   struct stat sb;
   std::ios_base::fmtflags fmt_flags( std::cout.flags() ); // save fmt flags to restore after manipulation
 
@@ -294,9 +294,9 @@ void System::ExportCOLMAP(const string &foldername){
   std::string pts_file_name  = "points3D.txt";
 
   //camera file
-  ofstream f;
+    std::ofstream f;
   f.open(cam_file_name.c_str()); //add folder path at some point
-  vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
+    std::vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
   Camera camera_data  = vpKFs[0]->camera;
   f << "# Camera list with one line of data per camera:" << "\n"  //header
     << "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]"   << "\n"
@@ -598,16 +598,16 @@ void System::SaveTrajectoryDebugging(const string &filename){
 
 }
 */
-void System::SaveMap(const string &filename){
-    cout << "saving map points" << endl;
-    ofstream f;
+void System::SaveMap(const std::string &filename){
+    std::cout << "saving map points" << std::endl;
+    std::ofstream f;
     f.open(filename.c_str());
 
-    const vector<MapPoint*> &vpMPs = maps["SLAM"]->GetAllMapPoints();
+    const std::vector<MapPoint*> &vpMPs = maps["SLAM"]->GetAllMapPoints();
     for(size_t i=0, iend=vpMPs.size(); i<iend; i++){
         if(vpMPs[i]->isBad()) {continue;}
         cv::Mat pos = vpMPs[i]->GetWorldPos();
-        f << setprecision(6) << pos.at<float>(0) << "\t" << pos.at<float>(1) << "\t" <<pos.at<float>(2) <<endl;
+        f << std::setprecision(6) << pos.at<float>(0) << "\t" << pos.at<float>(1) << "\t" <<pos.at<float>(2) <<std::endl;
     }
     f.close();
 
@@ -615,19 +615,19 @@ void System::SaveMap(const string &filename){
 
 int System::GetTrackingState()
 {
-    unique_lock<mutex> lock(mMutexState);
+    std::unique_lock<std::mutex> lock(mMutexState);
     return mTrackingState;
 }
 
-vector<MapPoint*> System::GetTrackedMapPoints()
+std::vector<MapPoint*> System::GetTrackedMapPoints()
 {
-    unique_lock<mutex> lock(mMutexState);
+    std::unique_lock<std::mutex> lock(mMutexState);
     return mTrackedMapPoints;
 }
 
-vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
+std::vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
 {
-    unique_lock<mutex> lock(mMutexState);
+    std::unique_lock<std::mutex> lock(mMutexState);
     return mTrackedKeyPointsUn;
 }
 
