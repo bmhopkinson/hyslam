@@ -52,7 +52,7 @@ namespace HYSLAM
 {
 
     Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-               std::map<std::string, Map* > &_maps,  const string &strSettingPath):
+               std::map<std::string, Map* > &_maps,  const std::string &strSettingPath):
      mbVO(false), mpORBVocabulary(pVoc),
     mpSystem(pSys), mpViewer(NULL),
     mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , mnLastRelocFrameId(0)
@@ -99,10 +99,11 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
         cam_types.push_back((*it).name());
         LoadCalibration(*it, (*it).name());
         InitializeDataStructures((*it).name());
+        std::cout << "tracking loadsettings: cameras: " << (*it).name()<< std::endl;
     }
 
     // Load ORB parameters
-
+/*
     ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
     ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];
@@ -114,7 +115,7 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
     std::cout << "- Scale Factor: " << ORBext_settings.fScaleFactor << std::endl;
     std::cout << "- Initial Fast Threshold: " << ORBext_settings.fIniThFAST << std::endl;
     std::cout << "- Minimum Fast Threshold: " << ORBext_settings.fMinThFAST << std::endl;
-
+*/
     // load optimizer parameters
     optParams.Info_Depth = fSettings["Opt.Info_Depth"];
     optParams.Info_IMU   = fSettings["Opt.Info_IMU"];
@@ -235,6 +236,28 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const Imgdata img_data, 
     return mCurrentFrame.mTcw.clone();
 }
 
+cv::Mat Tracking::trackMono(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
+    cam_cur = img_data.camera;
+    mImGray = image;
+
+    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary,cam_data[cam_cur], img_data.name, sensor_data, false);
+
+    Track();
+    return mCurrentFrame.mTcw.clone();
+}
+
+cv::Mat Tracking::trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
+    cam_cur = img_data.camera;
+    mImGray = image;
+    std::cout << "trackStereo, img_data.time_stamp " << img_data.time_stamp << std::endl;
+    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary, cam_data[cam_cur]  , img_data.name, sensor_data, true );
+
+    Track();
+    return mCurrentFrame.mTcw.clone();
+}
+
+
+
 void Tracking::Track()
 {
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
@@ -251,13 +274,12 @@ void Tracking::Track()
     // ADDITION: Tracking state monitoring
     nPoints = 0;
     nObserved = 0;
-
+    std::cout << "trakcing: " << cam_cur << std::endl;
     mLastProcessedState=mState[cam_cur];  //only used by viewer
 
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(maps[cam_cur]->mMutexMapUpdate);
 
-    // System is initialized. Track Frame.
     bOK = false;
     UpdateLastFrame();
 
@@ -335,6 +357,7 @@ void Tracking::Track()
     TrackingState* pnext_track_state;
     if(mState[cam_cur] == NOT_INITIALIZED){
         if(bOK){
+            std::cout << "succesful initialization: transitioning to state OK" << std::endl;
             HandlePostInit(pKFnew, maps[cam_cur],  cam_cur);
             next_state = OK;
             delete state[cam_cur];
@@ -348,6 +371,7 @@ void Tracking::Track()
         if (bOK) {
             pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = OK;
+            std::cout << "tracking remains good, stay in normal" << std::endl;
         } else {
             if (cam_cur == "SLAM") {
                 pnext_track_state = state_options[cam_cur]["RELOCALIZE"];

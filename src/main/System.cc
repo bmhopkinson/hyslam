@@ -110,6 +110,8 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
                              maps, strSettingsFile);
 
+    mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker);
+
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
     mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path);
@@ -141,7 +143,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const Imgdata &img_info,  const SensorData &sensor_data)
 {
-
+    cv::Mat Tcw;
     // Check reset
     {
     std::unique_lock<std::mutex> lock(mMutexReset);
@@ -152,7 +154,8 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     }
     }
 
-    cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight, img_info, sensor_data);
+   // cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight, img_info, sensor_data);
+    mpImageProcessor->ProcessStereoImage(imLeft,imRight,img_info, sensor_data);
 
     std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackingState = mpTracker->GetCurrentTrackingState();
@@ -164,7 +167,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 
 cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const SensorData &sensor_data)
 {
-
+    cv::Mat Tcw;
     // Check reset
     {
     std::unique_lock<std::mutex> lock(mMutexReset);
@@ -175,8 +178,8 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
     }
     }
 
-    cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
-
+    //cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
+    mpImageProcessor->ProcessMonoImage(im,img_info, sensor_data);
     std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackingState = mpTracker->GetCurrentTrackingState();
     mTrackedMapPoints.clear();

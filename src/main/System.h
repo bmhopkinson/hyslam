@@ -30,6 +30,7 @@
 
 #include <Tracking.h>
 #include <Mapping.h>
+#include <ImageProcessing.h>
 #include "LoopClosing.h"
 #include "FrameDrawer.h"
 #include "MapDrawer.h"
@@ -48,6 +49,7 @@ class Map;
 class Tracking;
 class Mapping;
 class LoopClosing;
+class ImageProcessing;
 
 
 class System
@@ -157,6 +159,9 @@ private:
     // Loop Closer. It searches loops with every new keyframe. If there is a loop it performs
     // a pose graph optimization and full bundle adjustment (in a new thread) afterwards.
     LoopClosing* mpLoopCloser;
+
+    //Image Processer
+    ImageProcessing* mpImageProcessor;
 
     // The viewer draws the map and the current camera pose. It uses Pangolin.
     Viewer* mpViewer;
