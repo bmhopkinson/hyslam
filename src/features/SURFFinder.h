@@ -13,10 +13,10 @@ class SURFFinder : public FeatureFinder {
 public:
     SURFFinder();
     SURFFinder(double threshold_);
-    void setThreshold(double threshold_){threshold = threshold_;};
-    double getThreshold();
+    void setThreshold(double threshold_);
+    double getThreshold(){return threshold;};
     void detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints); //detect features
-    void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors) ; //compute descriptors
+    void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors); //compute descriptors
 private:
     double threshold = 20;
     int nOctaves =1;

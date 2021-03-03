@@ -18,13 +18,15 @@
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ORBEXTRACTOR_H
-#define ORBEXTRACTOR_H
+#ifndef FEATUREEXTRACTOR_H
+#define FEATUREEXTRACTOR_H
 
+#include <FeatureFinder.h>
+
+#include <opencv/cv.h>
 #include <vector>
 #include <list>
-#include <opencv/cv.h>
-#include <ORBFinder.h>
+#include <memory>
 
 
 namespace HYSLAM
@@ -60,7 +62,7 @@ public:
     
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };
 
-    FeatureExtractor(ORBextractorSettings settings);
+    FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, ORBextractorSettings settings);
 
     ~FeatureExtractor(){}
 
@@ -103,7 +105,7 @@ protected:
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
 
 
-    ORBFinder orbfinder;
+    std::unique_ptr<FeatureFinder> feature_finder;
 
     int nfeatures;
     double scaleFactor;

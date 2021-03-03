@@ -53,13 +53,15 @@
 *
 */
 
+#include <FeatureExtractor.h>
+#include <ORBFinder.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 #include <iostream>
 
-#include "FeatureExtractor.h"
+
 
 
 using namespace cv;
@@ -71,8 +73,9 @@ const int N_CELLS = 14;
 const int PATCH_SIZE = 31;
 const int EDGE_THRESHOLD = 19;
 
-FeatureExtractor::FeatureExtractor(ORBextractorSettings settings)
+FeatureExtractor::FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, ORBextractorSettings settings)
 {
+    feature_finder = std::move(feature_finder_);
     nfeatures = settings.nFeatures;
     scaleFactor = settings.fScaleFactor;
     nlevels = settings.nLevels;
@@ -111,6 +114,7 @@ FeatureExtractor::FeatureExtractor(ORBextractorSettings settings)
     }
     mnFeaturesPerLevel[nlevels-1] = std::max(nfeatures - sumFeatures, 0);
 
+   // feature_finder = std::make_unique<ORBFinder>(iniThFAST, true);
 
 }
 
@@ -443,16 +447,15 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
                     maxX = maxBorderX;
 
                 vector<cv::KeyPoint> vKeysCell;
-                orbfinder.setNonMaxSuppression(true);
-                orbfinder.setThreshold(iniThFAST);
-                orbfinder.detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
+                feature_finder->setThreshold(iniThFAST);
+                feature_finder->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
               //  FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
               //       vKeysCell,iniThFAST,true);
 
                 if(vKeysCell.empty())
                 {
-                    orbfinder.setThreshold(minThFAST);
-                    orbfinder.detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
+                    feature_finder->setThreshold(minThFAST);
+                    feature_finder->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
                   //  FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
                  //        vKeysCell,minThFAST,true);
                 }
@@ -540,7 +543,7 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
 
         // Compute the descriptors
         cv::Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
-        orbfinder.compute(workingMat, keypoints,desc);
+        feature_finder->compute(workingMat, keypoints,desc);
         //computeDescriptors(workingMat, keypoints, desc, pattern);
 
         offset += nkeypointsLevel;

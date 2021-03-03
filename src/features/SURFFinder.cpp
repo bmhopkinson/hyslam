@@ -15,4 +15,16 @@ SURFFinder::SURFFinder(double threshold_) : threshold(threshold_)
     detector = cv::xfeatures2d::SURF::create(threshold, nOctaves, nOctaveLayers);
 }
 
+void SURFFinder::setThreshold(double threshold_){
+    detector->setHessianThreshold(threshold_);
+    threshold = threshold_;
+}
+void SURFFinder::detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints) {
+    detector->detect(image, keypoints);
+}
+
+void SURFFinder::compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors) {
+    detector->compute(image, keypoints, descriptors);
+}
+
 }

@@ -24,6 +24,7 @@
 #include <opencv2/core/core.hpp>
 
 #include <ORBstereomatcher.h>
+#include <ORBFinder.h>
 #include <ORBUtil.h>
 #include "FrameDrawer.h"
 #include <MapPointDB.h>
@@ -69,16 +70,16 @@ namespace HYSLAM
     std::string tracking_config_file;
     LoadSettings(strSettingPath, ORBextractor_settings, tracking_config_file);
 
-    mpORBextractorLeft = new FeatureExtractor(ORBextractor_settings);
+    mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true) ,ORBextractor_settings);
 
     if(mSensor["SLAM"]==System::STEREO)
-        mpORBextractorRight = new FeatureExtractor(ORBextractor_settings);
+        mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true) , ORBextractor_settings);
 
    // if(mSensor["SLAM"]==System::MONOCULAR)
    ORBextractorSettings ORBextractor_settings_init;
    ORBextractor_settings_init = ORBextractor_settings;
    ORBextractor_settings_init.nFeatures = 3*ORBextractor_settings.nFeatures;
-   mpIniORBextractor = new FeatureExtractor(ORBextractor_settings_init);
+   mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true) , ORBextractor_settings_init);
 
    SetupStates();
 
