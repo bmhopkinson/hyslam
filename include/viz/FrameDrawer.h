@@ -21,7 +21,7 @@
 #ifndef FRAMEDRAWER_H
 #define FRAMEDRAWER_H
 
-#include <Tracking.h>
+#include <src/main/Tracking.h>
 #include <MapPoint.h>
 #include <Map.h>
 #include <ORBViews.h>

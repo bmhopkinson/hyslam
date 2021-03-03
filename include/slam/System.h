@@ -28,8 +28,8 @@
 #include <map>
 #include <opencv2/core/core.hpp>
 
-#include <Tracking.h>
-#include <Mapping.h>
+#include <src/main/Tracking.h>
+#include <src/main/Mapping.h>
 #include "LoopClosing.h"
 #include "FrameDrawer.h"
 #include "MapDrawer.h"

@@ -29,7 +29,7 @@
 #include "Viewer.h"
 #include "FrameDrawer.h"
 #include "Map.h"
-#include <Mapping.h>
+#include <src/main/Mapping.h>
 #include "LoopClosing.h"
 #include "Frame.h"
 #include "ORBVocabulary.h"

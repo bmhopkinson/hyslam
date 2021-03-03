@@ -5,7 +5,7 @@
 #include <KeyFrame.h>
 #include <Map.h>
 #include <LocalBundleAdjustment.h>
-#include <ORBSLAM_datastructs.h>
+#include <src/main/ORBSLAM_datastructs.h>
 #include <g2o/types/sba/Trajectory_g2o.h>
 
 #include <iostream>

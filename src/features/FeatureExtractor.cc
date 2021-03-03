@@ -69,7 +69,7 @@ using namespace std;
 
 namespace HYSLAM
 {
-const int N_CELLS = 14;
+const int N_CELLS = 30;
 const int PATCH_SIZE = 31;
 const int EDGE_THRESHOLD = 19;
 

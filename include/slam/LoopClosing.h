@@ -22,10 +22,10 @@
 #define LOOPCLOSING_H
 
 #include "KeyFrame.h"
-#include <Mapping.h>
+#include <src/main/Mapping.h>
 #include "Map.h"
 #include "ORBVocabulary.h"
-#include <Tracking.h>
+#include <src/main/Tracking.h>
 
 #include <thread>
 #include <mutex>

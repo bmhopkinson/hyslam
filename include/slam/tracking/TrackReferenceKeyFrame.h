@@ -2,7 +2,7 @@
 #define TRACKREFERENCEKEYFRAME_H_
 
 #include <TrackingStrategy.h>
-#include <ORBSLAM_datastructs.h>
+#include <src/main/ORBSLAM_datastructs.h>
 #include <Tracking_datastructs.h>
 
 namespace HYSLAM{

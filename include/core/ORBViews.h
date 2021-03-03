@@ -1,7 +1,7 @@
 #ifndef ORBVIEWS_H_
 #define ORBVIEWS_H_
 
-#include <ORBSLAM_datastructs.h>
+#include <src/main/ORBSLAM_datastructs.h>
 #include <opencv2/opencv.hpp>
 
 #include <vector>

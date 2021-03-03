@@ -3,7 +3,6 @@
 #include <ORBViews.h>
 #include <ORBSLAM_datastructs.h>
 #include <Camera.h>
-#include <Camera.h>
 #include <math.h>
 #include <assert.h>
 #include <limits>

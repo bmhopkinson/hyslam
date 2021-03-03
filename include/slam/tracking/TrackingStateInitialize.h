@@ -3,7 +3,7 @@
 
 #include <TrackingState.h>
 #include <Tracking_datastructs.h>
-#include <ORBSLAM_datastructs.h>
+#include <src/main/ORBSLAM_datastructs.h>
 #include <Camera.h>
 #include <Initializer.h>
 #include <vector>
