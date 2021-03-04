@@ -46,9 +46,15 @@ int Camera::loadData(const cv::FileNode &data_node){
     Rt.copyTo(Tcam);
     std::cout << "Rt: " << Tcam << std::endl;
 
-    cv::FileNode calib = data_node["calibration"];
+
     cv::FileNode dimensions = data_node["dimensions"];
     scale = dimensions["scale"];
+    mnMaxX = dimensions["width"];
+    mnMaxY = dimensions["height"];
+    mnMaxX = scale * mnMaxX;
+    mnMaxY = scale * mnMaxY;
+
+    cv::FileNode calib = data_node["calibration"];
     float fx = calib["fx"];
     float fy = calib["fy"];
     float cx = calib["cx"];

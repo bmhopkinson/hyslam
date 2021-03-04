@@ -62,6 +62,7 @@ int ORBmatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoint*> 
     const ORBViews views = frame.getViews(); //this could get large convert to const ref eventually
     ORBExtractorParams orb_params = views.orbParams();
 
+
     //apply landmark criteria
     for(auto criterion = landmark_criteria.begin(); criterion != landmark_criteria.end(); ++criterion){//winnow down potential landmark matches
         cand_lms = (*criterion)->apply(frame, cand_lms, criteria_data);
@@ -82,7 +83,6 @@ int ORBmatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoint*> 
         int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
         float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
         std::vector<size_t> cand_lmviews = frame.GetFeaturesInArea(u,v,radius,nPredictedLevel-1,nPredictedLevel+1);
-
         for(auto criterion  = landmarkview_criteria.begin(); criterion != landmarkview_criteria.end(); ++criterion ){ //winnow down potential views
             cand_lmviews = (*criterion)->apply(frame, lm, cand_lmviews, criteria_data);
         }
@@ -139,6 +139,13 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, 
     criteria_data.setPreviousFrame(&last_frame_copy);
 
     std::vector<MapPoint*> vpMapPoints = LastFrame.replicatemvpMapPoints();
+
+    int n_mpts = 0;
+    for(auto it = vpMapPoints.begin(); it != vpMapPoints.end(); ++it){
+        if(*it){
+            n_mpts++;
+        }
+    }
 
     std::vector< std::unique_ptr<LandMarkCriterion> >     landmark_criteria;
     landmark_criteria.push_back( std::make_unique<ProjectionCriterion>() );

@@ -21,12 +21,12 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
     cv::Mat Tcw_cur;
     if(camera.camName == "SLAM"){
         double delta_cur = current_frame.mTimeStamp - last_frame.mTimeStamp; //mVelocity is based on slam motion so need to reference time to that
-        std::cout << "TrackMotionModel: dt " <<delta_cur << std::endl;
+      //  std::cout << "TrackMotionModel: dt " <<delta_cur << std::endl;
         TrajectoryElement te = slam_trajectory->back();
         GenUtils::ScaleVelocity(te.Vcw, te.dt_vel, delta_cur,  Vcw);  //scale 'velocity' based on time difference between that used to calculate the velocity and time betwween mono init frame, properly accounts for going back in time
         Tcw_cur =  Vcw * last_frame.mTcw;
-        std::cout << "Velocity: " << Vcw << std::endl;
-        std::cout << "pose estimate: " << Tcw_cur << std::endl;
+     //   std::cout << "Velocity: " << Vcw << std::endl;
+     //   std::cout << "pose estimate: " << Tcw_cur << std::endl;
 
     } else {  //THIS FAILS IF SLAM CAM HAS LOST TRACKING
         if(slam_trajectory->integrateVelocity( last_slamframe.mTimeStamp, last_frame.mTimeStamp, Vcw) == 0){
@@ -53,7 +53,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
         th = params.match_radius_threshold_other;
 
     int nmatches = matcher.SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
-    std::cout << "TrackMotionModel, SearchByProj matches" << nmatches << std::endl;
+   // std::cout << "TrackMotionModel, SearchByProj matches" << nmatches << std::endl;
 
     //   std::cout << "TrackwMotionModel, Frame: " << mCurrentFrame.mnId << std::endl;
     //   mCurrentFrame.validateNewAssociations();
@@ -63,7 +63,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
         current_frame.clearAssociations();
         th =  params.match_theshold_inflation_factor*th;
         nmatches = matcher.SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
-        std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
+      //  std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
     }
 
     if(nmatches < params.N_min_matches){

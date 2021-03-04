@@ -19,7 +19,9 @@ std::vector<MapPoint*> ProjectionCriterion::apply(Frame &frame, std::vector<MapP
         }
 
         cv::Mat uv;
-        if(frame.ProjectLandMark(lm, uv)){
+        bool valid = frame.ProjectLandMark(lm, uv);
+       // std::cout << "frame projected pos: u,v " << uv.at<float>(0) << "\t"  << uv.at<float>(1) << std::endl;
+        if(valid){
             lms_passed.push_back(lm);
         }
     }

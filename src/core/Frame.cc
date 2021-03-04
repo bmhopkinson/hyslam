@@ -164,12 +164,16 @@ void Frame::UpdatePoseMatrices()
 bool Frame::ProjectLandMark(MapPoint* pMP, cv::Mat &uv_ur){
   // 3D in absolute coordinates
   cv::Mat P = pMP->GetWorldPos();
+  //std::cout << "world pos: " << P << std::endl;
   return ProjectLandMark(P, uv_ur);
 }
 
 bool Frame::ProjectLandMark(cv::Mat P, cv::Mat &uv_ur){
     const cv::Mat Pc = mRcw*P+mtcw; //rotation into camera coordinates
-    return camera.Project(Pc, uv_ur);
+   // std::cout << "camera pos: " << Pc << std::endl;
+    bool valid =  camera.Project(Pc, uv_ur);
+  //  std::cout << "frame projected pos: u,v " << uv_ur.at<float>(0) << "\t"  << uv_ur.at<float>(1) << std::endl;
+    return valid;
 }
 float Frame::ReprojectionError(cv::Mat P, int idx){
 
