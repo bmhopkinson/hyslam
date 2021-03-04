@@ -10,6 +10,15 @@
 
 namespace HYSLAM{
 
+// Tracking states
+enum class eTrackingState{
+    SYSTEM_NOT_READY,
+    NO_IMAGES_YET,
+    INITIALIZATION,
+    NORMAL,
+    RELOCALIZATION
+};
+
 class RANSACParameters{
 public:
     double probability = 0.99;

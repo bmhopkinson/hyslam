@@ -7,14 +7,9 @@ namespace HYSLAM {
 TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log) :
     params(params_), TrackingState(log)
 {
-  //  cv::FileNode config_data_strategies =config_data["Strategies"];
-  //  TrackMotionModelParameters tmmparams(config_data_strategies["MotionModel"]);
+
     track_motion_model = std::make_unique<TrackMotionModel>(optimizer_info_, params.tmomo_params);
-
- //   TrackReferenceKeyFrameParameters trkfparams(config_data_strategies["ReferenceKeyFrame"]);
     track_reference_keyframe = std::make_unique<TrackReferenceKeyFrame>(optimizer_info_, params.trefkf_params);
-
- //   TrackLocalMapParameters tlmparams(config_data_strategies["LocalMap"]);
     track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params);
 }
 

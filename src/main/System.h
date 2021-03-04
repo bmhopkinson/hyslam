@@ -38,6 +38,7 @@
 #include "Map.h"
 #include "ORBVocabulary.h"
 #include "ORBSLAM_datastructs.h"
+#include <Tracking_datastructs.h>
 #include <SensorData.h>
 
 namespace HYSLAM
@@ -111,7 +112,6 @@ public:
 
     // Information from most recent processed frame
     // You can call this right after TrackMonocular (or stereo or RGBD)
-    int GetTrackingState();
     std::vector<MapPoint*> GetTrackedMapPoints();
     std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
 
@@ -179,8 +179,10 @@ private:
     std::mutex mMutexReset;
     bool mbReset;
 
+    std::map<std::string, Camera> cam_data;
+
     // Tracking state
-    int mTrackingState;
+    std::map<std::string, eTrackingState> current_tracking_state;
     std::vector<MapPoint*> mTrackedMapPoints;
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;

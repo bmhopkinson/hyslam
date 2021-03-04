@@ -68,6 +68,7 @@ class Tracking
 //
 public:
     // Tracking states
+    /*
     enum eTrackingState{
         SYSTEM_NOT_READY=-1,
         NO_IMAGES_YET=0,
@@ -75,9 +76,9 @@ public:
         OK=2,
         LOST=3
     };
-
+*/
     Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
-             const std::string &strSettingPath);
+             std::map<std::string, Camera > cam_data_, const std::string &strSettingPath);
     ~Tracking();
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
@@ -208,7 +209,7 @@ protected:
     //Map
     std::map<std::string, Map* > maps;
 
-    //camera data - combine all this into a camera info structure
+    //camera data
     std::map<std::string, Camera> cam_data;
 
     //stopping - for postprocessing only

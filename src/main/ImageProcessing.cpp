@@ -12,7 +12,8 @@
 #include <thread>
 
 namespace HYSLAM{
-ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pTracker) : mpTracker(pTracker)
+ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pTracker, std::map<std::string, Camera> cam_data_)
+ : mpTracker(pTracker), cam_data(cam_data_)
 {
     // Load camera parameters from settings file
     ORBextractorSettings ORBextractor_settings;
@@ -94,7 +95,7 @@ cv::Mat ImageProcessing::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
 
 void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings){
     cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
-
+/*
     cv::FileNode cameras = fSettings["Cameras"];
     for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
         cv::FileNode camera = *it;
@@ -104,7 +105,7 @@ void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettin
         cam_data.insert( std::make_pair(cam_name, cam_info) );
         std::cout << "imageprocessing loadsettings: cameras: " << cam_name << std::endl;
     }
-
+*/
     ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
     ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];

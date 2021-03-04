@@ -26,6 +26,7 @@
 #include <MapPointDB.h>
 #include <Camera.h>
 #include "ORBSLAM_datastructs.h"
+
 #include <thread>
 #include <pangolin/pangolin.h>
 #include <iomanip>
@@ -91,9 +92,18 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     //Create the Map(s)
     cv::FileNode cameras = fsSettings["Cameras"];
     for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
-      Map* mpMap = new Map();
-      mpMap->setKeyFrameDBVocab(mpVocabulary);
-      maps.insert(std::make_pair((*it).name(), mpMap));
+        cv::FileNode camera = *it;
+        std::string cam_name  = (*it).name();
+
+        Map* mpMap = new Map();
+        mpMap->setKeyFrameDBVocab(mpVocabulary);
+        maps.insert(std::make_pair(cam_name, mpMap));
+
+
+        Camera cam_info;
+        cam_info.loadData(camera);
+        cam_data.insert( std::make_pair(cam_name, cam_info) );
+        std::cout << "system loadsettings: cameras: " << cam_name << std::endl;
     }
 
     //Create Drawers. These are used by the Viewer
@@ -108,9 +118,9 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
-                             maps, strSettingsFile);
+                             maps, cam_data, strSettingsFile);
 
-    mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker);
+    mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker, cam_data);
 
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
@@ -158,7 +168,6 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     mpImageProcessor->ProcessStereoImage(imLeft,imRight,img_info, sensor_data);
 
     std::unique_lock<std::mutex> lock2(mMutexState);
-    mTrackingState = mpTracker->GetCurrentTrackingState();
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
     mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
@@ -181,7 +190,6 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
     //cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
     mpImageProcessor->ProcessMonoImage(im,img_info, sensor_data);
     std::unique_lock<std::mutex> lock2(mMutexState);
-    mTrackingState = mpTracker->GetCurrentTrackingState();
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
     mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
@@ -616,11 +624,6 @@ void System::SaveMap(const std::string &filename){
 
 }
 
-int System::GetTrackingState()
-{
-    std::unique_lock<std::mutex> lock(mMutexState);
-    return mTrackingState;
-}
 
 std::vector<MapPoint*> System::GetTrackedMapPoints()
 {
@@ -635,11 +638,11 @@ std::vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
 }
 
 // ADDITION: Tracking state monitoring
-bool System::TrackingOk() { return mpTracker->GetCurrentTrackingState() == Tracking::OK; }
-bool System::TrackingLost() { return mpTracker->GetCurrentTrackingState() == Tracking::LOST; }
-bool System::TrackingReady() { return (mpTracker->GetCurrentTrackingState() != Tracking::SYSTEM_NOT_READY); }
-bool System::TrackingNeedImages() { return mpTracker->GetCurrentTrackingState() == Tracking::NO_IMAGES_YET; }
-bool System::TrackingInitialized() { return (mpTracker->GetCurrentTrackingState() == Tracking::OK) or (mpTracker->GetCurrentTrackingState() == Tracking::LOST); }
+bool System::TrackingOk() { return mpTracker->GetCurrentTrackingState() == eTrackingState::NORMAL; }
+bool System::TrackingLost() { return mpTracker->GetCurrentTrackingState() == eTrackingState::RELOCALIZATION; }
+bool System::TrackingReady() { return (mpTracker->GetCurrentTrackingState() != eTrackingState::SYSTEM_NOT_READY); }
+bool System::TrackingNeedImages() { return mpTracker->GetCurrentTrackingState() ==  eTrackingState::NO_IMAGES_YET; }
+bool System::TrackingInitialized() { return (mpTracker->GetCurrentTrackingState() == eTrackingState::NORMAL) or (mpTracker->GetCurrentTrackingState() ==  eTrackingState::RELOCALIZATION); }
 double System::PercentObserved() { return mpTracker->PercentObserved(); }
 
 } //namespace ORB_SLAM

@@ -30,7 +30,7 @@ namespace HYSLAM
 
 FrameDrawer::FrameDrawer(Map* pMap):mpMap(pMap)
 {
-    mState=Tracking::SYSTEM_NOT_READY;
+    mState=eTrackingState::SYSTEM_NOT_READY;
     mIm = cv::Mat(480,640,CV_8UC3, cv::Scalar(0,0,0));
 }
 
@@ -40,7 +40,7 @@ cv::Mat FrameDrawer::DrawFrame()
     std::vector<cv::KeyPoint> vIniKeys; // Initialization: KeyPoints in reference frame
     std::vector<int> vMatches; // Initialization: correspondeces with reference keypoints
     std::vector<cv::KeyPoint> vCurrentKeys; // KeyPoints in current frame
-    int state; // Tracking state
+    eTrackingState state; // Tracking state
     ORBViews views_current;
     LandMarkMatches lm_matches_current;
 
@@ -48,24 +48,24 @@ cv::Mat FrameDrawer::DrawFrame()
     {
         std::unique_lock<std::mutex> lock(mMutex);
         state=mState;
-        if(mState==Tracking::SYSTEM_NOT_READY)
-            mState=Tracking::NO_IMAGES_YET;
+        if(mState==eTrackingState::SYSTEM_NOT_READY)
+            mState=eTrackingState::NO_IMAGES_YET;
 
         mIm.copyTo(im);
 
-        if(mState==Tracking::NOT_INITIALIZED)
+        if(mState==eTrackingState::INITIALIZATION)
         {
             vCurrentKeys = mvCurrentKeys;
             vIniKeys = mvIniKeys;
             vMatches = mvIniMatches;
         }
-        else if(mState==Tracking::OK)
+        else if(mState==eTrackingState::NORMAL)
         {
 
             views_current = views;
             lm_matches_current = lm_matches;
         }
-        else if(mState==Tracking::LOST)
+        else if(mState==eTrackingState::RELOCALIZATION)
         {
             vCurrentKeys = mvCurrentKeys;
         }
@@ -75,7 +75,7 @@ cv::Mat FrameDrawer::DrawFrame()
         cvtColor(im,im,CV_GRAY2BGR);
 
     //Draw
-    if(state==Tracking::NOT_INITIALIZED) //INITIALIZING
+    if(state==eTrackingState::INITIALIZATION) //INITIALIZING
     {
         for(unsigned int i=0; i<vMatches.size(); i++)
         {
@@ -86,7 +86,7 @@ cv::Mat FrameDrawer::DrawFrame()
             }
         }        
     }
-    else if(state==Tracking::OK) //TRACKING
+    else if(state==eTrackingState::NORMAL) //TRACKING
     {
         mnTracked=0;
        // const float r = 5;
@@ -140,14 +140,14 @@ cv::Mat FrameDrawer::DrawFrame()
 }
 
 
-void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
+void FrameDrawer::DrawTextInfo(cv::Mat &im, eTrackingState nState, cv::Mat &imText)
 {
     std::stringstream s;
-    if(nState==Tracking::NO_IMAGES_YET)
+    if(nState==eTrackingState::NO_IMAGES_YET)
         s << " WAITING FOR IMAGES";
-    else if(nState==Tracking::NOT_INITIALIZED)
+    else if(nState==eTrackingState::INITIALIZATION)
         s << " TRYING TO INITIALIZE ";
-    else if(nState==Tracking::OK)
+    else if(nState==eTrackingState::NORMAL)
     {
         if(!mbOnlyTracking)
             s << "SLAM MODE |  ";
@@ -157,11 +157,11 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
         int nMPs = mpMap->MapPointsInMap();
         s << "KFs: " << nKFs << ", MPs: " << nMPs << ", Matches: " << mnTracked;
     }
-    else if(nState==Tracking::LOST)
+    else if(nState==eTrackingState::RELOCALIZATION)
     {
         s << " TRACK LOST. TRYING TO RELOCALIZE ";
     }
-    else if(nState==Tracking::SYSTEM_NOT_READY)
+    else if(nState==eTrackingState::SYSTEM_NOT_READY)
     {
         s << " LOADING ORB VOCABULARY. PLEASE WAIT...";
     }
@@ -182,18 +182,18 @@ void FrameDrawer::Update(Tracking *pTracker)
     pTracker->mImGray.copyTo(mIm);
     mbOnlyTracking = false;
 
-    if(pTracker->mLastProcessedState==Tracking::NOT_INITIALIZED)
+    if(pTracker->mLastProcessedState==eTrackingState::INITIALIZATION)
     {
         mvCurrentKeys = pTracker->mCurrentFrame.getViews().getKeys();
         mvIniKeys=pTracker->init_data[pTracker->cam_cur].mInitialFrame.getViews().getKeys();
         mvIniMatches=pTracker->init_data[pTracker->cam_cur].mvIniMatches;
     }
-    else if(pTracker->mLastProcessedState==Tracking::OK)
+    else if(pTracker->mLastProcessedState==eTrackingState::NORMAL)
     {
         lm_matches =  pTracker->mCurrentFrame.getLandMarkMatches();
         views = pTracker->mCurrentFrame.copyViews();
     }
-    mState=static_cast<int>(pTracker->mLastProcessedState);
+    mState=pTracker->mLastProcessedState;
 }
 
 } //namespace ORB_SLAM

@@ -52,10 +52,9 @@ namespace HYSLAM
 {
 
     Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-               std::map<std::string, Map* > &_maps,  const std::string &strSettingPath):
-     mbVO(false), mpORBVocabulary(pVoc),
-    mpSystem(pSys), mpViewer(NULL),
-    mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , mnLastRelocFrameId(0)
+               std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath):
+     mbVO(false), mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
+    mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), mnLastRelocFrameId(0)
 
 {
     //
@@ -94,12 +93,12 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
 
     cv::FileNode cameras = fSettings["Cameras"];
     for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
-//        FrameDrawer* pFrameDrawer = new FrameDrawer(mpMap);
-//        mpFrameDrawers.insert(std::make_pair( (*it).name() ,pFrameDrawer) );
+        std::string cam_name  = (*it).name();
         cam_types.push_back((*it).name());
-        LoadCalibration(*it, (*it).name());
+        mSensor[cam_name]  = cam_data[cam_name].sensor;
+        //LoadCalibration(*it, (*it).name());
         InitializeDataStructures((*it).name());
-        std::cout << "tracking loadsettings: cameras: " << (*it).name()<< std::endl;
+        std::cout << "tracking loadsettings: cameras: " << cam_name << std::endl;
     }
 
     // Load ORB parameters
@@ -217,7 +216,7 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const Imgdata img_data, 
 
     // ORB extraction
     FeatureExtractor* extractor;
-    if(mState[cam_cur]==NOT_INITIALIZED || mState[cam_cur]==NO_IMAGES_YET){
+    if(mState[cam_cur]==eTrackingState::INITIALIZATION || mState[cam_cur]==eTrackingState::NO_IMAGES_YET){
         extractor = mpIniORBextractor;
     }
     else {
@@ -339,7 +338,7 @@ void Tracking::Track()
 
 
     // Reset if the camera get lost soon after initialization
-    if(mState[cam_cur]==LOST)
+    if(mState[cam_cur]==eTrackingState::RELOCALIZATION)
     {
         if(maps[cam_cur]->KeyFramesInMap()<=5)
         {
@@ -355,29 +354,29 @@ void Tracking::Track()
     //set next state
     eTrackingState next_state;
     TrackingState* pnext_track_state;
-    if(mState[cam_cur] == NOT_INITIALIZED){
+    if(mState[cam_cur] == eTrackingState::INITIALIZATION){
         if(bOK){
 
             HandlePostInit(pKFnew, maps[cam_cur],  cam_cur);
-            next_state = OK;
+            next_state = eTrackingState::NORMAL;
             delete state[cam_cur];
             pnext_track_state = state_options[cam_cur]["NORMAL"];
         } else {
-            next_state = NOT_INITIALIZED;
+            next_state =  eTrackingState::INITIALIZATION;
             pnext_track_state = state[cam_cur];
         }
     }
-    else if(mState[cam_cur] == OK) {
+    else if(mState[cam_cur] == eTrackingState::NORMAL) {
         if (bOK) {
             pnext_track_state = state_options[cam_cur]["NORMAL"];
-            next_state = OK;
+            next_state = eTrackingState::NORMAL;
         } else {
             if (cam_cur == "SLAM") {
                 pnext_track_state = state_options[cam_cur]["RELOCALIZE"];
-                next_state = LOST;
+                next_state = eTrackingState::RELOCALIZATION;
             } else {
                 //  state[cam_cur] = state_options["INITIALIZE"]; //don't try to relocalize accessory cameras - just reinitialize
-                next_state = NOT_INITIALIZED;
+                next_state = eTrackingState::INITIALIZATION;
                 cv::FileNode cam_states = config_data["Cameras"];
                 cv::FileNode state_config = config_data["States"];
                 StateInitializeParameters state_initialize_params(state_config[cam_states[cam_cur]["Initialize"].string()], config_data["Strategies"]);
@@ -386,10 +385,10 @@ void Tracking::Track()
             }
         }
     }
-    else if(mState[cam_cur] == LOST){
+    else if(mState[cam_cur] == eTrackingState::RELOCALIZATION){
         if(bOK){
             pnext_track_state = state_options[cam_cur]["NORMAL"];
-            next_state = OK;
+            next_state = eTrackingState::NORMAL;
         }
     }
     mState[cam_cur] = next_state;
@@ -421,7 +420,7 @@ void Tracking::SetupStates(){
                                                         strategy_config);
       state[cam_name] = new TrackingStateInitialize(optParams, cam, init_data[cam.camName], state_initialize_params,
                                                        ftracking);
-      mState[cam_name] = NOT_INITIALIZED;
+      mState[cam_name] = eTrackingState::INITIALIZATION;
 
       //Normal
       StateNormalParameters state_normal_params(state_config[cam_states[cam_name]["Normal"].string()], strategy_config);
@@ -588,7 +587,7 @@ void Tracking::Reset()
         std::string this_cam = *vit;
         maps[this_cam]->clear(); // Clear Map (this erase MapPoints and KeyFrames)
 
-        mState[this_cam] = NO_IMAGES_YET; //need to clear from all cams
+        mState[this_cam] = eTrackingState::NO_IMAGES_YET; //need to clear from all cams
         trajectories[this_cam]->clear();
 
       /*  if(mpInitializer[this_cam])
@@ -617,7 +616,7 @@ void Tracking::InitializeDataStructures(std::string cam_name){
   //  Trajectory trajectory;
   //trajectories.insert(std::make_pair( cam_name, trajectory) );
   trajectories[cam_name] = std::make_unique<Trajectory>();
-  mState.insert(std::make_pair(cam_name, NO_IMAGES_YET) );
+  mState.insert(std::make_pair(cam_name, eTrackingState::NO_IMAGES_YET) );
   init_data.insert(std::make_pair( cam_name, InitializerData() ) );
   recent_init.insert(std::make_pair(cam_name, 0 ) );
   mLastFrame.insert(std::make_pair(cam_name, Frame() ) );

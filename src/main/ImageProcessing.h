@@ -13,12 +13,13 @@
 
 #include <opencv2/core/core.hpp>
 #include <string>
+#include <map>
 
 namespace HYSLAM {
 
 class ImageProcessing {
 public:
-    ImageProcessing(const std::string &strSettingPath, Tracking* pTracker);
+    ImageProcessing(const std::string &strSettingPath, Tracking* pTracker, std::map<std::string, Camera> cam_data_);
     void ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data);
     void ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data);
 

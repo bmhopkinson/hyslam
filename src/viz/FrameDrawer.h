@@ -22,6 +22,7 @@
 #define FRAMEDRAWER_H
 
 #include <Tracking.h>
+#include <Tracking_datastructs.h>
 #include <MapPoint.h>
 #include <Map.h>
 #include <ORBViews.h>
@@ -53,7 +54,7 @@ public:
 
 protected:
 
-    void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
+    void DrawTextInfo(cv::Mat &im, eTrackingState nState, cv::Mat &imText);
 
     // Info of the frame to be drawn
     cv::Mat mIm;
@@ -65,7 +66,7 @@ protected:
     std::vector<int> mvIniMatches;
     ORBViews views;
     LandMarkMatches lm_matches;
-    int mState;
+    eTrackingState mState;
 
     Map* mpMap;
     std::mutex mMutex;
