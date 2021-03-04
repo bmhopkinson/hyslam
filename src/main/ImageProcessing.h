@@ -7,6 +7,7 @@
 
 #include <FeatureExtractor.h>
 #include <Tracking.h>
+#include <Tracking_datastructs.h>
 #include <SensorData.h>
 #include <ORBSLAM_datastructs.h>
 #include <Camera.h>
@@ -20,8 +21,8 @@ namespace HYSLAM {
 class ImageProcessing {
 public:
     ImageProcessing(const std::string &strSettingPath, Tracking* pTracker, std::map<std::string, Camera> cam_data_);
-    void ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data);
-    void ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data);
+    void ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data, eTrackingState tracking_state);
+    void ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data, eTrackingState tracking_state);
 
 private:
     void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings);

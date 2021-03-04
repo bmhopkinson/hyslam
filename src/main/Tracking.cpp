@@ -102,7 +102,6 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
     }
 
     // Load ORB parameters
-
     ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
     ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];
@@ -136,16 +135,7 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
         cout << endl << "Depth Threshold (Close/Far Points): " << cam_data["SLAM"].thDepth << endl;
         cout << "Stereo Init Features: " << stereoInitFeatures << endl;
     }
-/*
-    if(mSensor["SLAM"]==System::RGBD)
-    {
-        mDepthMapFactor = fSettings["DepthMapFactor"];
-        if(fabs(mDepthMapFactor)<1e-5)
-            mDepthMapFactor=1;
-        else
-            mDepthMapFactor = 1.0f/mDepthMapFactor;
-    }
-*/
+
 }
 
 Tracking::~Tracking()
@@ -600,16 +590,6 @@ void Tracking::Reset()
 
     if(mpViewer)
         mpViewer->Release();
-}
-
-
-void Tracking::LoadCalibration(const cv::FileNode &camera, std::string cam_name)
-{
-    Camera cam_info;
-    cam_info.loadData(camera);
-    mSensor[cam_name]  = cam_info.sensor;
-    cam_data.insert( std::make_pair(cam_name, cam_info) );
-
 }
 
 void Tracking::InitializeDataStructures(std::string cam_name){

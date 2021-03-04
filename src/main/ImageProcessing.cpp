@@ -19,7 +19,7 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pT
     ORBextractorSettings ORBextractor_settings;
     std::string tracking_config_file;
     LoadSettings(strSettingPath, ORBextractor_settings);
-
+    
     mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
     mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
 
@@ -31,14 +31,20 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pT
 }
 
 
-void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data){
+void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data, eTrackingState tracking_state){
     cam_cur = img_data.camera;
     mImGray = im;
     mImGray = PreProcessImg(mImGray, cam_data[cam_cur].RGB, cam_data[cam_cur].scale);
 
     std::vector<cv::KeyPoint> mvKeys;
     cv::Mat mDescriptors;
-    FeatureExtractor* extractor = mpORBextractorLeft;
+    FeatureExtractor* extractor;
+    if(tracking_state==eTrackingState::INITIALIZATION || tracking_state==eTrackingState::NO_IMAGES_YET){
+        extractor = mpIniORBextractor;
+    }
+    else {
+        extractor = mpORBextractorLeft;
+    }
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
     ORBExtractorParams orb_params(extractor);
     ORBViews LMviews(mvKeys, mDescriptors,  orb_params);
@@ -46,7 +52,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
 
 }
 
-void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data){
+void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data,  eTrackingState tracking_state){
     cam_cur = img_data.camera;
     mImGray = imRectLeft;
     cv::Mat imGrayRight = imRectRight;
@@ -95,17 +101,7 @@ cv::Mat ImageProcessing::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
 
 void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings){
     cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
-/*
-    cv::FileNode cameras = fSettings["Cameras"];
-    for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
-        cv::FileNode camera = *it;
-        std::string cam_name  = (*it).name();
-        Camera cam_info;
-        cam_info.loadData(camera);
-        cam_data.insert( std::make_pair(cam_name, cam_info) );
-        std::cout << "imageprocessing loadsettings: cameras: " << cam_name << std::endl;
-    }
-*/
+
     ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
     ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];

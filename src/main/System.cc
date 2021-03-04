@@ -103,6 +103,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
         Camera cam_info;
         cam_info.loadData(camera);
         cam_data.insert( std::make_pair(cam_name, cam_info) );
+        current_tracking_state[cam_name] = eTrackingState::SYSTEM_NOT_READY;
         std::cout << "system loadsettings: cameras: " << cam_name << std::endl;
     }
 
@@ -153,6 +154,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const Imgdata &img_info,  const SensorData &sensor_data)
 {
+    std::string cam_cur = img_info.camera;
     cv::Mat Tcw;
     // Check reset
     {
@@ -165,8 +167,8 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     }
 
    // cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight, img_info, sensor_data);
-    mpImageProcessor->ProcessStereoImage(imLeft,imRight,img_info, sensor_data);
-
+    mpImageProcessor->ProcessStereoImage(imLeft,imRight,img_info, sensor_data, current_tracking_state[cam_cur]);
+    current_tracking_state[cam_cur] = mpTracker->GetCurrentTrackingState(cam_cur);
     std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
@@ -176,6 +178,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 
 cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const SensorData &sensor_data)
 {
+    std::string cam_cur = img_info.camera;
     cv::Mat Tcw;
     // Check reset
     {
@@ -188,7 +191,9 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
     }
 
     //cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
-    mpImageProcessor->ProcessMonoImage(im,img_info, sensor_data);
+    mpImageProcessor->ProcessMonoImage(im, img_info, sensor_data, current_tracking_state[cam_cur]);
+    current_tracking_state[cam_cur] = mpTracker->GetCurrentTrackingState(cam_cur);
+
     std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();

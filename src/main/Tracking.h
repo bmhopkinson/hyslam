@@ -91,6 +91,7 @@ public:
     void SetLoopClosing(LoopClosing* pLoopClosing);
     void SetViewer(Viewer* pViewer);
     eTrackingState GetCurrentTrackingState() {return mState["SLAM"];};
+    eTrackingState GetCurrentTrackingState(std::string cam_name) {return mState[cam_name];};
     void RunImagingBundleAdjustment();
 
 
@@ -98,7 +99,6 @@ public:
     KeyFrame* GetReferenceKF() { return mpReferenceKF["SLAM"] ;}
 
     // Load new settings
-    void LoadCalibration(const cv::FileNode &camera, std::string cam_name);
     void InitializeDataStructures(std::string cam_name);
     cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
 
