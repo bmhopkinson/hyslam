@@ -35,9 +35,10 @@
 namespace HYSLAM
 {
 
-    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path):
+    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path, MainThreadsStatus* thread_status_):
     mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), mbFinished(true), maps(_maps),
-    mbAbortBA(false), abortJobs(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true)
+    mbAbortBA(false), abortJobs(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true),
+    thread_status(thread_status_)
 {
         std::cout << "mapping config path " << config_path << std::endl;
     config_data = cv::FileStorage(config_path ,cv::FileStorage::READ );
@@ -89,24 +90,31 @@ void Mapping::Run()
 
                  optInfo optpar = mpTracker->optParams;
                //periodically do a Global Bundle Adjustment
-               if(!optpar.realtime && nKFs_created % optpar.GBAinterval == 0 && miLBAcalls > 1 ){
+               bool time_for_GBA = (nKFs_created - lastGBAKF) > optpar.GBAinterval;
+             //  std::cout << "mapping: nKFs_created: " << nKFs_created << "\t lastGBAKF: " << lastGBAKF << "\t time_for_GBA: " << time_for_GBA <<std::endl;
+               if(!optpar.realtime && time_for_GBA ){
                   bNeedGBA = true;
                   std::cout << "need GBA = true" << std::endl;
                }
 
               if(bNeedGBA){
-                  mpTracker->RequestStop();
+                 // mpTracker->RequestStop();
+                 thread_status->tracking.stop_requested = true;
                    // Wait until Tracking has effectively stopped
-                  while(!mpTracker->isStopped() )
+                 // while(!mpTracker->isStopped() )
+                  while(thread_status->tracking.is_stopped )
                   {
                         usleep(1000);
                   }
 
                   if(!CheckNewKeyFrames() && !stopRequested()){
+                      std::cout << "running Global Bundle Adjustement !!!" << std::endl;
                        RunGlobalBA();
                        bNeedGBA = false;
+                       lastGBAKF = mpCurrentKeyFrame->mnId ;
                   }
-                  mpTracker->Release();
+                  //mpTracker->Release();
+                  thread_status->tracking.release = true;
                }
 
             }
@@ -146,6 +154,7 @@ void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandato
         curKF_cam = mpCurrentKeyFrame->camera.camName;
        // std::cout << "processing new KF:" << mpCurrentKeyFrame->mnId << " from cam: " << curKF_cam << std::endl;
         mlNewKeyFrames.pop_front();
+        nKFs_created++;
     }
 
 

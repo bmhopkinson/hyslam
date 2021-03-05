@@ -291,12 +291,14 @@ int Frame::removeLandMarkAssociation(int i){
 }
 
 int Frame::getAssociatedLandMarks(std::vector<cv::KeyPoint> &features, std::vector<MapPoint*> &landmarks ){
+   // std::vector<MapPoint*> tempvec;
     for(auto it = matches.cbegin(); it != matches.cend(); ++it){
         int LMid = it->first;
         cv::KeyPoint keypt = views.keypt(LMid);
         features.push_back(keypt);
         landmarks.push_back(it->second);
     }
+  //  landmarks = tempvec;
     return 0;
 }
 

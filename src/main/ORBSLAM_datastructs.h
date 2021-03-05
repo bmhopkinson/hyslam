@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <mutex>
 #include <opencv2/opencv.hpp>
 #include <FeatureExtractor.h>
 
@@ -20,7 +21,20 @@ struct Imgdata
   Imgdata(){};
 };
 
+struct ThreadStatus{
+    bool is_stopped = false;
+    bool stop_requested = false;
+    bool stoppable = true;
+    bool release = false;
+    void clearPostStop();
+    std::mutex mutex_ts;
+};
 
+struct MainThreadsStatus{
+    ThreadStatus tracking;
+    ThreadStatus mapping;
+
+};
 
 struct optInfo{
       double Info_IMU;

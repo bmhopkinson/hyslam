@@ -26,6 +26,7 @@
 #include <MapPointDB.h>
 #include <Camera.h>
 #include "ORBSLAM_datastructs.h"
+#include <ImagingBundleAdjustment.h>
 
 #include <thread>
 #include <pangolin/pangolin.h>
@@ -47,13 +48,6 @@ namespace HYSLAM
 System::System(const std::string &strVocFile, const std::string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false)
 {
-    // Output welcome message
-    std::cout << std::endl <<
-    "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << std::endl <<
-    "This program comes with ABSOLUTELY NO WARRANTY;" << std::endl  <<
-    "This is free software, and you are welcome to redistribute it" <<std::endl <<
-    "under certain conditions. See LICENSE.txt." << std::endl << std::endl;
-
     std::cout << "Input sensor was set to: ";
 
     if(mSensor==MONOCULAR)
@@ -71,61 +65,51 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
        exit(-1);
     }
 
-    //Load ORB Vocabulary
-    std::cout << std::endl << "Loading ORB Vocabulary. This could take a while...MODIFIED" << std::endl;
-
-    clock_t tStart = clock();
+    LoadSettings(strSettingsFile);
     mpVocabulary = new ORBVocabulary();
-    bool bVocLoad = false; // chose loading method based on file extension
-    if (has_suffix(strVocFile, ".txt"))
-        bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
-    else
-        bVocLoad = mpVocabulary->loadFromBinaryFile(strVocFile);
-    if(!bVocLoad)
-    {
-        std::cerr << "Wrong path to vocabulary. " << std::endl;
-        std::cerr << "Failed to open at: " << strVocFile << std::endl;
-        exit(-1);
-    }
-    printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+    LoadVocabulary( strVocFile, mpVocabulary);
 
-    //Create the Map(s)
+    //Load Camera data and create per camera data structures
     cv::FileNode cameras = fsSettings["Cameras"];
     for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
         cv::FileNode camera = *it;
         std::string cam_name  = (*it).name();
 
-        Map* mpMap = new Map();
-        mpMap->setKeyFrameDBVocab(mpVocabulary);
-        maps.insert(std::make_pair(cam_name, mpMap));
-
-
+        //load camera data
         Camera cam_info;
         cam_info.loadData(camera);
         cam_data.insert( std::make_pair(cam_name, cam_info) );
         current_tracking_state[cam_name] = eTrackingState::SYSTEM_NOT_READY;
         std::cout << "system loadsettings: cameras: " << cam_name << std::endl;
+
+        //create map
+        Map* mpMap = new Map();
+        mpMap->setKeyFrameDBVocab(mpVocabulary);
+        maps.insert(std::make_pair(cam_name, mpMap));
+
+        //create frame drawer
+        FrameDrawer* pFrameDrawer = new FrameDrawer(maps[cam_name]);
+        mpFrameDrawers.insert(std::make_pair( cam_name ,pFrameDrawer) );
+
     }
 
     //Create Drawers. These are used by the Viewer
     mpMapDrawer = new MapDrawer(maps, strSettingsFile);
+    
+    //Initialize Main Threads
+    //Shared Data structures
+    thread_status = std::make_unique<MainThreadsStatus>();
 
-    for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
-        FrameDrawer* pFrameDrawer = new FrameDrawer(maps[(*it).name()]);
-        mpFrameDrawers.insert(std::make_pair( (*it).name() ,pFrameDrawer) );
-    }
-
-
-    //Initialize the Tracking thread
+    //Initialize Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
-                             maps, cam_data, strSettingsFile);
+                             maps, cam_data, strSettingsFile, thread_status.get());
 
     mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker, cam_data);
 
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
-    mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path);
+    mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path, thread_status.get());
     mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
@@ -142,7 +126,6 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
 
     //Set pointers between threads
     mpTracker->SetLocalMapper(mpLocalMapper);
-    mpTracker->SetLoopClosing(mpLoopCloser);
 
     mpLocalMapper->SetTracker(mpTracker);
     mpLocalMapper->SetLoopCloser(mpLoopCloser);
@@ -156,15 +139,6 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 {
     std::string cam_cur = img_info.camera;
     cv::Mat Tcw;
-    // Check reset
-    {
-    std::unique_lock<std::mutex> lock(mMutexReset);
-    if(mbReset)
-    {
-        mpTracker->Reset();
-        mbReset = false;
-    }
-    }
 
    // cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight, img_info, sensor_data);
     mpImageProcessor->ProcessStereoImage(imLeft,imRight,img_info, sensor_data, current_tracking_state[cam_cur]);
@@ -172,7 +146,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
-    mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
+//    mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
     return Tcw;
 }
 
@@ -180,15 +154,6 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 {
     std::string cam_cur = img_info.camera;
     cv::Mat Tcw;
-    // Check reset
-    {
-    std::unique_lock<std::mutex> lock(mMutexReset);
-    if(mbReset)
-    {
-        mpTracker->Reset();
-        mbReset = false;
-    }
-    }
 
     //cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
     mpImageProcessor->ProcessMonoImage(im, img_info, sensor_data, current_tracking_state[cam_cur]);
@@ -197,19 +162,64 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
     std::unique_lock<std::mutex> lock2(mMutexState);
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
-    mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
+  //  mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
 
     return Tcw;
 }
 
 void System::RunImagingBundleAdjustment(){
-    mpTracker->RunImagingBundleAdjustment();
+   // mpTracker->RunImagingBundleAdjustment();
+    //stop LocalMapping and LoopClosing
+    mpLocalMapper->RequestStop();
+
+    // Wait until Local Mapping has effectively stopped
+    while(!mpLocalMapper->isStopped())
+    {
+        usleep(1000);
+    }
+    while(mpLoopCloser->isRunningGBA()){  //can't stop loop closing right now - add this capability  -just check to make sure a GBA isn't running
+        usleep(10000);
+    }
+
+    g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
+    ImagingBundleAdjustment imgBA(maps["Imaging"], mpTracker->trajectories["Imaging"].get(), traj_g2o, optParams );
+    imgBA.Run();
+
+    mpLocalMapper->Release();
 }
 
 void System::Reset()
 {
+    /// THIS HASN'T BEEN TESTED SO PROBABLY DOESN:T WORK
     std::unique_lock<std::mutex> lock(mMutexReset);
-    mbReset = true;
+
+    std::cout << "System Reseting" << std::endl;
+    if(mpViewer)
+    {
+        mpViewer->RequestStop();
+        while(!mpViewer->isStopped())
+            usleep(3000);
+    }
+
+    mpTracker->Reset();
+
+    // Reset Local Mapping
+    std::cout << "Reseting Local Mapper...";
+    mpLocalMapper->RequestReset();
+    std::cout << " done" << std::endl;
+
+    // Reset Loop Closing
+    std::cout << "Reseting Loop Closing...";
+    mpLoopCloser->RequestReset();
+    std::cout << " done" << std::endl;
+
+
+    KeyFrame::nNextId = 0;
+    Frame::nNextId = 0;
+
+    if(mpViewer)
+        mpViewer->Release();
+
 }
 
 void System::Shutdown()
@@ -249,6 +259,8 @@ std::vector<int> System::ValidImagingKeyFrames(){
   return KF_frame_numbers;
 
 }
+
+
 
 
 void System::SaveTrajectoryMapping(const std::string &filename)
@@ -649,5 +661,34 @@ bool System::TrackingReady() { return (mpTracker->GetCurrentTrackingState() != e
 bool System::TrackingNeedImages() { return mpTracker->GetCurrentTrackingState() ==  eTrackingState::NO_IMAGES_YET; }
 bool System::TrackingInitialized() { return (mpTracker->GetCurrentTrackingState() == eTrackingState::NORMAL) or (mpTracker->GetCurrentTrackingState() ==  eTrackingState::RELOCALIZATION); }
 double System::PercentObserved() { return mpTracker->PercentObserved(); }
+
+void System::LoadSettings(std::string settings_path) {
+   // std::cout << "LoadSettings: settings_path " << settings_path << std::endl;
+    cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
+    // load optimizer parameters
+    optParams.Info_Depth = fSettings["Opt.Info_Depth"];
+    optParams.Info_IMU   = fSettings["Opt.Info_IMU"];
+    optParams.Info_GPS   = fSettings["Opt.Info_GPS"];
+    int temp = fSettings["Opt.realtime"];
+    optParams.realtime = temp; //implicit cast to bool;
+    optParams.GBAinterval = fSettings["Opt.GBAinterval"];
+
+}
+
+void System::LoadVocabulary(const std::string vocab_file, ORBVocabulary* vocab){
+    clock_t tStart = clock();
+    bool bVocLoad = false; // chose loading method based on file extension
+    if (has_suffix(vocab_file, ".txt"))
+        bVocLoad = mpVocabulary->loadFromTextFile(vocab_file);
+    else
+        bVocLoad = mpVocabulary->loadFromBinaryFile(vocab_file);
+    if(!bVocLoad)
+    {
+        std::cerr << "Wrong path to vocabulary. " << std::endl;
+        std::cerr << "Failed to open at: " << vocab_file << std::endl;
+        exit(-1);
+    }
+    printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+}
 
 } //namespace ORB_SLAM

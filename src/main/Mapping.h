@@ -24,6 +24,7 @@
 #include "KeyFrame.h"
 #include "Map.h"
 #include "LoopClosing.h"
+#include <ORBSLAM_datastructs.h>
 #include <Tracking.h>
 #include <MapJob.h>
 #include <opencv2/opencv.hpp>
@@ -43,7 +44,7 @@ class Map;
 class Mapping
 {
 public:
-    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path);
+    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path, MainThreadsStatus* thread_status_);
 
     void SetLoopCloser(LoopClosing* pLoopCloser);
 
@@ -113,6 +114,7 @@ protected:
     bool mbAbortBA;
     bool abortJobs;
 
+    MainThreadsStatus* thread_status;
     bool mbStopped;
     bool mbStopRequested;
     bool mbNotStop;
@@ -121,9 +123,9 @@ protected:
     bool mbAcceptKeyFrames;
     std::mutex mMutexAccept;
 
-    int miLBAcalls = 0; //local BA calls- do global BA periodically
-    int nKFs_created = 0; // used for determining when to do global BA
+    long unsigned int nKFs_created = 0; // used for determining when to do global BA
     bool bNeedGBA = false; //indicates global BA needed
+    long unsigned int  lastGBAKF = 0;
 
     std::ofstream flocalmap;
 

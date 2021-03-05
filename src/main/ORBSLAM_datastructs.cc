@@ -5,6 +5,13 @@ namespace HYSLAM {
 Imgdata::Imgdata(std::string name_, std::string camera_, double time_stamp_) :
           name(name_), camera(camera_), time_stamp(time_stamp_){}
 
+void ThreadStatus::clearPostStop(){
+    std::lock_guard<std::mutex> lock(mutex_ts);
+    is_stopped = false;
+    stop_requested = false;
+    release = false;
+
+}
 ORBExtractorParams::ORBExtractorParams(FeatureExtractor* extractor){
   setParams(extractor);
 }

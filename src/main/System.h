@@ -22,12 +22,6 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include <string>
-#include <thread>
-#include <unistd.h>
-#include <map>
-#include <opencv2/core/core.hpp>
-
 #include <Tracking.h>
 #include <Mapping.h>
 #include <ImageProcessing.h>
@@ -40,6 +34,15 @@
 #include "ORBSLAM_datastructs.h"
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
+
+
+#include <opencv2/core/core.hpp>
+
+#include <string>
+#include <thread>
+#include <unistd.h>
+#include <map>
+#include <memory>
 
 namespace HYSLAM
 {
@@ -144,9 +147,15 @@ private:
 
     // ORB vocabulary used for place recognition and feature matching.
     ORBVocabulary* mpVocabulary;
+    void LoadVocabulary(const std::string vocab_file, ORBVocabulary* vocab);
+
+    void LoadSettings(std::string settings_path);
 
     // camera-specific Map structures that stores the pointers to all KeyFrames and MapPoints.
     std::map<std::string, Map*> maps;
+
+    //data shared between threads
+    std::unique_ptr<MainThreadsStatus> thread_status;
 
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and
@@ -180,6 +189,7 @@ private:
     bool mbReset;
 
     std::map<std::string, Camera> cam_data;
+    optInfo optParams;
 
     // Tracking state
     std::map<std::string, eTrackingState> current_tracking_state;

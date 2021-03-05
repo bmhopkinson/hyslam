@@ -59,7 +59,6 @@ class Viewer;
 class FrameDrawer;
 class Map;
 class Mapping;
-class LoopClosing;
 class System;
 
 
@@ -69,7 +68,7 @@ class Tracking
 public:
 
     Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
-             std::map<std::string, Camera > cam_data_, const std::string &strSettingPath);
+             std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_);
     ~Tracking();
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
@@ -77,29 +76,22 @@ public:
  //   cv::Mat trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
 
     void SetLocalMapper(Mapping* pLocalMapper);
-    void SetLoopClosing(LoopClosing* pLoopClosing);
     void SetViewer(Viewer* pViewer);
     eTrackingState GetCurrentTrackingState() {return mState["SLAM"];};
     eTrackingState GetCurrentTrackingState(std::string cam_name) {return mState[cam_name];};
-    void RunImagingBundleAdjustment();
-
 
     // other getters setters
     KeyFrame* GetReferenceKF() { return mpReferenceKF["SLAM"] ;}
 
     // Load new settings
     void InitializeDataStructures(std::string cam_name);
-//    cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
-
-    // Use this function if you have deactivated local mapping and you only want to localize the camera.
-  //  void InformOnlyTracking(const bool &flag);
 
     // Thread Synch - for stopping when post-processing results - not for realtime use
     void RequestStop();
-    bool Stop();
+ //   bool Stop();
     void Release();
     bool isStopped();
-    bool stopRequested();
+//    bool stopRequested();
 
 
 public:
@@ -154,7 +146,6 @@ protected:
 
     //Other Thread Pointers
     Mapping* mpLocalMapper;
-    LoopClosing* mpLoopClosing;
 
     // state data
     std::map<std::string, TrackingState*> state;  //camera to state map
@@ -185,6 +176,7 @@ protected:
     std::map<std::string, Camera> cam_data;
 
     //stopping - for postprocessing only
+    MainThreadsStatus* thread_status;
     bool mbStopped;
     bool mbStopRequested;
     std::mutex mMutexStop;

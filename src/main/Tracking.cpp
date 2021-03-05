@@ -28,14 +28,12 @@
 #include <MapPointDB.h>
 #include "Map.h"
 #include <StereoInitializer.h>
-#include "ImagingBundleAdjustment.h"
 #include "ORBSLAM_datastructs.h"
 #include <TrackPlaceRecognition.h>
 #include <TrackingStateNormal.h>
 #include <TrackingStateRelocalize.h>
 #include <TrackingStateInitialize.h>
 #include <Tracking_datastructs.h>
-#include "g2o/types/sba/Trajectory_g2o.h"
 
 #include <fstream>
 #include <string>
@@ -50,9 +48,9 @@ namespace HYSLAM
 {
 
 Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-           std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath):
+           std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_):
             mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
-            mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_)
+            mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), thread_status(thread_status_)
 {
     //
     std::string ftracking_name = "./run_data/tracking_data.txt";
@@ -115,11 +113,6 @@ void Tracking::SetLocalMapper(Mapping *pLocalMapper)
     mpLocalMapper=pLocalMapper;
 }
 
-void Tracking::SetLoopClosing(LoopClosing *pLoopClosing)
-{
-    mpLoopClosing=pLoopClosing;
-}
-
 void Tracking::SetViewer(Viewer *pViewer)
 {
     mpViewer=pViewer;
@@ -147,13 +140,19 @@ void Tracking::_Track_()
 {
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
     //stop if needed - non-realtime only
-    if(Stop())
+  //  if(Stop())
+    if(thread_status->tracking.stop_requested && thread_status->tracking.stoppable)
     {
+        std::cout << "stopping tracking" << std::endl;
+        thread_status->tracking.is_stopped = true;
     // Safe area to stop
-       while(isStopped())
+       while(!thread_status->tracking.release)
        {
            usleep(3000);
        }
+       //clear stop related flags and resume operation
+        thread_status->tracking.clearPostStop();
+        std::cout << "restarting tracking" << std::endl;
    }
 
     // ADDITION: Tracking state monitoring
@@ -220,18 +219,6 @@ void Tracking::_Track_()
 
     if(!mCurrentFrame.mpReferenceKF)  //WHY DOES THE REFERENCE KEYFRAME KEEP GETTING UPDATED!!!!
         mCurrentFrame.mpReferenceKF = mpReferenceKF[cam_cur];
-
-
-    // Reset if the camera get lost soon after initialization
-    if(mState[cam_cur]==eTrackingState::RELOCALIZATION)
-    {
-        if(maps[cam_cur]->KeyFramesInMap()<=5)
-        {
-            std::cout << "Track lost soon after initialisation, reseting..." << std::endl;
-            mpSystem->Reset();
-            return;
-        }
-    }
 
     //append current frame's data to trajectory
     trajectories[cam_cur]->push_back(mCurrentFrame);
@@ -408,7 +395,7 @@ void Tracking::RequestStop()
     mbStopRequested = true;
 
 }
-
+/*
 bool Tracking::Stop()
 {
     unique_lock<mutex> lock(mMutexStop);
@@ -421,52 +408,31 @@ bool Tracking::Stop()
 
     return false;
 }
-
+*/
 bool Tracking::isStopped()
 {
     unique_lock<mutex> lock(mMutexStop);
     return mbStopped;
 }
-
+/*
 bool Tracking::stopRequested()
 {
     unique_lock<mutex> lock(mMutexStop);
     return mbStopRequested;
 }
-
+*/
 void Tracking::Release()
 {
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = false;
     mbStopRequested = false;
 
+
     cout << "Tracking RELEASE" << endl;
 }
 
 void Tracking::Reset()
 {
-
-    cout << "System Reseting" << endl;
-    if(mpViewer)
-    {
-        mpViewer->RequestStop();
-        while(!mpViewer->isStopped())
-            usleep(3000);
-    }
-
-    // Reset Local Mapping
-    cout << "Reseting Local Mapper...";
-    mpLocalMapper->RequestReset();
-    cout << " done" << endl;
-
-    // Reset Loop Closing
-    cout << "Reseting Loop Closing...";
-    mpLoopClosing->RequestReset();
-    cout << " done" << endl;
-
-
-    KeyFrame::nNextId = 0;
-    Frame::nNextId = 0;
 
     for(std::vector<std::string>::iterator vit = cam_types.begin(); vit != cam_types.end(); vit++){
         std::string this_cam = *vit;
@@ -476,8 +442,6 @@ void Tracking::Reset()
         trajectories[this_cam]->clear();
     }
 
-    if(mpViewer)
-        mpViewer->Release();
 }
 
 void Tracking::InitializeDataStructures(std::string cam_name){
@@ -513,27 +477,6 @@ void Tracking::HandlePostTrackingSuccess(){
 
   int n_valid_matches = mCurrentFrame.getLandMarkMatches().numValidMatches();
   ftracking <<  n_valid_matches << "\t" << maps[cam_cur]->MapPointsInMap() << "\t" <<   maps[cam_cur]->KeyFramesInMap() <<"\t";
-
-}
-
-void Tracking::RunImagingBundleAdjustment(){
-  //stop LocalMapping and LoopClosing
-  mpLocalMapper->RequestStop();
-
-  // Wait until Local Mapping has effectively stopped
-  while(!mpLocalMapper->isStopped())
-  {
-      usleep(1000);
-  }
-  while(mpLoopClosing->isRunningGBA()){  //can't stop loop closing right now - add this capability  -just check to make sure a GBA isn't running
-    usleep(10000);
-  }
-
-  g2o::Trajectory traj_g2o = trajectories["SLAM"]->convertToG2O();
-  ImagingBundleAdjustment imgBA(maps["Imaging"], trajectories["Imaging"].get(), traj_g2o, optParams );
-  imgBA.Run();
-
-  mpLocalMapper->Release();
 
 }
 
