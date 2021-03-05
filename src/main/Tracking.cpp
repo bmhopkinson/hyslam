@@ -51,11 +51,10 @@ using namespace std;
 namespace HYSLAM
 {
 
-    Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-               std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath):
-     mbVO(false), mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
-    mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), mnLastRelocFrameId(0)
-
+Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
+           std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath):
+            mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
+            mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_)
 {
     //
     std::string ftracking_name = "./run_data/tracking_data.txt";
@@ -64,32 +63,15 @@ namespace HYSLAM
                 << "KFref_matches\t"  << "nTrackedClose\t" << "nNonTrackedClose\t" <<"insertKF\t"
                 << "c1a\tc1b\tc1c\tc2\t"<< "newKFid\t" << "KF_newMps\t" <<std::endl;
 
-    // Load camera parameters from settings file
-    ORBextractorSettings ORBextractor_settings;
-    std::string tracking_config_file;
-    LoadSettings(strSettingPath, ORBextractor_settings, tracking_config_file);
-
-    mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true) ,ORBextractor_settings);
-
-    if(mSensor["SLAM"]==System::STEREO)
-        mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true) , ORBextractor_settings);
-
-   // if(mSensor["SLAM"]==System::MONOCULAR)
-   ORBextractorSettings ORBextractor_settings_init;
-   ORBextractor_settings_init = ORBextractor_settings;
-   ORBextractor_settings_init.nFeatures = 3*ORBextractor_settings.nFeatures;
-   mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true) , ORBextractor_settings_init);
-
-   SetupStates();
+    LoadSettings(strSettingPath);
+    SetupStates();
 
 }
 
-void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings, std::string &tracking_filename){
+void Tracking::LoadSettings(std::string settings_path){
         std::cout << "LoadSettings: settings_path " << settings_path << std::endl;
     cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
-    //tracking_filename = fSettings["Tracking_Config"].string();
     config_data = cv::FileStorage(fSettings["Tracking_Config"].string(),cv::FileStorage::READ );
-   // std::cout << "tracking_filename: " << tracking_filename << std::endl;
 
     cv::FileNode cameras = fSettings["Cameras"];
     for(cv::FileNodeIterator it = cameras.begin(); it != cameras.end(); it++){
@@ -100,19 +82,6 @@ void Tracking::LoadSettings(std::string settings_path, ORBextractorSettings &ORB
         InitializeDataStructures((*it).name());
         std::cout << "tracking loadsettings: cameras: " << cam_name << std::endl;
     }
-
-    // Load ORB parameters
-    ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
-    ORBext_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
-    ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];
-    ORBext_settings.fIniThFAST = fSettings["ORBextractor.iniThFAST"];
-    ORBext_settings.fMinThFAST = fSettings["ORBextractor.minThFAST"];
-    std::cout << std::endl  << "ORB Extractor Parameters: " << std::endl;
-    std::cout << "- Number of Features: " << ORBext_settings.nFeatures << std::endl;
-    std::cout << "- Scale Levels: " << ORBext_settings.nLevels << std::endl;
-    std::cout << "- Scale Factor: " << ORBext_settings.fScaleFactor << std::endl;
-    std::cout << "- Initial Fast Threshold: " << ORBext_settings.fIniThFAST << std::endl;
-    std::cout << "- Minimum Fast Threshold: " << ORBext_settings.fMinThFAST << std::endl;
 
     // load optimizer parameters
     optParams.Info_Depth = fSettings["Opt.Info_Depth"];
@@ -158,97 +127,25 @@ void Tracking::SetViewer(Viewer *pViewer)
     mpViewer=pViewer;
 }
 
-cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data)
-{
-    cam_cur = img_data.camera;
-    mImGray = imRectLeft;
-    cv::Mat imGrayRight = imRectRight;
-
-    mImGray     = PreProcessImg(mImGray, cam_data[cam_cur].RGB, cam_data[cam_cur].scale);
-    imGrayRight = PreProcessImg(imGrayRight, cam_data[cam_cur].RGB, cam_data[cam_cur].scale);
-
-    Camera cam_data_cur = cam_data[cam_cur];
-    cam_data_cur.mnMaxX = mImGray.cols;
-    cam_data_cur.mnMaxY = mImGray.rows;
-
-    // ORB extraction - all this needs to be moved to separate class - perhaps even just a parallel LandMark Extraction thread
-    // this has nothing to do w/ Tracking - frame should be created in LandMark Extraction class and then passed into Tracking to track frame
-    std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
-    cv::Mat mDescriptors, mDescriptorsRight;
-    std::thread orb_thread(ORBUtil::extractORB, mpORBextractorLeft, std::ref(mImGray), std::ref(mvKeys),std::ref( mDescriptors) ); 
- //   (*mpORBextractorLeft)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
-    (*mpORBextractorRight)(imGrayRight, cv::Mat(), mvKeysRight,  mDescriptorsRight );
-    orb_thread.join();
-    ORBExtractorParams orb_params(mpORBextractorLeft);
-    ORBViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
-    ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, cam_data_cur);
-    stereomatch.computeStereoMatches();
-    std::vector<float> mvuRight;
-    std::vector<float> mvDepth;
-    stereomatch.getData(LMviews);
-
-    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary, cam_data_cur  , img_data.name, sensor_data, true );
-    Track();
-
-    return mCurrentFrame.mTcw.clone();
-}
-
-
-cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data)
-{
-    cam_cur = img_data.camera;
-    mImGray = im;
-    mImGray = PreProcessImg(mImGray, cam_data[cam_cur].RGB, cam_data[cam_cur].scale);
-
-    Camera cam_data_cur = cam_data[cam_cur];
-    cam_data_cur.mnMaxX = mImGray.cols;
-    cam_data_cur.mnMaxY = mImGray.rows;
-
-    // ORB extraction
-    FeatureExtractor* extractor;
-    if(mState[cam_cur]==eTrackingState::INITIALIZATION || mState[cam_cur]==eTrackingState::NO_IMAGES_YET){
-        extractor = mpIniORBextractor;
-    }
-    else {
-        extractor = mpORBextractorLeft;
-    }
-    std::vector<cv::KeyPoint> mvKeys;
-    cv::Mat mDescriptors;
-    (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
-    ORBExtractorParams orb_params(extractor);
-    ORBViews LMviews(mvKeys, mDescriptors,  orb_params);
-
-    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary,cam_data_cur, img_data.name, sensor_data, false);
-
-    Track();
-
-    return mCurrentFrame.mTcw.clone();
-}
-
-cv::Mat Tracking::trackMono(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
+cv::Mat Tracking::track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
     cam_cur = img_data.camera;
     mImGray = image;
     Camera cam_data_cur = cam_data[cam_cur];
 
-    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary,cam_data[cam_cur], img_data.name, sensor_data, false);
+    bool is_stereo = false;
+    if(cam_data_cur.sensor == 0){
+        is_stereo = false;
+    } else if( cam_data_cur.sensor == 1 ){
+        is_stereo = true;
+    }
 
-    Track();
+    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary,cam_data[cam_cur], img_data.name, sensor_data, is_stereo);
+
+    _Track_();
     return mCurrentFrame.mTcw.clone();
 }
 
-cv::Mat Tracking::trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
-    cam_cur = img_data.camera;
-    mImGray = image;
-    Camera cam_data_cur = cam_data[cam_cur];
-    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary, cam_data_cur  , img_data.name, sensor_data, true );
-
-    Track();
-    return mCurrentFrame.mTcw.clone();
-}
-
-
-
-void Tracking::Track()
+void Tracking::_Track_()
 {
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
     //stop if needed - non-realtime only
@@ -269,7 +166,7 @@ void Tracking::Track()
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(maps[cam_cur]->mMutexMapUpdate);
 
-    bOK = false;
+    bool bOK = false;
     UpdateLastFrame();
 
     FrameBuffer frame_buf;
@@ -608,7 +505,7 @@ void Tracking::InformOnlyTracking(const bool &flag)
     mbOnlyTracking = flag;
 }
 */
-
+/*
 cv::Mat Tracking::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
 
     cv::resize(img, img, cv::Size(), fscale, fscale);
@@ -630,7 +527,7 @@ cv::Mat Tracking::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
 
     return img;
 }
-
+*/
 
 void Tracking::HandlePostTrackingSuccess(){
   // Update motion model - only for SLAM

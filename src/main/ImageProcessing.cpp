@@ -48,7 +48,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
     ORBExtractorParams orb_params(extractor);
     ORBViews LMviews(mvKeys, mDescriptors,  orb_params);
-    mpTracker->trackMono(LMviews, mImGray, cam_cur, img_data, sensor_data);
+    mpTracker->track(LMviews, mImGray, cam_cur, img_data, sensor_data);
 
 }
 
@@ -73,7 +73,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     std::vector<float> mvDepth;
     stereomatch.getData(LMviews);
 
-    mpTracker->trackStereo(LMviews, mImGray , cam_cur, img_data, sensor_data);
+    mpTracker->track(LMviews, mImGray , cam_cur, img_data, sensor_data);
 
 }
 

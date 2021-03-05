@@ -67,25 +67,14 @@ class Tracking
 {
 //
 public:
-    // Tracking states
-    /*
-    enum eTrackingState{
-        SYSTEM_NOT_READY=-1,
-        NO_IMAGES_YET=0,
-        NOT_INITIALIZED=1,
-        OK=2,
-        LOST=3
-    };
-*/
+
     Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
              std::map<std::string, Camera > cam_data_, const std::string &strSettingPath);
     ~Tracking();
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
-    cv::Mat GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data);
-    cv::Mat GrabImageMonocular(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data);
-    cv::Mat trackMono(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
-    cv::Mat trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
+    cv::Mat track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
+ //   cv::Mat trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
 
     void SetLocalMapper(Mapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
@@ -100,7 +89,7 @@ public:
 
     // Load new settings
     void InitializeDataStructures(std::string cam_name);
-    cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
+//    cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
 
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
   //  void InformOnlyTracking(const bool &flag);
@@ -141,9 +130,6 @@ public:
     // Basically we store the reference keyframe for each frame and its relative transformation
     std::map< std::string, std::unique_ptr<Trajectory> > trajectories;
 
-    // True if local mapping is deactivated and we are performing only localization
-   // bool mbOnlyTracking;
-
     //optimizer parameters
     optInfo optParams;
 
@@ -152,7 +138,7 @@ public:
 protected:
 
     // Main tracking function. It is independent of the input sensor.
-    void Track();
+    void _Track_();
     void SetupStates();
 
     void UpdateLastFrame();
@@ -163,15 +149,10 @@ protected:
     void HandlePostTrackingSuccess();
 
     //Dataloaders
-    void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings, std::string &tracking_filename);
+    void LoadSettings(std::string settings_path);
     cv::FileStorage config_data;
 
-    // In case of performing only localization, this flag is true when there are no matches to
-    // points in the map. Still tracking will continue if there are enough matches with temporal points.
-    // In that case we are doing visual odometry. The system will try to do relocalization to recover
-    // "zero-drift" localization to the map.
-    bool mbVO;
-    bool bOK;
+  //  bool bOK;  //tracking success
 
     //Other Thread Pointers
     Mapping* mpLocalMapper;
@@ -181,22 +162,15 @@ protected:
     std::map<std::string, TrackingState*> state;  //camera to state map
     std::map<std::string, std::map<std::string, TrackingState*> > state_options; //state name to state pointer map
 
-    //ORB
-    FeatureExtractor* mpORBextractorLeft, *mpORBextractorRight;
-    FeatureExtractor* mpIniORBextractor;
-
     //BoW
     ORBVocabulary* mpORBVocabulary;
- //   KeyFrameDatabase* mpKeyFrameDB;
 
     // Initalization
     int stereoInitFeatures;
 
     //Local Map
     std::map<std::string, KeyFrame*> mpReferenceKF;
-    std::vector<KeyFrame*> mvpLocalKeyFrames;
     std::vector<MapPoint*> mvpLocalMapPoints;
-    
 
     // System
     System* mpSystem;
@@ -217,11 +191,9 @@ protected:
     bool mbStopRequested;
     std::mutex mMutexStop;
 
-
     //Last Frame, KeyFrame and Relocalisation Info
     std::map<std::string, Frame> mLastFrame;
     unsigned int mnLastKeyFrameId;
-    unsigned int mnLastRelocFrameId;
 
     std::ofstream fout;
     std::ofstream ftracking; 
