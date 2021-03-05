@@ -22,8 +22,7 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pT
     
     mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
     mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
-
-    // if(mSensor["SLAM"]==System::MONOCULAR)
+    
     ORBextractorSettings ORBextractor_settings_init;
     ORBextractor_settings_init = ORBextractor_settings;
     ORBextractor_settings_init.nFeatures = 3 * ORBextractor_settings.nFeatures;
@@ -69,8 +68,8 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     ORBViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
     ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, cam_data[cam_cur]);
     stereomatch.computeStereoMatches();
-    std::vector<float> mvuRight;
-    std::vector<float> mvDepth;
+ //   std::vector<float> mvuRight;
+ //   std::vector<float> mvDepth;
     stereomatch.getData(LMviews);
 
     mpTracker->track(LMviews, mImGray , cam_cur, img_data, sensor_data);

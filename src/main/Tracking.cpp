@@ -24,8 +24,6 @@
 #include <opencv2/core/core.hpp>
 
 #include <ORBstereomatcher.h>
-#include <ORBFinder.h>
-#include <ORBUtil.h>
 #include "FrameDrawer.h"
 #include <MapPointDB.h>
 #include "Map.h"
@@ -476,13 +474,6 @@ void Tracking::Reset()
 
         mState[this_cam] = eTrackingState::NO_IMAGES_YET; //need to clear from all cams
         trajectories[this_cam]->clear();
-
-      /*  if(mpInitializer[this_cam])
-        {
-            delete mpInitializer[this_cam];
-            mpInitializer[this_cam] = static_cast<Initializer*>(NULL);
-        }
-        */
     }
 
     if(mpViewer)
@@ -499,35 +490,6 @@ void Tracking::InitializeDataStructures(std::string cam_name){
   mLastFrame.insert(std::make_pair(cam_name, Frame() ) );
 
 }
-/*
-void Tracking::InformOnlyTracking(const bool &flag)
-{
-    mbOnlyTracking = flag;
-}
-*/
-/*
-cv::Mat Tracking::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
-
-    cv::resize(img, img, cv::Size(), fscale, fscale);
-
-    if(img.channels()==3)
-    {
-        if(mbRGB)
-            cvtColor(img, img ,CV_RGB2GRAY);
-        else
-            cvtColor(img, img ,CV_BGR2GRAY);
-    }
-    else if(img.channels()==4)
-    {
-        if(mbRGB)
-            cvtColor(img, img ,CV_RGBA2GRAY);
-        else
-            cvtColor(img, img ,CV_BGRA2GRAY);
-    }
-
-    return img;
-}
-*/
 
 void Tracking::HandlePostTrackingSuccess(){
   // Update motion model - only for SLAM

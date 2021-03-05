@@ -152,8 +152,6 @@ protected:
     void LoadSettings(std::string settings_path);
     cv::FileStorage config_data;
 
-  //  bool bOK;  //tracking success
-
     //Other Thread Pointers
     Mapping* mpLocalMapper;
     LoopClosing* mpLoopClosing;
