@@ -61,8 +61,6 @@ void Mapping::SetTracker(Tracking *pTracker)
 void Mapping::Run()
 {
 
- //   mbFinished = false;
-
     while(1)
     {
 
@@ -99,13 +97,9 @@ void Mapping::Run()
                }
 
               if(bNeedGBA){
-                 // mpTracker->RequestStop();
-              //   thread_status->tracking.stop_requested = true;
-                thread_status->tracking.setStopRequested(true);
+                  thread_status->tracking.setStopRequested(true);
                    // Wait until Tracking has effectively stopped
-                 // while(!mpTracker->isStopped() )
-                  //while(thread_status->tracking.is_stopped )
-                  while(thread_status->tracking.isStopped())
+                  while(!thread_status->tracking.isStopped())
                   {
                         usleep(1000);
                   }
@@ -116,8 +110,6 @@ void Mapping::Run()
                        bNeedGBA = false;
                        lastGBAKF = mpCurrentKeyFrame->mnId ;
                   }
-                  //mpTracker->Release();
-               //   thread_status->tracking.release = true;
                 thread_status->tracking.setRelease(true);
                }
 
@@ -129,7 +121,6 @@ void Mapping::Run()
         {
             // Safe area to stop
             std::cout << "Mapping Stop!!!" << std::endl;
-           // while(!thread_status->mapping.release && !CheckFinish())
            while(!thread_status->mapping.isRelease() && !CheckFinish())
             {
                 usleep(3000);
@@ -290,22 +281,11 @@ bool Mapping::CheckNewKeyFrames()
     return(!mlNewKeyFrames.empty());
 }
 
-/*
-void Mapping::RequestStop()
-{
-    std::unique_lock<std::mutex> lock(mMutexStop);
-    mbStopRequested = true;
-    std::unique_lock<std::mutex> lock2(mMutexNewKFs);
-    mbAbortBA = true;
-}
-*/
 bool Mapping::Stop()
 {
     bool res = false;
     if(stopRequested() && !thread_status->mapping.isStoppable())
     {
-        //mbStopped = true;
-        //thread_status->mapping.is_stopped = true;
         thread_status->mapping.setIsStopped(true);
         std::cout << "Local Mapping STOP" << std::endl;
         res =  true;
@@ -315,33 +295,14 @@ bool Mapping::Stop()
 
 bool Mapping::isStopped()
 {
- //   return mbStopped;
-  //  return thread_status->mapping.is_stopped;
   return thread_status->mapping.isStopped();
 }
 
 bool Mapping::stopRequested()
 {
-    //return mbStopRequested;
-   // return thread_status->mapping.stop_requested;
    return thread_status->mapping.isStopRequested();
 }
-/*
-void Mapping::Release()
-{
-    std::unique_lock<std::mutex> lock(mMutexStop);
-    std::unique_lock<std::mutex> lock2(mMutexFinish);
-    if(mbFinished)
-        return;
-    mbStopped = false;
-    mbStopRequested = false;
-    for(std::list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
-        delete *lit;
-    mlNewKeyFrames.clear();
 
-    std::cout << "Local Mapping RELEASE" << std::endl;
-}
-*/
 bool Mapping::AcceptKeyFrames()
 {
     std::unique_lock<std::mutex> lock(mMutexAccept);
@@ -360,9 +321,7 @@ bool Mapping::SetNotStop(bool flag)
 
     if(flag && isStopped())
         return false;
-
-  //  thread_status->mapping.stoppable = flag;
-  thread_status->mapping.setStoppable(flag);
+    thread_status->mapping.setStoppable(flag);
 
     return true;
 }
@@ -425,30 +384,18 @@ void Mapping::ResetIfRequested()
         mbResetRequested=false;
     }
 }
-/*
-void Mapping::RequestFinish()
-{
-    std::unique_lock<std::mutex> lock(mMutexFinish);
-    mbFinishRequested = true;
-}
-*/
+
 bool Mapping::CheckFinish()
 {
     std::unique_lock<std::mutex> lock(mMutexFinish);
- //   return mbFinishRequested;
- //return thread_status->mapping.finish_requested;
- return thread_status->mapping.isFinishRequested();
+    return thread_status->mapping.isFinishRequested();
 }
 
 void Mapping::SetFinish()
 {
     std::unique_lock<std::mutex> lock(mMutexFinish);
-    //mbFinished = true;
-   // thread_status->mapping.is_finished = true;
-   thread_status->mapping.setIsFinished(true);
+    thread_status->mapping.setIsFinished(true);
     std::unique_lock<std::mutex> lock2(mMutexStop);
-    //mbStopped = true;
- //   thread_status->mapping.is_stopped = true;
    thread_status->mapping.setIsStopped(true);
     std::cout << "Mapping finished  !!!!!!" << std::endl;
 }
@@ -456,9 +403,7 @@ void Mapping::SetFinish()
 bool Mapping::isFinished()
 {
     std::unique_lock<std::mutex> lock(mMutexFinish);
-    //return mbFinished;
-  //  return thread_status->mapping.is_finished;
-  return thread_status->mapping.isFinished();
+    return thread_status->mapping.isFinished();
 }
 
 } //namespace ORB_SLAM
