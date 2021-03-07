@@ -140,13 +140,13 @@ void Tracking::_Track_()
 {
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
     //stop if needed - non-realtime only
-  //  if(Stop())
-    if(thread_status->tracking.stop_requested && thread_status->tracking.stoppable)
+    if(Stop())
+  //  if(thread_status->tracking.stop_requested && thread_status->tracking.stoppable)
     {
         std::cout << "stopping tracking" << std::endl;
-        thread_status->tracking.is_stopped = true;
+      //  thread_status->tracking.is_stopped = true;
     // Safe area to stop
-       while(!thread_status->tracking.release)
+       while(!thread_status->tracking.isRelease())
        {
            usleep(3000);
        }
@@ -389,46 +389,16 @@ KeyFrame* Tracking::determineReferenceKeyFrame(Frame* pcurrent_frame){
     return pKFbest_ref;
 }
 
-void Tracking::RequestStop()
-{
-    unique_lock<mutex> lock(mMutexStop);
-    mbStopRequested = true;
-
-}
-/*
 bool Tracking::Stop()
 {
-    unique_lock<mutex> lock(mMutexStop);
-    if(mbStopRequested)
+    if(thread_status->tracking.isStopRequested() && thread_status->tracking.isStoppable())
     {
-        mbStopped = true;
-        cout << "Tracking STOP" << endl;
+        thread_status->tracking.setIsStopped(true);
         return true;
+        std::cout << "stopping tracking" << std::endl;
     }
-
     return false;
-}
-*/
-bool Tracking::isStopped()
-{
-    unique_lock<mutex> lock(mMutexStop);
-    return mbStopped;
-}
-/*
-bool Tracking::stopRequested()
-{
-    unique_lock<mutex> lock(mMutexStop);
-    return mbStopRequested;
-}
-*/
-void Tracking::Release()
-{
-    unique_lock<mutex> lock(mMutexStop);
-    mbStopped = false;
-    mbStopRequested = false;
 
-
-    cout << "Tracking RELEASE" << endl;
 }
 
 void Tracking::Reset()

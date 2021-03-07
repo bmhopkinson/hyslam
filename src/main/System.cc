@@ -113,7 +113,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
-    mpLoopCloser = new LoopClosing(maps, mpVocabulary, mSensor!=MONOCULAR);
+    mpLoopCloser = new LoopClosing(maps, mpVocabulary,thread_status.get(), mSensor!=MONOCULAR);
     mptLoopClosing = new std::thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
@@ -131,7 +131,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     mpLocalMapper->SetLoopCloser(mpLoopCloser);
 
     mpLoopCloser->SetTracker(mpTracker);
-    mpLoopCloser->SetLocalMapper(mpLocalMapper);
+ //   mpLoopCloser->SetLocalMapper(mpLocalMapper);
 
 }
 
@@ -170,10 +170,11 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 void System::RunImagingBundleAdjustment(){
    // mpTracker->RunImagingBundleAdjustment();
     //stop LocalMapping and LoopClosing
-    mpLocalMapper->RequestStop();
+  //  mpLocalMapper->RequestStop();
+  thread_status->mapping.stop_requested = true;
 
     // Wait until Local Mapping has effectively stopped
-    while(!mpLocalMapper->isStopped())
+    while(!thread_status->mapping.is_stopped)
     {
         usleep(1000);
     }
@@ -185,7 +186,8 @@ void System::RunImagingBundleAdjustment(){
     ImagingBundleAdjustment imgBA(maps["Imaging"], mpTracker->trajectories["Imaging"].get(), traj_g2o, optParams );
     imgBA.Run();
 
-    mpLocalMapper->Release();
+    thread_status->mapping.release = true;
+    //mpLocalMapper->Release();
 }
 
 void System::Reset()
@@ -224,7 +226,8 @@ void System::Reset()
 
 void System::Shutdown()
 {
-    mpLocalMapper->RequestFinish();
+    //mpLocalMapper->RequestFinish();
+    thread_status->mapping.finish_requested = true;
     mpLoopCloser->RequestFinish();
     if(mpViewer)
     {

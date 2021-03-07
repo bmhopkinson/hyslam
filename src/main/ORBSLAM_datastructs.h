@@ -22,12 +22,34 @@ struct Imgdata
 };
 
 struct ThreadStatus{
+
+    void clearPostStop();
+
+    bool isStopped() const;
+    bool isStopRequested() const;
+    bool isStoppable() const;
+    bool isRelease() const;
+    bool isFinished() const;
+    bool isFinishRequested() const;
+    bool isAcceptingInput() const;
     bool is_stopped = false;
+
+    void setIsStopped(bool isStopped);
+    void setStopRequested(bool stopRequested);
+    void setStoppable(bool stoppable);
+    void setRelease(bool release);
+    void setIsFinished(bool isFinished);
+    void setFinishRequested(bool finishRequested);
+    void setAcceptingInput(bool acceptingInput);
+
     bool stop_requested = false;
     bool stoppable = true;
     bool release = false;
-    void clearPostStop();
-    std::mutex mutex_ts;
+    bool is_finished = false;
+    bool finish_requested = false;
+    bool accepting_input = true;
+
+    mutable std::mutex mutex_ts;
 };
 
 struct MainThreadsStatus{

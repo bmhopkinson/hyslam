@@ -49,7 +49,7 @@ public:
 
 public:
 
-    LoopClosing(std::map<std::string, Map*> &_maps,  ORBVocabulary* pVoc,const bool bFixScale);
+    LoopClosing(std::map<std::string, Map*> &_maps,  ORBVocabulary* pVoc,  MainThreadsStatus* thread_status_, const bool bFixScale);
 
     void SetTracker(Tracking* pTracker);
 
@@ -102,10 +102,11 @@ protected:
 
     std::map<std::string, Map*> maps;
     Tracking* mpTracker;
+    MainThreadsStatus* thread_status;
 
     ORBVocabulary* mpORBVocabulary;
 
-    Mapping *mpLocalMapper;
+   // Mapping *mpLocalMapper;
 
     std::list<KeyFrame*> mlpLoopKeyFrameQueue;
 

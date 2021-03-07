@@ -22,7 +22,7 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pT
     
     mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
     mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
-    
+
     ORBextractorSettings ORBextractor_settings_init;
     ORBextractor_settings_init = ORBextractor_settings;
     ORBextractor_settings_init.nFeatures = 3 * ORBextractor_settings.nFeatures;

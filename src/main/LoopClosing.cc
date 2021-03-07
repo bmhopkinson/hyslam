@@ -34,9 +34,9 @@
 namespace HYSLAM
 {
 
-LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, ORBVocabulary *pVoc, const bool bFixScale):
+LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, ORBVocabulary *pVoc,  MainThreadsStatus* thread_status_, const bool bFixScale):
     mbResetRequested(false), mbFinishRequested(false), mbFinished(true), maps(_maps),
-    mpORBVocabulary(pVoc), mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
+    mpORBVocabulary(pVoc), thread_status(thread_status_),  mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
     mbStopGBA(false), mbFixScale(bFixScale)
 {
     mnCovisibilityConsistencyTh = 3;
@@ -47,13 +47,13 @@ void LoopClosing::SetTracker(Tracking *pTracker)
 {
     mpTracker=pTracker;
 }
-
+/*
 void LoopClosing::SetLocalMapper(Mapping *pLocalMapper)
 {
     mpLocalMapper=pLocalMapper;
 }
 
-
+*/
 void LoopClosing::Run()
 {
     mbFinished =false;
@@ -422,7 +422,8 @@ void LoopClosing::CorrectLoop()
 
     // Send a stop signal to Local Mapping
     // Avoid new keyframes are inserted while correcting the loop
-    mpLocalMapper->RequestStop();
+   // mpLocalMapper->RequestStop();
+    thread_status->mapping.stop_requested = true;
 
     // If a Global Bundle Adjustment is running, abort it
     if(isRunningGBA())
@@ -437,7 +438,8 @@ void LoopClosing::CorrectLoop()
     }
 
     // Wait until Local Mapping has effectively stopped
-    while(!mpLocalMapper->isStopped())
+ //   while(!mpLocalMapper->isStopped())
+    while(!thread_status->mapping.is_stopped)
     {
         usleep(1000);
     }
@@ -600,7 +602,8 @@ void LoopClosing::CorrectLoop()
     mpThreadGBA = new std::thread(&LoopClosing::RunGlobalBundleAdjustment,this,mpCurrentKF->mnId);
 
     // Loop closed. Release Local Mapping.
-    mpLocalMapper->Release();
+   // mpLocalMapper->Release();
+   thread_status->mapping.release = true;
 
     std::cout << "Loop Closed!" << std::endl;
 
@@ -697,10 +700,12 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
         {
             std::cout << "Global Bundle Adjustment finished" << std::endl;
             std::cout << "Updating map ..." << std::endl;
-            mpLocalMapper->RequestStop();
+           // mpLocalMapper->RequestStop();
+           thread_status->mapping.stop_requested = true;
             // Wait until Local Mapping has effectively stopped
 
-            while(!mpLocalMapper->isStopped() && !mpLocalMapper->isFinished())
+          //  while(!mpLocalMapper->isStopped() && !mpLocalMapper->isFinished())
+            while(!thread_status->mapping.is_stopped && !thread_status->mapping.is_finished)
             {
                 usleep(1000);
             }
@@ -772,7 +777,8 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
                 }
             }
 
-            mpLocalMapper->Release();
+           // mpLocalMapper->Release();
+            thread_status->mapping.release = true;
 
             std::cout << "Map updated!" << std::endl;
         }

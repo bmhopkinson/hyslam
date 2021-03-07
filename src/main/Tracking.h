@@ -86,14 +86,6 @@ public:
     // Load new settings
     void InitializeDataStructures(std::string cam_name);
 
-    // Thread Synch - for stopping when post-processing results - not for realtime use
-    void RequestStop();
- //   bool Stop();
-    void Release();
-    bool isStopped();
-//    bool stopRequested();
-
-
 public:
 
     std::map<std::string, eTrackingState> mState;
@@ -177,9 +169,7 @@ protected:
 
     //stopping - for postprocessing only
     MainThreadsStatus* thread_status;
-    bool mbStopped;
-    bool mbStopRequested;
-    std::mutex mMutexStop;
+    bool Stop();
 
     //Last Frame, KeyFrame and Relocalisation Info
     std::map<std::string, Frame> mLastFrame;

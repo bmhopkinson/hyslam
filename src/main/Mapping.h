@@ -56,15 +56,12 @@ public:
     void InsertKeyFrame(KeyFrame* pKF);
 
     // Thread Synch
-    void RequestStop();
+ //   void RequestStop();
     void RequestReset();
-    bool Stop();
-    void Release();
-    bool isStopped();
-    bool stopRequested();
+    bool SetNotStop(bool flag); //GET RID OF THIS
+    bool isStopped(); //WORK TO MOVE TO PRIVATE
+    bool stopRequested();//WORK TO MOVE TO PRIVATE
     bool AcceptKeyFrames();
-    void SetAcceptKeyFrames(bool flag);
-    bool SetNotStop(bool flag);
 
     void InterruptBA();
 
@@ -93,8 +90,14 @@ protected:
 
     bool CheckFinish();
     void SetFinish();
+    bool Stop();
+    // void Release();
+
+
+    void SetAcceptKeyFrames(bool flag);
+
     bool mbFinishRequested;
-    bool mbFinished;
+ //   bool mbFinished;
     std::mutex mMutexFinish;
 
     std::map<std::string, Map* > maps;
