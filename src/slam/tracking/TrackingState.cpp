@@ -1,6 +1,5 @@
 #include <TrackingState.h>
 #include <Camera.h>
-#include <Mapping.h>
 
 namespace HYSLAM {
 TrackingState::TrackingState(std::ofstream &log, MainThreadsStatus* thread_status_):
@@ -9,9 +8,9 @@ thread_status(thread_status_)
     pftracking = &log;
 }
 
-std::vector<KeyFrame*> TrackingState::newKeyFrame(Frame &current_frame, Map *pMap, Mapping *pLocalMapper, unsigned int  last_keyframe_id, bool force){
+std::vector<KeyFrame*> TrackingState::newKeyFrame(Frame &current_frame, Map *pMap, unsigned int  last_keyframe_id, bool force){
     std::vector<KeyFrame*> newKFs;
-    if(needNewKeyFrame(current_frame, pMap, pLocalMapper, last_keyframe_id, force)){
+    if(needNewKeyFrame(current_frame, pMap, last_keyframe_id, force)){
         newKFs = createNewKeyFrame(current_frame, pMap);
     }
     return newKFs;

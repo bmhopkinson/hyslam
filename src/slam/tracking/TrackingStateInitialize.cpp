@@ -1,5 +1,4 @@
 #include <TrackingStateInitialize.h>
-#include <Mapping.h> //necessary b/c of cyclic dependenies among main threads and TrackingState - work to eliminate
 #include <MonoInitializer.h>
 #include <StereoInitializer.h>
 #include <InitializerDataStructs.h>
@@ -67,7 +66,7 @@ void TrackingStateInitialize::clear(){
     initializer->clear();
 }
 
-bool TrackingStateInitialize::needNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper, unsigned int last_keyframe_id, bool force){
+bool TrackingStateInitialize::needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force){
     return success;
 }
 

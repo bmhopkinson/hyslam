@@ -21,7 +21,7 @@ bool TrackingStateRelocalize::refinePoseEstimate( Frame &current_frame, const Fr
     return nmatches > params.thresh_refine;
 }
 
-bool TrackingStateRelocalize::needNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper, unsigned int last_keyframe_id, bool force){
+bool TrackingStateRelocalize::needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force){
     return false; //don't insert a keyframe immediately after relocalization
 }
 

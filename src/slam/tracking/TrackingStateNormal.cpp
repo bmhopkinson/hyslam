@@ -1,5 +1,4 @@
 #include <TrackingStateNormal.h>
-#include <Mapping.h> //necessary b/c of cyclic dependencies among main threads and TrackingState - work to eliminate
 #include <Camera.h>
 #include <Tracking_datastructs.h>
 
@@ -45,7 +44,7 @@ bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBu
     return mnMatchesInliers > params.thresh_refine;
 }
 
-bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper, unsigned int last_keyframe_id, bool force){
+bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsigned int last_keyframe_id, bool force){
  //   if(mbOnlyTracking)
  //       return false;
 
@@ -126,7 +125,8 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap, Mappi
          //   thread_status->mapping.setInterrupt(true);
             if(camera.sensor !=0) //if not a monocular camera
             {
-                if(pLocalMapper->KeyframesInQueue()<3) {
+               // if(pLocalMapper->KeyframesInQueue()<3) {
+               if(thread_status->mapping.getQueueLength() < 3){
                     insertKF = true;
                 }
                 else {

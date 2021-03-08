@@ -196,7 +196,7 @@ void Tracking::_Track_()
         }
 
         if(mpLocalMapper->SetNotStop(true)) {
-            newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mpLocalMapper, mnLastKeyFrameId, force);
+            newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mnLastKeyFrameId, force);
             if (!newKFs.empty()) { // KeyFrame(s) created
                 for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                     KeyFrame *pKFnew = *it;

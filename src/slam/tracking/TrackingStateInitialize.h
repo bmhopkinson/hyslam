@@ -18,7 +18,7 @@ namespace HYSLAM {
         void clear();
 
     private:
-        bool needNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper, unsigned int last_keyframe_id, bool force);
+        bool needNewKeyFrame(Frame &current_frame, Map* pMap,  unsigned int last_keyframe_id, bool force);
         std::vector<KeyFrame*> createNewKeyFrame(Frame &current_frame, Map* pMap);
         int HandlePostMonoInitSLAM(KeyFrame* pKFini, KeyFrame* pKFcur, Map* pMap, Trajectory* trajectory);
         std::unique_ptr<Initializer> initializer;

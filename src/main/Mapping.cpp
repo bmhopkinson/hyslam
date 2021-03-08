@@ -129,6 +129,7 @@ void Mapping::Run()
                 for(std::list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
                     delete *lit;
                 mlNewKeyFrames.clear();
+                thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
 
                 std::cout << "Local Mapping RELEASE" << std::endl;
             }
@@ -161,6 +162,7 @@ void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandato
         curKF_cam = mpCurrentKeyFrame->camera.camName;
        // std::cout << "processing new KF:" << mpCurrentKeyFrame->mnId << " from cam: " << curKF_cam << std::endl;
         mlNewKeyFrames.pop_front();
+        thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
         nKFs_created++;
     }
 
@@ -265,6 +267,7 @@ void Mapping::InsertKeyFrame(KeyFrame *pKF)
 {
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
     mlNewKeyFrames.push_back(pKF);
+    thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
     std::cout << "mapping received new KF: " << pKF->mnId << std::endl;
    // thread_status->mapping.setInterrupt(true);
 }
@@ -368,6 +371,7 @@ void Mapping::ResetIfRequested()
     {
         std::cout << "Reseting Mapping due to Request" << std::endl;
         mlNewKeyFrames.clear();
+        thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
         mlpRecentAddedMapPoints.clear();
         mbResetRequested=false;
     }

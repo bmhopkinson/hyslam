@@ -11,7 +11,7 @@
 #include <iostream>
 
 namespace HYSLAM{
-    class Mapping;
+  //  class Mapping;
 
 class TrackingState{
 public:
@@ -19,12 +19,12 @@ public:
     virtual ~TrackingState(){};
     virtual bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,   std::map< std::string, std::unique_ptr<Trajectory> > &trajectories) = 0; //signature mimics TrackingStrategy
     virtual bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories) = 0;
-    std::vector<KeyFrame*> newKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper, unsigned int last_keyframe_id, bool force); //template method using needNewKeyFrame, createNewKeyFrame
+    std::vector<KeyFrame*> newKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force); //template method using needNewKeyFrame, createNewKeyFrame
 protected:
     std::ofstream* pftracking;
     MainThreadsStatus* thread_status;
 private:
-    virtual bool needNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper, unsigned int last_keyframe_id, bool force) = 0;
+    virtual bool needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force) = 0;
     virtual std::vector<KeyFrame*> createNewKeyFrame(Frame &current_frame, Map* pMap);
 
 };
