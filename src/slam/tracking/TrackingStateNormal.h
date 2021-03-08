@@ -13,7 +13,7 @@
 namespace HYSLAM {
 class TrackingStateNormal : public TrackingState {
 public:
-    TrackingStateNormal(optInfo optimizer_info_, StateNormalParameters params_, std::ofstream &log);
+    TrackingStateNormal(optInfo optimizer_info_, StateNormalParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_);
     bool initialPoseEstimation( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
     bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
 

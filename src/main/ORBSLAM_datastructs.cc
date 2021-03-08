@@ -83,6 +83,26 @@ void ThreadStatus::clearPostStop(){
         accepting_input = acceptingInput;
     }
 
+    bool ThreadStatus::isInterrupt() const {
+        std::lock_guard<std::mutex> lock(mutex_ts);
+        return interrupt;
+    }
+
+    void ThreadStatus::setInterrupt(bool interrupt) {
+        std::lock_guard<std::mutex> lock(mutex_ts);
+        ThreadStatus::interrupt = interrupt;
+    }
+
+    int ThreadStatus::getQueueLength() const {
+        std::lock_guard<std::mutex> lock(mutex_ts);
+        return queue_length;
+    }
+
+    void ThreadStatus::setQueueLength(int queueLength) {
+        std::lock_guard<std::mutex> lock(mutex_ts);
+        queue_length = queueLength;
+    }
+
     ORBExtractorParams::ORBExtractorParams(FeatureExtractor* extractor){
   setParams(extractor);
 }

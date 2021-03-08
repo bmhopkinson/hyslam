@@ -6,8 +6,8 @@
 #include <GlobalBundleAdjustment.h>
 
 namespace HYSLAM {
-TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_,  StateInitializeParameters params_, std::ofstream &log) :
-    TrackingState(log), optimizer_info(optimizer_info_), camera(camera_), params(params_)
+TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_,  StateInitializeParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_) :
+    TrackingState(log, thread_status_), optimizer_info(optimizer_info_), camera(camera_), params(params_)
 {
  //   cv::FileNode config_data_strategies =config_data["Strategies"];
  //   cv::FileNode config_init = config_data_strategies["Initialize"];
@@ -71,22 +71,22 @@ bool TrackingStateInitialize::needNewKeyFrame(Frame &current_frame, Map* pMap, M
     return success;
 }
 
-KeyFrame* TrackingStateInitialize::createNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper){
+std::vector<KeyFrame*> TrackingStateInitialize::createNewKeyFrame(Frame &current_frame, Map* pMap){
     KeyFrame* pKFcur = initializer->getCurrentKF();
     current_frame =initializer->getInitializedFrame();
-
+/*
     for(std::vector<KeyFrame*>::iterator vit = KFnew.begin(); vit != KFnew.end(); ++vit){
         KeyFrame* pKF = *vit;
-        pLocalMapper->InsertKeyFrame(pKF);
-        pMap->getKeyFrameDB()->update(pKF);
+       // pLocalMapper->InsertKeyFrame(pKF);
+       // pMap->getKeyFrameDB()->update(pKF);
     }
-
+*/
     current_frame.SetPose(pKFcur->GetPose());  //think I should be able to move this up to initialPoseEstimation which seems more appropriate
     current_frame.mpReferenceKF = pKFcur;
     pMap->mvpKeyFrameOrigins.push_back(pKFcur);  //used in loop closing
 
 
-    return pKFcur;
+    return KFnew;
 }
 
 int TrackingStateInitialize::HandlePostMonoInitSLAM(KeyFrame* pKFini, KeyFrame* pKFcur, Map* pMap, Trajectory* trajectory){

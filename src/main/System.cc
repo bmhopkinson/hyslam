@@ -168,13 +168,11 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 }
 
 void System::RunImagingBundleAdjustment(){
-   // mpTracker->RunImagingBundleAdjustment();
     //stop LocalMapping and LoopClosing
-  //  mpLocalMapper->RequestStop();
-  thread_status->mapping.stop_requested = true;
+  thread_status->mapping.setStopRequested(true);
 
     // Wait until Local Mapping has effectively stopped
-    while(!thread_status->mapping.is_stopped)
+    while(!thread_status->mapping.isStopped())
     {
         usleep(1000);
     }
@@ -186,8 +184,7 @@ void System::RunImagingBundleAdjustment(){
     ImagingBundleAdjustment imgBA(maps["Imaging"], mpTracker->trajectories["Imaging"].get(), traj_g2o, optParams );
     imgBA.Run();
 
-    thread_status->mapping.release = true;
-    //mpLocalMapper->Release();
+    thread_status->mapping.setRelease(true);
 }
 
 void System::Reset()
@@ -227,7 +224,7 @@ void System::Reset()
 void System::Shutdown()
 {
     //mpLocalMapper->RequestFinish();
-    thread_status->mapping.finish_requested = true;
+    thread_status->mapping.setFinishRequested(true);
     mpLoopCloser->RequestFinish();
     if(mpViewer)
     {
@@ -237,6 +234,7 @@ void System::Shutdown()
     }
 
     // Wait until all thread have effectively stopped
+    std::cout << "waiting for all threads to stop" << std::endl;
     while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
     {
         usleep(5000);

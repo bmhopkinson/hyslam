@@ -36,9 +36,7 @@ namespace HYSLAM
 {
 
     Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path, MainThreadsStatus* thread_status_):
-    mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), maps(_maps),
-    mbAbortBA(false), abortJobs(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true),
-    thread_status(thread_status_)
+    mbMonocular(bMonocular), mbResetRequested(false), maps(_maps), thread_status(thread_status_)
 {
         std::cout << "mapping config path " << config_path << std::endl;
     config_data = cv::FileStorage(config_path ,cv::FileStorage::READ );
@@ -81,8 +79,6 @@ void Mapping::Run()
             std::vector< std::unique_ptr<MapJob> > optional_jobs;
             SetupOptionalJobs(optional_jobs);
             RunOptionalJobs(optional_jobs, false);
-
-            mbAbortBA = false;
 
             if(!CheckNewKeyFrames() && !stopRequested())
             {
@@ -127,12 +123,8 @@ void Mapping::Run()
             }
 
             {//relase actions
-                std::unique_lock<std::mutex> lock(mMutexStop);
-                std::unique_lock<std::mutex> lock2(mMutexFinish);
                 if(isFinished())
                     return;
-                //mbStopped = false;
-                //mbStopRequested = false;
                 thread_status->mapping.clearPostStop();
                 for(std::list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
                     delete *lit;
@@ -143,17 +135,18 @@ void Mapping::Run()
 
             if(CheckFinish())
             {
+                std::cout << "Mapping - Finish requested" << std::endl;
                 break;
             }
         }
         ResetIfRequested();
 
-        // Tracking will see that Local Mapping is NOT busy
-        SetAcceptKeyFrames(true);
-
         if(CheckFinish()) {
+            std::cout << "Mapping - Finish requested" << std::endl;
             break;
         }
+        // Tracking will see that Local Mapping is NOT busy
+        SetAcceptKeyFrames(true);
         usleep(3000);
     }
 
@@ -232,7 +225,7 @@ if(multithreaded){
 
     bool abort = false;
     while (!active_jobs.empty()) {
-        if (CheckNewKeyFrames() || stopRequested()) {
+        if (CheckNewKeyFrames() || stopRequested() || interruptJobs() ) {
             abort = true;
             //  std::cout << "attempting to abort jobs" << std::endl;
         }
@@ -251,10 +244,11 @@ if(multithreaded){
 
         }
     }
+    thread_status->mapping.setInterrupt(false);
 }
 else {
     for(auto job = optional_jobs.begin(); job != optional_jobs.end(); ++job){
-        if (CheckNewKeyFrames() || stopRequested()) {
+        if (CheckNewKeyFrames() || stopRequested()  || interruptJobs()) {
             std::cout << "stopping optional jobs" << std::endl;
            break;
         } else {   //run job
@@ -262,6 +256,7 @@ else {
             job_thread.join();
         }
     }
+    thread_status->mapping.setInterrupt(false);
 }
 
 }
@@ -271,7 +266,7 @@ void Mapping::InsertKeyFrame(KeyFrame *pKF)
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
     mlNewKeyFrames.push_back(pKF);
     std::cout << "mapping received new KF: " << pKF->mnId << std::endl;
-    mbAbortBA=true;
+   // thread_status->mapping.setInterrupt(true);
 }
 
 
@@ -303,16 +298,9 @@ bool Mapping::stopRequested()
    return thread_status->mapping.isStopRequested();
 }
 
-bool Mapping::AcceptKeyFrames()
-{
-    std::unique_lock<std::mutex> lock(mMutexAccept);
-    return mbAcceptKeyFrames;
-}
-
 void Mapping::SetAcceptKeyFrames(bool flag)
 {
-    std::unique_lock<std::mutex> lock(mMutexAccept);
-    mbAcceptKeyFrames=flag;
+    thread_status->mapping.setAcceptingInput(flag);
 }
 
 bool Mapping::SetNotStop(bool flag)
@@ -326,9 +314,9 @@ bool Mapping::SetNotStop(bool flag)
     return true;
 }
 
-void Mapping::InterruptBA()
+bool Mapping::interruptJobs()
 {
-    mbAbortBA = true;
+   return thread_status->mapping.isInterrupt();
 }
 
 void Mapping::RunGlobalBA(){
@@ -387,22 +375,19 @@ void Mapping::ResetIfRequested()
 
 bool Mapping::CheckFinish()
 {
-    std::unique_lock<std::mutex> lock(mMutexFinish);
+
     return thread_status->mapping.isFinishRequested();
 }
 
 void Mapping::SetFinish()
 {
-    std::unique_lock<std::mutex> lock(mMutexFinish);
     thread_status->mapping.setIsFinished(true);
-    std::unique_lock<std::mutex> lock2(mMutexStop);
-   thread_status->mapping.setIsStopped(true);
+    thread_status->mapping.setIsStopped(true);
     std::cout << "Mapping finished  !!!!!!" << std::endl;
 }
 
 bool Mapping::isFinished()
 {
-    std::unique_lock<std::mutex> lock(mMutexFinish);
     return thread_status->mapping.isFinished();
 }
 

@@ -4,8 +4,8 @@
 #include <Tracking_datastructs.h>
 
 namespace HYSLAM {
-TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log) :
-    params(params_), TrackingState(log)
+TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_) :
+    params(params_),  TrackingState(log, thread_status_)
 {
 
     track_motion_model = std::make_unique<TrackMotionModel>(optimizer_info_, params.tmomo_params);
@@ -50,7 +50,8 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap, Mappi
  //       return false;
 
     // If Local Mapping is freezed by a Loop Closure do not insert keyframes
-    if(pLocalMapper->isStopped() || pLocalMapper->stopRequested())
+   // if(pLocalMapper->isStopped() || pLocalMapper->stopRequested())
+   if(thread_status->mapping.isStopped() || thread_status->mapping.isStopRequested())
         return false;
 
     const int nKFs = pMap->KeyFramesInMap();
@@ -95,7 +96,8 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap, Mappi
         thRefRatio = params.min_frac_refKF_mono;
 
     // Conditions used to decide on KF insertion
-    bool local_mapping_idle = pLocalMapper->AcceptKeyFrames();
+    //bool local_mapping_idle = pLocalMapper->AcceptKeyFrames();
+    bool local_mapping_idle = thread_status->mapping.isAcceptingInput();
     bool max_interval_exceeded = current_frame.mnId>= last_keyframe_id+ params.max_KF_interval;
     bool min_interval_exceeded = current_frame.mnId>= last_keyframe_id+params.min_KF_interval;
     bool lack_close_landmarks =  (camera.sensor !=0) && bNeedToInsertClose;
@@ -108,41 +110,35 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap, Mappi
     bool insertKF = false;
     if(definite_insert || (optional_insert && local_mapping_idle))
     {
-       // std::cout << "KF insert requested: definite: " << definite_insert << ", tracking_dire: "<< tracking_dire <<", optional: " << optional_insert
+      //  std::cout << "KF insert requested: definite: " << definite_insert << ", tracking_dire: "<< tracking_dire <<", optional: " << optional_insert
        //         << ", tracking_weak: " << tracking_weak << ", mnMatchesInliers: " << mnMatchesInliers <<
-       //         ", N_target: "<< params.N_tracked_target  << ", variance: "<< params.N_tracked_variance <<std::endl;
+        //        ", N_target: "<< params.N_tracked_target  << ", variance: "<< params.N_tracked_variance <<std::endl;
         // If the mapping accepts keyframes, insert keyframe.
         // Otherwise send a signal to interrupt BA
 //        if(cam_cur != "SLAM") {std::cout << "attempting to insert keyframe" << std::endl;}
         if(local_mapping_idle)
         {
             insertKF = true;
-            //return true;
         }
         else
         {
-            pLocalMapper->InterruptBA();
+            //pLocalMapper->InterruptBA();
+         //   thread_status->mapping.setInterrupt(true);
             if(camera.sensor !=0) //if not a monocular camera
             {
                 if(pLocalMapper->KeyframesInQueue()<3) {
                     insertKF = true;
-                    //return true;
                 }
                 else {
                     insertKF = false;
-                    //return false;
                 }
             }
             else {
                 insertKF = false;
-                // return false;
             }
         }
     }
     (*pftracking) << insertKF << "\t";
-   // if(insertKF){
-    //    (*pftracking) << c1a << "\t" << c1b << "\t" <<c1c << "\t" <<c2 << "\t" ;
-   // }
     return insertKF;
 }
 

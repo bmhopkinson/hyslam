@@ -141,10 +141,8 @@ void Tracking::_Track_()
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
     //stop if needed - non-realtime only
     if(Stop())
-  //  if(thread_status->tracking.stop_requested && thread_status->tracking.stoppable)
     {
         std::cout << "stopping tracking" << std::endl;
-      //  thread_status->tracking.is_stopped = true;
     // Safe area to stop
        while(!thread_status->tracking.isRelease())
        {
@@ -187,7 +185,7 @@ void Tracking::_Track_()
 
 
     // If tracking was good, check if we insert a keyframe
-    KeyFrame* pKFnew = nullptr;
+    std::vector<KeyFrame*> newKFs;
     if(bOK)
     {
         HandlePostTrackingSuccess();
@@ -196,11 +194,20 @@ void Tracking::_Track_()
             force = true;
             recent_init[cam_cur]--;
         }
-        pKFnew = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mpLocalMapper, mnLastKeyFrameId, force);
-        if( pKFnew){ //this logic needs to go somewhere
-            mpReferenceKF[cam_cur] =  pKFnew;
-            mnLastKeyFrameId = mCurrentFrame.mnId;
-       //     mpLastKeyFrame = pKFnew;
+
+        if(mpLocalMapper->SetNotStop(true)) {
+            newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mpLocalMapper, mnLastKeyFrameId, force);
+            if (!newKFs.empty()) { // KeyFrame(s) created
+                for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
+                    KeyFrame *pKFnew = *it;
+                    mpLocalMapper->InsertKeyFrame(pKFnew);
+                    maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
+                }
+
+                mpReferenceKF[cam_cur] = newKFs.back();
+                mnLastKeyFrameId = mCurrentFrame.mnId;
+            }
+            mpLocalMapper->SetNotStop(false);
         }
 
         // We allow points with high innovation (considererd outliers by the Huber Function)
@@ -229,7 +236,7 @@ void Tracking::_Track_()
     if(mState[cam_cur] == eTrackingState::INITIALIZATION){
         if(bOK){
 
-            HandlePostInit(pKFnew, maps[cam_cur],  cam_cur);
+            HandlePostInit(newKFs.back(), maps[cam_cur],  cam_cur);
             next_state = eTrackingState::NORMAL;
             delete state[cam_cur];
             pnext_track_state = state_options[cam_cur]["NORMAL"];
@@ -253,7 +260,7 @@ void Tracking::_Track_()
                 cv::FileNode state_config = config_data["States"];
                 StateInitializeParameters state_initialize_params(state_config[cam_states[cam_cur]["Initialize"].string()], config_data["Strategies"]);
                 pnext_track_state = new TrackingStateInitialize(optParams, cam_data[cam_cur], init_data[cam_cur],
-                                                                state_initialize_params, ftracking);
+                                                                state_initialize_params, ftracking, thread_status);
             }
         }
     }
@@ -291,17 +298,17 @@ void Tracking::SetupStates(){
       StateInitializeParameters state_initialize_params(state_config[cam_states[cam_name]["Initialize"].string()],
                                                         strategy_config);
       state[cam_name] = new TrackingStateInitialize(optParams, cam, init_data[cam.camName], state_initialize_params,
-                                                       ftracking);
+                                                       ftracking, thread_status);
       mState[cam_name] = eTrackingState::INITIALIZATION;
 
       //Normal
       StateNormalParameters state_normal_params(state_config[cam_states[cam_name]["Normal"].string()], strategy_config);
-      state_options[cam_name]["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params, ftracking);
+      state_options[cam_name]["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params, ftracking, thread_status);
 
       //Relocalize
       StateRelocalizeParameters state_relocalize_params(state_config[cam_states[cam_name]["Relocalize"].string()],
                                                         strategy_config);
-      state_options[cam_name]["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params, ftracking);
+      state_options[cam_name]["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params, ftracking, thread_status);
   }
 }
 

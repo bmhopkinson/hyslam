@@ -61,11 +61,7 @@ public:
     bool SetNotStop(bool flag); //GET RID OF THIS
     bool isStopped(); //WORK TO MOVE TO PRIVATE
     bool stopRequested();//WORK TO MOVE TO PRIVATE
-    bool AcceptKeyFrames();
 
-    void InterruptBA();
-
-    void RequestFinish();
     bool isFinished();
 
     int KeyframesInQueue(){
@@ -91,14 +87,11 @@ protected:
     bool CheckFinish();
     void SetFinish();
     bool Stop();
+    bool interruptJobs();
     // void Release();
 
 
     void SetAcceptKeyFrames(bool flag);
-
-    bool mbFinishRequested;
- //   bool mbFinished;
-    std::mutex mMutexFinish;
 
     std::map<std::string, Map* > maps;
 
@@ -114,17 +107,8 @@ protected:
 
     std::mutex mMutexNewKFs;
 
-    bool mbAbortBA;
-    bool abortJobs;
-
     MainThreadsStatus* thread_status;
-    bool mbStopped;
-    bool mbStopRequested;
-    bool mbNotStop;
     std::mutex mMutexStop;
-
-    bool mbAcceptKeyFrames;
-    std::mutex mMutexAccept;
 
     long unsigned int nKFs_created = 0; // used for determining when to do global BA
     bool bNeedGBA = false; //indicates global BA needed

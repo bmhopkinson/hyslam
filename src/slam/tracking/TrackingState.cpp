@@ -3,27 +3,28 @@
 #include <Mapping.h>
 
 namespace HYSLAM {
-TrackingState::TrackingState(std::ofstream &log)
+TrackingState::TrackingState(std::ofstream &log, MainThreadsStatus* thread_status_):
+thread_status(thread_status_)
 {
     pftracking = &log;
 }
 
-KeyFrame* TrackingState::newKeyFrame(Frame &current_frame, Map *pMap, Mapping *pLocalMapper, unsigned int  last_keyframe_id, bool force){
-    KeyFrame* pKFnew = nullptr;
+std::vector<KeyFrame*> TrackingState::newKeyFrame(Frame &current_frame, Map *pMap, Mapping *pLocalMapper, unsigned int  last_keyframe_id, bool force){
+    std::vector<KeyFrame*> newKFs;
     if(needNewKeyFrame(current_frame, pMap, pLocalMapper, last_keyframe_id, force)){
-        pKFnew = createNewKeyFrame(current_frame, pMap, pLocalMapper);
+        newKFs = createNewKeyFrame(current_frame, pMap);
     }
-    return pKFnew;
+    return newKFs;
 }
 
 
-KeyFrame*  TrackingState::createNewKeyFrame(Frame &current_frame, Map* pMap, Mapping* pLocalMapper){
-    KeyFrame* pKFnew = nullptr;
+std::vector<KeyFrame*>  TrackingState::createNewKeyFrame(Frame &current_frame, Map* pMap){
+    std::vector<KeyFrame*> newKFs;
     Camera camera = current_frame.getCamera();
-    if(!pLocalMapper->SetNotStop(true))
-        return pKFnew;
 
-    pKFnew = new KeyFrame(current_frame);
+    KeyFrame* pKFnew = new KeyFrame(current_frame);
+    newKFs.push_back(pKFnew);
+
     current_frame.mpReferenceKF = pKFnew;
 
     (*pftracking) << pKFnew->mnId << "\t";
@@ -89,10 +90,10 @@ KeyFrame*  TrackingState::createNewKeyFrame(Frame &current_frame, Map* pMap, Map
         }
     }
     //std::cout << "inserting new KF into map: " << pKF->mnId << std::endl;
-    pLocalMapper->InsertKeyFrame(pKFnew);
-    pLocalMapper->SetNotStop(false);
+  //  pLocalMapper->InsertKeyFrame(pKFnew);
+   // pLocalMapper->SetNotStop(false);
 
-    return pKFnew;
+    return newKFs;
 }
 
 }

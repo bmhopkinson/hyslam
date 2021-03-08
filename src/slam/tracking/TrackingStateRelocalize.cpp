@@ -3,8 +3,8 @@
 
 namespace HYSLAM{
 
-TrackingStateRelocalize::TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log) :
-   TrackingState(log), params(params_)
+TrackingStateRelocalize::TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log,  MainThreadsStatus* thread_status_) :
+TrackingState(log, thread_status_), params(params_)
 {
     track_place_recognition = std::make_unique<TrackPlaceRecognition>(optimizer_info_, params.tplacerecog_params);
     track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params);
