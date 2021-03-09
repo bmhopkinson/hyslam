@@ -55,7 +55,8 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
     track_data.image = mImGray;
     track_data.LMviews = LMviews;
 
-    mpTracker->track(track_data);
+    //mpTracker->track(track_data);
+    output_queue->push(track_data);
 
 }
 
@@ -85,7 +86,8 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     track_data.image = mImGray;
     track_data.LMviews = LMviews;
 
-    mpTracker->track(track_data);
+    //mpTracker->track(track_data);
+    output_queue->push(track_data);
 
 }
 

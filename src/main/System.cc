@@ -98,16 +98,22 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     
     //Initialize Main Threads
     //Shared Data structures
-    thread_status = std::make_unique<MainThreadsStatus>();
-    mapping_queue = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
+    thread_status  = std::make_unique<MainThreadsStatus>();
+    tracking_queue = std::make_unique<ThreadSafeQueue<ImageFeatureData> >();
+    mapping_queue  = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
+
+
+    mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker, cam_data);
+    mpImageProcessor->setOutputQueue(tracking_queue.get());
 
     //Initialize Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
                              maps, cam_data, strSettingsFile, thread_status.get());
+    mpTracker->setInputQueue(tracking_queue.get());
     mpTracker->setOutputQueue( mapping_queue.get() );
+    mptTracking = new std::thread(&HYSLAM::Tracking::Run, mpTracker);
 
-    mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker, cam_data);
 
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
@@ -150,6 +156,9 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
 //    mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
+    while(tracking_queue->size() > 2){
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
     return Tcw;
 }
 
@@ -166,6 +175,9 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
     mTrackedMapPoints.clear();
     mTrackedKeyPointsUn.clear();
   //  mpTracker->mCurrentFrame.getAssociatedLandMarks(mTrackedKeyPointsUn, mTrackedMapPoints);
+    while(tracking_queue->size() > 2){
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
 
     return Tcw;
 }
@@ -229,6 +241,7 @@ void System::Reset()
 void System::Shutdown()
 {
     //mpLocalMapper->RequestFinish();
+    thread_status->tracking.setFinishRequested(true);
     thread_status->mapping.setFinishRequested(true);
     mpLoopCloser->RequestFinish();
     if(mpViewer)
@@ -240,7 +253,7 @@ void System::Shutdown()
 
     // Wait until all thread have effectively stopped
     std::cout << "waiting for all threads to stop" << std::endl;
-    while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
+    while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA() || !thread_status->tracking.isFinished())
     {
         usleep(5000);
     }

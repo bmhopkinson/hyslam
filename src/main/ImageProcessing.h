@@ -10,6 +10,7 @@
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
 #include <InterThread.h>
+#include <ThreadSafeQueue.h>
 #include <ORBSLAM_datastructs.h>
 #include <ORBExtractorParams.h>
 #include <Camera.h>
@@ -25,6 +26,7 @@ public:
     ImageProcessing(const std::string &strSettingPath, Tracking* pTracker, std::map<std::string, Camera> cam_data_);
     void ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data, eTrackingState tracking_state);
     void ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data, eTrackingState tracking_state);
+    void setOutputQueue(ThreadSafeQueue<ImageFeatureData>* output_queue_){output_queue = output_queue_;}
 
 private:
     void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings);
@@ -32,6 +34,7 @@ private:
     ORBExtractorParams setORBExtractorParams(FeatureExtractor* extractor);
 
     Tracking* mpTracker;
+    ThreadSafeQueue<ImageFeatureData>* output_queue;
 
     FeatureExtractor* mpORBextractorLeft, *mpORBextractorRight;
     FeatureExtractor* mpIniORBextractor;

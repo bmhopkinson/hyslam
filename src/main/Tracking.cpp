@@ -118,6 +118,25 @@ void Tracking::SetViewer(Viewer *pViewer)
     mpViewer=pViewer;
 }
 
+void Tracking::Run(){
+
+    while(true) {
+        if(inputAvailable()){
+            ImageFeatureData image_feature_data = input_queue->pop();
+            track(image_feature_data);
+        } else if (thread_status->tracking.isFinishRequested()){
+            break;
+        }
+
+        std::this_thread::sleep_for(std::chrono::microseconds(1000) );
+    }
+    thread_status->tracking.setIsFinished(true);
+    std::cout << "tracking Finished" << std::endl;
+}
+
+bool Tracking::inputAvailable(){
+    return (input_queue->size() > 0);
+}
 //cv::Mat Tracking::track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
 cv::Mat Tracking::track(ImageFeatureData &track_data){
     cam_cur = track_data.img_data.camera;

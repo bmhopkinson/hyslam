@@ -158,6 +158,7 @@ private:
 
     //data shared between threads
     std::unique_ptr< MainThreadsStatus > thread_status;
+    std::unique_ptr< ThreadSafeQueue<ImageFeatureData> > tracking_queue;
     std::unique_ptr< ThreadSafeQueue<KeyFrame*> > mapping_queue;
   //  std::unique_ptr< ImageFeatureData > tracking_queue;
     // Tracker. It receives a frame and computes the associated camera pose.
@@ -182,7 +183,8 @@ private:
     MapDrawer* mpMapDrawer;
 
     // System threads: Local Mapping, Loop Closing, Viewer.
-    // The Tracking thread "lives" in the main execution thread that creates the System object.
+    // The ImageProcessing thread "lives" in the main execution thread that creates the System object.
+    std::thread* mptTracking;
     std::thread* mptLocalMapping;
     std::thread* mptLoopClosing;
     std::thread* mptViewer;

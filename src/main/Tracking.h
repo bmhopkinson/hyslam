@@ -71,12 +71,12 @@ public:
              std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_);
     ~Tracking();
 
-    // Preprocess the input and call Track(). Extract features and performs stereo matching.
-  //  cv::Mat track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
+    void Run();
     cv::Mat track(ImageFeatureData &track_data);
 
  //   void SetLocalMapper(Mapping* pLocalMapper);
     void SetViewer(Viewer* pViewer);
+    void setInputQueue(ThreadSafeQueue<ImageFeatureData>* input_queue_){input_queue = input_queue_;}
     void setOutputQueue(ThreadSafeQueue<KeyFrame*>* output_queue_){output_queue = output_queue_;}
     eTrackingState GetCurrentTrackingState() {return mState["SLAM"];};
     eTrackingState GetCurrentTrackingState(std::string cam_name) {return mState[cam_name];};
@@ -125,6 +125,7 @@ protected:
     // Main tracking function. It is independent of the input sensor.
     void _Track_();
     void SetupStates();
+    bool inputAvailable();
 
     void UpdateLastFrame();
     KeyFrame* determineReferenceKeyFrame(Frame* pcurrent_frame);
@@ -171,6 +172,7 @@ protected:
     //stopping - for postprocessing only
     MainThreadsStatus* thread_status;
     bool Stop();
+    ThreadSafeQueue<ImageFeatureData>* input_queue;
     ThreadSafeQueue<KeyFrame*>* output_queue;
 
     //Last Frame, KeyFrame and Relocalisation Info
