@@ -136,13 +136,8 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     }
 
     //Set pointers between threads
-   // mpTracker->SetLocalMapper(mpLocalMapper);
-
     mpLocalMapper->SetTracker(mpTracker);
-//    mpLocalMapper->SetLoopCloser(mpLoopCloser);
-
     mpLoopCloser->SetTracker(mpTracker);
- //   mpLoopCloser->SetLocalMapper(mpLocalMapper);
 
 }
 
