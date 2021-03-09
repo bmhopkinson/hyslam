@@ -1,7 +1,7 @@
 #include <LandMarkTriangulator.h>
 #include <Camera.h>
 #include <ORBViews.h>
-#include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 #include <GenUtils.h>
 #include <ORBmatcher.h>
 

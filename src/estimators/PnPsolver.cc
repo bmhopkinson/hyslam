@@ -52,7 +52,7 @@
 
 #include "PnPsolver.h"
 #include <ORBViews.h>
-#include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 
 #include <vector>
 #include <cmath>

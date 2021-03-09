@@ -4,7 +4,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <FeatureExtractor.h>
-#include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 #include <ORBViews.h>
 #include <Camera.h>
 

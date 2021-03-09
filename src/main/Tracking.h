@@ -29,15 +29,14 @@
 #include "Viewer.h"
 #include "FrameDrawer.h"
 #include "Map.h"
-//#include <Mapping.h>
-#include "LoopClosing.h"
+#include <ORBSLAM_datastructs.h>
+#include <InterThread.h>
 #include "Frame.h"
 #include "ORBVocabulary.h"
 #include "FeatureExtractor.h"
 #include <MonoInitializer.h>
 #include "MapDrawer.h"
 #include "System.h"
-#include "ORBSLAM_datastructs.h"
 #include "Tracking_datastructs.h"
 #include "Trajectory.h"
 #include <Camera.h>
@@ -73,8 +72,8 @@ public:
     ~Tracking();
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
-    cv::Mat track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
- //   cv::Mat trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
+  //  cv::Mat track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
+    cv::Mat track(ImageFeatureData &track_data);
 
  //   void SetLocalMapper(Mapping* pLocalMapper);
     void SetViewer(Viewer* pViewer);

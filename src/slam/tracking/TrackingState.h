@@ -6,7 +6,7 @@
 #include <Map.h>
 #include <Trajectory.h>
 #include <TrackingStrategy.h>
-#include <ORBSLAM_datastructs.h>
+#include <InterThread.h>
 
 #include <iostream>
 

@@ -21,7 +21,7 @@
 #include <ORBmatcher.h>
 
 #include <ORBViews.h>
-#include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 #include <GenUtils.h>
 #include <Camera.h>
 #include <Map.h>  //long term - eliminate this dependency

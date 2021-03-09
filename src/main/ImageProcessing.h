@@ -9,7 +9,9 @@
 #include <Tracking.h>
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
+#include <InterThread.h>
 #include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 #include <Camera.h>
 
 #include <opencv2/core/core.hpp>
@@ -27,6 +29,7 @@ public:
 private:
     void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings);
     cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
+    ORBExtractorParams setORBExtractorParams(FeatureExtractor* extractor);
 
     Tracking* mpTracker;
 

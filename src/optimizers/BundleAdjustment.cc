@@ -1,6 +1,7 @@
 #include "BundleAdjustment.h"
 #include "OptHelpers.h"
 #include <SensorData.h>
+#include <ORBExtractorParams.h>
 
 #include "g2o/core/block_solver.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
@@ -9,19 +10,17 @@
 #include "g2o/types/sba/sba_accessory_cam.h"
 #include "g2o/core/robust_kernel_impl.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
-#include "g2o/types/sim3/types_seven_dof_expmap.h"
 #include "g2o/types/slam3d_addons/SE3_sensor_edges.h"
 #include "g2o/types/slam3d/vertex_se3.h"
-#include "g2o/types/slam3d/isometry3d_mappings.h"
-#include "g2o/types/sba/sba_accessory_cam.h"
+
 
 #include <Eigen/Core>
-#include <Eigen/StdVector>
+
 #include <opencv2/core/eigen.hpp>
 
 #include "Converter.h"
 
-#include<mutex>
+
 #include<vector>
 #include<math.h>
 

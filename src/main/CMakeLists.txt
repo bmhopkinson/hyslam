@@ -5,6 +5,7 @@ HYSLAM_ADD_SOURCES(
         Mapping.h Mapping.cpp
         LoopClosing.h LoopClosing.cc
         ImageProcessing.h   ImageProcessing.cpp
+        InterThread.h   InterThread.cpp
         ORBSLAM_datastructs.h ORBSLAM_datastructs.cc
 )
 

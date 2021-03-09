@@ -3,7 +3,7 @@
 
 #include <TrackingState.h>
 #include <Tracking_datastructs.h>
-#include <ORBSLAM_datastructs.h>
+#include <InterThread.h>
 #include <TrackPlaceRecognition.h>
 #include <TrackLocalMap.h>
 

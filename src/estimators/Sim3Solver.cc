@@ -26,7 +26,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "KeyFrame.h"
-
+#include <ORBExtractorParams.h>
 #include <DBoW2/Random.h>
 
 namespace HYSLAM

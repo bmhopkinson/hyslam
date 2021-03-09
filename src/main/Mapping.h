@@ -25,6 +25,7 @@
 #include "Map.h"
 #include "LoopClosing.h"
 #include <ORBSLAM_datastructs.h>
+#include <InterThread.h>
 #include <Tracking.h>
 #include <MapJob.h>
 #include <ThreadSafeQueue.h>

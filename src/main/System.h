@@ -26,6 +26,7 @@
 #include <Mapping.h>
 #include <ImageProcessing.h>
 #include "LoopClosing.h"
+#include <InterThread.h>
 #include "FrameDrawer.h"
 #include "MapDrawer.h"
 #include "Viewer.h"
@@ -158,7 +159,7 @@ private:
     //data shared between threads
     std::unique_ptr< MainThreadsStatus > thread_status;
     std::unique_ptr< ThreadSafeQueue<KeyFrame*> > mapping_queue;
-
+  //  std::unique_ptr< ImageFeatureData > tracking_queue;
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and
     // performs relocalization if tracking fails.

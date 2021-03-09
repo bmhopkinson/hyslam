@@ -1,7 +1,7 @@
 #include <MatchCriteria.h>
 #include <LandMarkMatches.h>
 #include <ORBViews.h>
-#include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 #include <Camera.h>
 #include <math.h>
 #include <assert.h>

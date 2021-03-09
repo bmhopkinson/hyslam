@@ -26,6 +26,7 @@
 #include "Map.h"
 #include "ORBVocabulary.h"
 #include <Tracking.h>
+#include <InterThread.h>
 
 #include <thread>
 #include <mutex>

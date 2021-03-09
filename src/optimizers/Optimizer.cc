@@ -22,7 +22,7 @@
 #include "OptHelpers.h"
 #include "Converter.h"
 #include <ORBViews.h>
-#include <ORBSLAM_datastructs.h>
+#include <ORBExtractorParams.h>
 #include <Camera.h>
 #include <MapPointDB.h>
 

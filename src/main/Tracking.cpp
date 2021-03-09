@@ -118,9 +118,10 @@ void Tracking::SetViewer(Viewer *pViewer)
     mpViewer=pViewer;
 }
 
-cv::Mat Tracking::track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
-    cam_cur = img_data.camera;
-    mImGray = image;
+//cv::Mat Tracking::track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
+cv::Mat Tracking::track(ImageFeatureData &track_data){
+    cam_cur = track_data.img_data.camera;
+    mImGray = track_data.image;
     Camera cam_data_cur = cam_data[cam_cur];
 
     bool is_stereo = false;
@@ -130,7 +131,7 @@ cv::Mat Tracking::track(ORBViews LMviews, cv::Mat &image, std::string cam_name, 
         is_stereo = true;
     }
 
-    mCurrentFrame = Frame( img_data.time_stamp, LMviews, mpORBVocabulary,cam_data[cam_cur], img_data.name, sensor_data, is_stereo);
+    mCurrentFrame = Frame( track_data.img_data.time_stamp, track_data.LMviews, mpORBVocabulary,cam_data[cam_cur], track_data.img_data.name, track_data.sensor_data, is_stereo);
 
     _Track_();
     return mCurrentFrame.mTcw.clone();

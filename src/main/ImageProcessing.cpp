@@ -8,6 +8,7 @@
 #include <ORBUtil.h>
 #include <ORBstereomatcher.h>
 
+
 #include <iostream>
 #include <thread>
 
@@ -45,9 +46,16 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
         extractor = mpORBextractorLeft;
     }
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
-    ORBExtractorParams orb_params(extractor);
+    ORBExtractorParams orb_params = setORBExtractorParams(extractor);
     ORBViews LMviews(mvKeys, mDescriptors,  orb_params);
-    mpTracker->track(LMviews, mImGray, cam_cur, img_data, sensor_data);
+
+    ImageFeatureData track_data;
+    track_data.img_data = img_data;
+    track_data.sensor_data = sensor_data;
+    track_data.image = mImGray;
+    track_data.LMviews = LMviews;
+
+    mpTracker->track(track_data);
 
 }
 
@@ -64,15 +72,20 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     std::thread orb_thread(ORBUtil::extractORB, mpORBextractorLeft, std::ref(mImGray), std::ref(mvKeys),std::ref( mDescriptors) );
     (*mpORBextractorRight)(imGrayRight, cv::Mat(), mvKeysRight,  mDescriptorsRight );
     orb_thread.join();
-    ORBExtractorParams orb_params(mpORBextractorLeft);
+    ORBExtractorParams orb_params = setORBExtractorParams(mpORBextractorLeft);
+
     ORBViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
     ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, cam_data[cam_cur]);
     stereomatch.computeStereoMatches();
- //   std::vector<float> mvuRight;
- //   std::vector<float> mvDepth;
     stereomatch.getData(LMviews);
 
-    mpTracker->track(LMviews, mImGray , cam_cur, img_data, sensor_data);
+    ImageFeatureData track_data;
+    track_data.img_data = img_data;
+    track_data.sensor_data = sensor_data;
+    track_data.image = mImGray;
+    track_data.LMviews = LMviews;
+
+    mpTracker->track(track_data);
 
 }
 
@@ -115,6 +128,20 @@ void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettin
 
     fSettings.release();
 
+}
+
+ORBExtractorParams ImageProcessing::setORBExtractorParams(FeatureExtractor* extractor){
+    ORBExtractorParams params;
+
+    params.mnScaleLevels = extractor->GetLevels();
+    params.mfScaleFactor = extractor->GetScaleFactor();
+    params.mfLogScaleFactor = log(params.mfScaleFactor);
+    params.mvScaleFactors = extractor->GetScaleFactors();
+    params.mvInvScaleFactors = extractor->GetInverseScaleFactors();
+    params.mvLevelSigma2 = extractor->GetScaleSigmaSquares();
+    params.mvInvLevelSigma2 = extractor->GetInverseScaleSigmaSquares();
+
+    return params;
 }
 
 } //end namespace
