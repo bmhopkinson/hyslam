@@ -27,6 +27,8 @@
 #include <ORBSLAM_datastructs.h>
 #include <Tracking.h>
 #include <MapJob.h>
+#include <ThreadSafeQueue.h>
+
 #include <opencv2/opencv.hpp>
 
 #include <iostream>
@@ -49,25 +51,13 @@ public:
     void SetLoopCloser(LoopClosing* pLoopCloser);
 
     void SetTracker(Tracking* pTracker);
+    void setInputQueue(ThreadSafeQueue<KeyFrame*>* input_queue_){input_queue = input_queue_;}
 
     // Main function
     void Run();
 
-    void InsertKeyFrame(KeyFrame* pKF);
-
-    // Thread Synch
- //   void RequestStop();
     void RequestReset();
-    bool SetNotStop(bool flag); //GET RID OF THIS
-    bool isStopped(); //WORK TO MOVE TO PRIVATE
-    bool stopRequested();//WORK TO MOVE TO PRIVATE
-
     bool isFinished();
-
-    int KeyframesInQueue(){
-        std::unique_lock<std::mutex> lock(mMutexNewKFs);
-        return mlNewKeyFrames.size();
-    }
 
 protected:
 
@@ -87,9 +77,8 @@ protected:
     bool CheckFinish();
     void SetFinish();
     bool Stop();
+    bool stopRequested();
     bool interruptJobs();
-    // void Release();
-
 
     void SetAcceptKeyFrames(bool flag);
 
@@ -97,8 +86,6 @@ protected:
 
     LoopClosing* mpLoopCloser;
     Tracking* mpTracker;
-
-    std::list<KeyFrame*> mlNewKeyFrames;
 
     KeyFrame* mpCurrentKeyFrame;
     std::string curKF_cam;
@@ -108,7 +95,7 @@ protected:
     std::mutex mMutexNewKFs;
 
     MainThreadsStatus* thread_status;
-    std::mutex mMutexStop;
+    ThreadSafeQueue<KeyFrame*>* input_queue;
 
     long unsigned int nKFs_created = 0; // used for determining when to do global BA
     bool bNeedGBA = false; //indicates global BA needed

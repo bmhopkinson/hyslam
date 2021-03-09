@@ -7,11 +7,12 @@
 
 #include <queue>
 #include <mutex>
+#include <iostream>
 
 namespace HYSLAM {
 
 template<typename T>
-class ThreadsafeQueue {
+class ThreadSafeQueue {
     std::queue<T> queue_;
     mutable std::mutex mutex_;
 
@@ -22,16 +23,16 @@ class ThreadsafeQueue {
     }
 
 public:
-    ThreadsafeQueue() = default;
-    ThreadsafeQueue(const ThreadsafeQueue<T> &) = delete ;
-    ThreadsafeQueue& operator=(const ThreadsafeQueue<T> &) = delete ;
+    ThreadSafeQueue() = default;
+    ThreadSafeQueue(const ThreadSafeQueue<T> &) = delete ;
+    ThreadSafeQueue& operator=(const ThreadSafeQueue<T> &) = delete ;
 
-    ThreadsafeQueue(ThreadsafeQueue<T>&& other) {
+    ThreadSafeQueue(ThreadSafeQueue<T>&& other) {
         std::lock_guard<std::mutex> lock(mutex_);
         queue_ = std::move(other.queue_);
     }
 
-    virtual ~ThreadsafeQueue() { }
+    virtual ~ThreadSafeQueue() { }
 
     unsigned long size() const {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -49,6 +50,7 @@ public:
     }
 
     void push(const T &item) {
+      //  std::cout << "item pushed to queue" << std::endl;
         std::lock_guard<std::mutex> lock(mutex_);
         queue_.push(item);
     }

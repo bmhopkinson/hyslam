@@ -99,17 +99,20 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     //Initialize Main Threads
     //Shared Data structures
     thread_status = std::make_unique<MainThreadsStatus>();
+    mapping_queue = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
 
     //Initialize Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
                              maps, cam_data, strSettingsFile, thread_status.get());
+    mpTracker->setOutputQueue( mapping_queue.get() );
 
     mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker, cam_data);
 
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
     mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path, thread_status.get());
+    mpLocalMapper->setInputQueue( mapping_queue.get() );
     mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
@@ -125,7 +128,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     }
 
     //Set pointers between threads
-    mpTracker->SetLocalMapper(mpLocalMapper);
+   // mpTracker->SetLocalMapper(mpLocalMapper);
 
     mpLocalMapper->SetTracker(mpTracker);
     mpLocalMapper->SetLoopCloser(mpLoopCloser);
@@ -172,10 +175,12 @@ void System::RunImagingBundleAdjustment(){
   thread_status->mapping.setStopRequested(true);
 
     // Wait until Local Mapping has effectively stopped
+    std::cout << "waiting for Mapping to stop" << std::endl;
     while(!thread_status->mapping.isStopped())
     {
         usleep(1000);
     }
+    std::cout << "mapping stopped, now making sure LoopClosing isn't running BA" << std::endl;
     while(mpLoopCloser->isRunningGBA()){  //can't stop loop closing right now - add this capability  -just check to make sure a GBA isn't running
         usleep(10000);
     }

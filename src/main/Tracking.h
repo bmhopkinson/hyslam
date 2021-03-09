@@ -29,7 +29,7 @@
 #include "Viewer.h"
 #include "FrameDrawer.h"
 #include "Map.h"
-#include <Mapping.h>
+//#include <Mapping.h>
 #include "LoopClosing.h"
 #include "Frame.h"
 #include "ORBVocabulary.h"
@@ -42,6 +42,7 @@
 #include "Trajectory.h"
 #include <Camera.h>
 #include <SensorData.h>
+#include <ThreadSafeQueue.h>
 
 #include <TrackingState.h>
 
@@ -58,7 +59,7 @@ namespace HYSLAM
 class Viewer;
 class FrameDrawer;
 class Map;
-class Mapping;
+//class Mapping;
 class System;
 
 
@@ -75,8 +76,9 @@ public:
     cv::Mat track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
  //   cv::Mat trackStereo(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data);
 
-    void SetLocalMapper(Mapping* pLocalMapper);
+ //   void SetLocalMapper(Mapping* pLocalMapper);
     void SetViewer(Viewer* pViewer);
+    void setOutputQueue(ThreadSafeQueue<KeyFrame*>* output_queue_){output_queue = output_queue_;}
     eTrackingState GetCurrentTrackingState() {return mState["SLAM"];};
     eTrackingState GetCurrentTrackingState(std::string cam_name) {return mState[cam_name];};
 
@@ -137,7 +139,7 @@ protected:
     cv::FileStorage config_data;
 
     //Other Thread Pointers
-    Mapping* mpLocalMapper;
+ //   Mapping* mpLocalMapper;
 
     // state data
     std::map<std::string, TrackingState*> state;  //camera to state map
@@ -170,6 +172,7 @@ protected:
     //stopping - for postprocessing only
     MainThreadsStatus* thread_status;
     bool Stop();
+    ThreadSafeQueue<KeyFrame*>* output_queue;
 
     //Last Frame, KeyFrame and Relocalisation Info
     std::map<std::string, Frame> mLastFrame;

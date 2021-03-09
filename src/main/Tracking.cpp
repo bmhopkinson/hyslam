@@ -107,12 +107,12 @@ Tracking::~Tracking()
 {
     ftracking.close();
 }
-
+/*
 void Tracking::SetLocalMapper(Mapping *pLocalMapper)
 {
     mpLocalMapper=pLocalMapper;
 }
-
+*/
 void Tracking::SetViewer(Viewer *pViewer)
 {
     mpViewer=pViewer;
@@ -195,20 +195,26 @@ void Tracking::_Track_()
             recent_init[cam_cur]--;
         }
 
-        if(mpLocalMapper->SetNotStop(true)) {
-            newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mnLastKeyFrameId, force);
-            if (!newKFs.empty()) { // KeyFrame(s) created
-                for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
-                    KeyFrame *pKFnew = *it;
-                    mpLocalMapper->InsertKeyFrame(pKFnew);
-                    maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
-                }
-
-                mpReferenceKF[cam_cur] = newKFs.back();
-                mnLastKeyFrameId = mCurrentFrame.mnId;
+        //if(mpLocalMapper->SetNotStop(true)) {
+        thread_status->mapping.setStoppable(false);
+        std::cout << "set mapping NOT stoppable" << std::endl;
+        newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mnLastKeyFrameId, force);
+        if (!newKFs.empty()) { // KeyFrame(s) created
+            for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
+                KeyFrame *pKFnew = *it;
+                output_queue->push(pKFnew);
+              //  mpLocalMapper->InsertKeyFrame(pKFnew);
+                std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << std::endl;
+                maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
             }
-            mpLocalMapper->SetNotStop(false);
+
+            mpReferenceKF[cam_cur] = newKFs.back();
+            mnLastKeyFrameId = mCurrentFrame.mnId;
         }
+       // mpLocalMapper->SetNotStop(false);
+        thread_status->mapping.setStoppable(true);
+        std::cout << "set mapping Stoppable" << std::endl;
+
 
         // We allow points with high innovation (considererd outliers by the Huber Function)
         // pass to the new keyframe, so that bundle adjustment will finally decide

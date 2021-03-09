@@ -126,10 +126,11 @@ void Mapping::Run()
                 if(isFinished())
                     return;
                 thread_status->mapping.clearPostStop();
-                for(std::list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
-                    delete *lit;
-                mlNewKeyFrames.clear();
-                thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
+                while(input_queue->size() > 0){
+                    input_queue->pop();
+                }
+                thread_status->mapping.setQueueLength(input_queue->size() );
+
 
                 std::cout << "Local Mapping RELEASE" << std::endl;
             }
@@ -158,12 +159,13 @@ void Mapping::Run()
 void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandatory_jobs){
     {
         std::unique_lock<std::mutex> lock(mMutexNewKFs);
-        mpCurrentKeyFrame = mlNewKeyFrames.front();
+        mpCurrentKeyFrame = input_queue->pop();
+        thread_status->mapping.setQueueLength(input_queue->size());
         curKF_cam = mpCurrentKeyFrame->camera.camName;
-       // std::cout << "processing new KF:" << mpCurrentKeyFrame->mnId << " from cam: " << curKF_cam << std::endl;
-        mlNewKeyFrames.pop_front();
-        thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
         nKFs_created++;
+     //   std::cout << "Mapping working on KF: " << mpCurrentKeyFrame->mnId<< std::endl;
+      //  std::cout << "Mapping new mapping_queue size:  "<< input_queue->size() << std::endl;
+
     }
 
 
@@ -263,37 +265,25 @@ else {
 
 }
 
-void Mapping::InsertKeyFrame(KeyFrame *pKF)
-{
-    std::unique_lock<std::mutex> lock(mMutexNewKFs);
-    mlNewKeyFrames.push_back(pKF);
-    thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
-    std::cout << "mapping received new KF: " << pKF->mnId << std::endl;
-   // thread_status->mapping.setInterrupt(true);
-}
 
-
-bool Mapping::CheckNewKeyFrames()
-{
+bool Mapping::CheckNewKeyFrames() {
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
-    return(!mlNewKeyFrames.empty());
+    return (input_queue->size() > 0);
 }
 
 bool Mapping::Stop()
 {
     bool res = false;
-    if(stopRequested() && !thread_status->mapping.isStoppable())
-    {
-        thread_status->mapping.setIsStopped(true);
-        std::cout << "Local Mapping STOP" << std::endl;
-        res =  true;
+    if(stopRequested() ) {
+        if(thread_status->mapping.isStoppable()) {
+            thread_status->mapping.setIsStopped(true);
+            std::cout << "Local Mapping STOP" << std::endl;
+            res = true;
+        } else {
+            std::cout << "MApping stop requested, but mapping isn't stoppable" << std::endl;
+        }
     }
     return res;
-}
-
-bool Mapping::isStopped()
-{
-  return thread_status->mapping.isStopped();
 }
 
 bool Mapping::stopRequested()
@@ -306,16 +296,6 @@ void Mapping::SetAcceptKeyFrames(bool flag)
     thread_status->mapping.setAcceptingInput(flag);
 }
 
-bool Mapping::SetNotStop(bool flag)
-{
-    std::unique_lock<std::mutex> lock(mMutexStop);
-
-    if(flag && isStopped())
-        return false;
-    thread_status->mapping.setStoppable(flag);
-
-    return true;
-}
 
 bool Mapping::interruptJobs()
 {
@@ -370,8 +350,11 @@ void Mapping::ResetIfRequested()
     if(mbResetRequested)
     {
         std::cout << "Reseting Mapping due to Request" << std::endl;
-        mlNewKeyFrames.clear();
-        thread_status->mapping.setQueueLength(mlNewKeyFrames.size());
+       // mlNewKeyFrames.clear();
+        while(input_queue->size() > 0 ){
+            input_queue->pop();
+        }
+        thread_status->mapping.setQueueLength(input_queue->size());
         mlpRecentAddedMapPoints.clear();
         mbResetRequested=false;
     }

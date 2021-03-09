@@ -34,6 +34,7 @@
 #include "ORBSLAM_datastructs.h"
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
+#include <ThreadSafeQueue.h>
 
 
 #include <opencv2/core/core.hpp>
@@ -155,7 +156,8 @@ private:
     std::map<std::string, Map*> maps;
 
     //data shared between threads
-    std::unique_ptr<MainThreadsStatus> thread_status;
+    std::unique_ptr< MainThreadsStatus > thread_status;
+    std::unique_ptr< ThreadSafeQueue<KeyFrame*> > mapping_queue;
 
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and
