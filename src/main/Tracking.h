@@ -55,13 +55,6 @@
 namespace HYSLAM
 {
 
-class Viewer;
-class FrameDrawer;
-class Map;
-//class Mapping;
-class System;
-
-
 class Tracking
 {
 //

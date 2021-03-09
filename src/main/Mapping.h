@@ -41,18 +41,14 @@ namespace HYSLAM
 {
 
 class Tracking;
-class LoopClosing;
-class Map;
 
-class Mapping
-{
+class Mapping {
 public:
     Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path, MainThreadsStatus* thread_status_);
 
-    void SetLoopCloser(LoopClosing* pLoopCloser);
-
     void SetTracker(Tracking* pTracker);
     void setInputQueue(ThreadSafeQueue<KeyFrame*>* input_queue_){input_queue = input_queue_;}
+    void setOutputQueue(ThreadSafeQueue<KeyFrame*>* output_queue_){output_queue = output_queue_;}
 
     // Main function
     void Run();
@@ -85,7 +81,6 @@ protected:
 
     std::map<std::string, Map* > maps;
 
-    LoopClosing* mpLoopCloser;
     Tracking* mpTracker;
 
     KeyFrame* mpCurrentKeyFrame;
@@ -97,6 +92,7 @@ protected:
 
     MainThreadsStatus* thread_status;
     ThreadSafeQueue<KeyFrame*>* input_queue;
+    ThreadSafeQueue<KeyFrame*>* output_queue;
 
     long unsigned int nKFs_created = 0; // used for determining when to do global BA
     bool bNeedGBA = false; //indicates global BA needed

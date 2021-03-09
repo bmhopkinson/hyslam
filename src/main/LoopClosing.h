@@ -22,11 +22,11 @@
 #define LOOPCLOSING_H
 
 #include "KeyFrame.h"
-#include <Mapping.h>
 #include "Map.h"
 #include "ORBVocabulary.h"
 #include <Tracking.h>
 #include <InterThread.h>
+#include <ThreadSafeQueue.h>
 
 #include <thread>
 #include <mutex>
@@ -36,9 +36,6 @@ namespace HYSLAM
 {
 
 class Tracking;
-class Mapping;
-class KeyFrameDatabase;
-
 
 class LoopClosing
 {
@@ -53,13 +50,12 @@ public:
     LoopClosing(std::map<std::string, Map*> &_maps,  ORBVocabulary* pVoc,  MainThreadsStatus* thread_status_, const bool bFixScale);
 
     void SetTracker(Tracking* pTracker);
-
-    void SetLocalMapper(Mapping* pLocalMapper);
+    void setInputQueue(ThreadSafeQueue<KeyFrame*>* input_queue_){input_queue = input_queue_;}
 
     // Main function
     void Run();
 
-    void InsertKeyFrame(KeyFrame *pKF);
+  //  void InsertKeyFrame(KeyFrame *pKF);
 
     void RequestReset();
 
@@ -104,6 +100,7 @@ protected:
     std::map<std::string, Map*> maps;
     Tracking* mpTracker;
     MainThreadsStatus* thread_status;
+    ThreadSafeQueue<KeyFrame*>* input_queue;
 
     ORBVocabulary* mpORBVocabulary;
 

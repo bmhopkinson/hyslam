@@ -101,9 +101,10 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     thread_status  = std::make_unique<MainThreadsStatus>();
     tracking_queue = std::make_unique<ThreadSafeQueue<ImageFeatureData> >();
     mapping_queue  = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
+    loopclosing_queue = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
 
 
-    mpImageProcessor = new ImageProcessing(strSettingsFile, mpTracker, cam_data);
+    mpImageProcessor = new ImageProcessing(strSettingsFile,cam_data);
     mpImageProcessor->setOutputQueue(tracking_queue.get());
 
     //Initialize Tracking thread
@@ -114,15 +115,16 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     mpTracker->setOutputQueue( mapping_queue.get() );
     mptTracking = new std::thread(&HYSLAM::Tracking::Run, mpTracker);
 
-
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
     mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path, thread_status.get());
     mpLocalMapper->setInputQueue( mapping_queue.get() );
+    mpLocalMapper->setOutputQueue( loopclosing_queue.get() );
     mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
     mpLoopCloser = new LoopClosing(maps, mpVocabulary,thread_status.get(), mSensor!=MONOCULAR);
+    mpLoopCloser->setInputQueue( loopclosing_queue.get() );
     mptLoopClosing = new std::thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
 
     //Initialize the Viewer thread and launch
@@ -137,7 +139,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
    // mpTracker->SetLocalMapper(mpLocalMapper);
 
     mpLocalMapper->SetTracker(mpTracker);
-    mpLocalMapper->SetLoopCloser(mpLoopCloser);
+//    mpLocalMapper->SetLoopCloser(mpLoopCloser);
 
     mpLoopCloser->SetTracker(mpTracker);
  //   mpLoopCloser->SetLocalMapper(mpLocalMapper);

@@ -13,8 +13,8 @@
 #include <thread>
 
 namespace HYSLAM{
-ImageProcessing::ImageProcessing(const std::string &strSettingPath, Tracking* pTracker, std::map<std::string, Camera> cam_data_)
- : mpTracker(pTracker), cam_data(cam_data_)
+ImageProcessing::ImageProcessing(const std::string &strSettingPath, std::map<std::string, Camera> cam_data_)
+ : cam_data(cam_data_)
 {
     // Load camera parameters from settings file
     ORBextractorSettings ORBextractor_settings;
@@ -55,7 +55,6 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
     track_data.image = mImGray;
     track_data.LMviews = LMviews;
 
-    //mpTracker->track(track_data);
     output_queue->push(track_data);
 
 }
@@ -86,7 +85,6 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     track_data.image = mImGray;
     track_data.LMviews = LMviews;
 
-    //mpTracker->track(track_data);
     output_queue->push(track_data);
 
 }

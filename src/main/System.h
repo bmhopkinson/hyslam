@@ -51,7 +51,6 @@ namespace HYSLAM
 
 class Viewer;
 class FrameDrawer;
-class Map;
 class Tracking;
 class Mapping;
 class LoopClosing;
@@ -160,6 +159,8 @@ private:
     std::unique_ptr< MainThreadsStatus > thread_status;
     std::unique_ptr< ThreadSafeQueue<ImageFeatureData> > tracking_queue;
     std::unique_ptr< ThreadSafeQueue<KeyFrame*> > mapping_queue;
+    std::unique_ptr< ThreadSafeQueue<KeyFrame*> > loopclosing_queue;
+
   //  std::unique_ptr< ImageFeatureData > tracking_queue;
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and

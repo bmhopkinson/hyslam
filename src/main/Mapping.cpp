@@ -26,7 +26,6 @@
 #include <LandMarkTriangulator.h>
 #include <LandMarkFuser.h>
 #include <LocalBundleAdjustmentJob.h>
-#include "LoopClosing.h"
 #include "GlobalBundleAdjustment.h"
 #include <MapPointDB.h>
 #include "g2o/types/sba/Trajectory_g2o.h"
@@ -44,11 +43,6 @@ namespace HYSLAM
     std::string flocalmap_name = "./run_data/localmapping_data.txt";
     flocalmap.open(flocalmap_name);
 
-}
-
-void Mapping::SetLoopCloser(LoopClosing* pLoopCloser)
-{
-    mpLoopCloser = pLoopCloser;
 }
 
 void Mapping::SetTracker(Tracking *pTracker)
@@ -111,7 +105,7 @@ void Mapping::Run()
 
             }
             flocalmap << std::endl;
-            mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
+            output_queue->push(mpCurrentKeyFrame);
         }
         else if(Stop())
         {

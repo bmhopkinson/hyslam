@@ -47,13 +47,7 @@ void LoopClosing::SetTracker(Tracking *pTracker)
 {
     mpTracker=pTracker;
 }
-/*
-void LoopClosing::SetLocalMapper(Mapping *pLocalMapper)
-{
-    mpLocalMapper=pLocalMapper;
-}
 
-*/
 void LoopClosing::Run()
 {
     mbFinished =false;
@@ -86,36 +80,33 @@ void LoopClosing::Run()
 
     SetFinish();
 }
-
+/*
 void LoopClosing::InsertKeyFrame(KeyFrame *pKF)
 {
     std::unique_lock<std::mutex> lock(mMutexLoopQueue);
     if(pKF->mnId!=0)
         mlpLoopKeyFrameQueue.push_back(pKF);
 }
-
+*/
 bool LoopClosing::CheckNewKeyFrames()
 {
     std::unique_lock<std::mutex> lock(mMutexLoopQueue);
-    return(!mlpLoopKeyFrameQueue.empty());
+    //return(!mlpLoopKeyFrameQueue.empty());
+    return(input_queue->size() > 0);
 }
 
 bool LoopClosing::DetectLoop()
 {
-    {
-        std::unique_lock<std::mutex> lock(mMutexLoopQueue);
-        mpCurrentKF = mlpLoopKeyFrameQueue.front();
-        curKF_cam = mpCurrentKF->camera.camName;
-        mlpLoopKeyFrameQueue.pop_front();
-        // Avoid that a keyframe can be erased while it is being process by this thread
-        mpCurrentKF->setProtection();
-    }
+
+    mpCurrentKF = input_queue->pop();
+    curKF_cam = mpCurrentKF->camera.camName;
+    // Avoid that a keyframe can be erased while it is being process by this thread
+    mpCurrentKF->setProtection();
+  // std::cout << "Loop Closing: Detecting on: " << mpCurrentKF->mnId << std::endl;
 
     //If the map contains less than 10 KF or less than 10 KF have passed from last loop detection
     if(mpCurrentKF->mnId<mLastLoopKFid+10)
     {
-      //  mpKeyFrameDB->add(mpCurrentKF);
-      //  mpCurrentKF->SetErase();
         maps[curKF_cam]->ClearKeyFrameProtection(mpCurrentKF); //utlimately just clear the keyframe directly
         return false;
     }
@@ -662,7 +653,10 @@ void LoopClosing::ResetIfRequested()
     std::unique_lock<std::mutex> lock(mMutexReset);
     if(mbResetRequested)
     {
-        mlpLoopKeyFrameQueue.clear();
+       // mlpLoopKeyFrameQueue.clear();
+        while(input_queue->size() > 0){
+            input_queue->pop();
+        }
         mLastLoopKFid=0;
         mbResetRequested=false;
     }
