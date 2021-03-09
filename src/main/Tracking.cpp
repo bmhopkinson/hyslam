@@ -195,15 +195,12 @@ void Tracking::_Track_()
             recent_init[cam_cur]--;
         }
 
-        //if(mpLocalMapper->SetNotStop(true)) {
         thread_status->mapping.setStoppable(false);
-        std::cout << "set mapping NOT stoppable" << std::endl;
         newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mnLastKeyFrameId, force);
         if (!newKFs.empty()) { // KeyFrame(s) created
             for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                 KeyFrame *pKFnew = *it;
                 output_queue->push(pKFnew);
-              //  mpLocalMapper->InsertKeyFrame(pKFnew);
                 std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << std::endl;
                 maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
             }
@@ -211,9 +208,7 @@ void Tracking::_Track_()
             mpReferenceKF[cam_cur] = newKFs.back();
             mnLastKeyFrameId = mCurrentFrame.mnId;
         }
-       // mpLocalMapper->SetNotStop(false);
         thread_status->mapping.setStoppable(true);
-        std::cout << "set mapping Stoppable" << std::endl;
 
 
         // We allow points with high innovation (considererd outliers by the Huber Function)
