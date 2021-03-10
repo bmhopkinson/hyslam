@@ -21,6 +21,8 @@ public:
 
     void detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints);
     void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat& descriptors);
+    int descriptor_mat_type(){return 0; } // CV_8U : 0
+    int descriptor_cols(){return 32;}  // ORB 256 bit descriptor (32 cols * 8 bits per col)
 
 private:
     int threshold = 20;

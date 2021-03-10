@@ -18,9 +18,9 @@
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <ORBExtractorParams.h>
 #include <GenUtils.h>
 #include <Camera.h>
@@ -40,26 +40,26 @@ using namespace std;
 namespace HYSLAM
 {
 
-const int ORBmatcher::TH_HIGH = 100;
-const int ORBmatcher::TH_LOW = 50;
-const int ORBmatcher::HISTO_LENGTH = 30;
+const int FeatureMatcher::TH_HIGH = 100;
+const int FeatureMatcher::TH_LOW = 50;
+const int FeatureMatcher::HISTO_LENGTH = 30;
 
-ORBmatcher::ORBmatcher(float nnratio, bool checkOri): mfNNratio(nnratio), mbCheckOrientation(checkOri)
+FeatureMatcher::FeatureMatcher(float nnratio, bool checkOri): mfNNratio(nnratio), mbCheckOrientation(checkOri)
 {
 }
 
 
-int ORBmatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoint*> &landmarks, const float th,
-                         std::vector< std::unique_ptr<LandMarkCriterion> >     &landmark_criteria,
-                         std::vector< std::unique_ptr<LandMarkViewCriterion> > &landmarkview_criteria,
-                         std::vector< std::unique_ptr<GlobalCriterion> >       &global_criteria,
-                         CriteriaData &criteria_data
+int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoint*> &landmarks, const float th,
+                                         std::vector< std::unique_ptr<LandMarkCriterion> >     &landmark_criteria,
+                                         std::vector< std::unique_ptr<LandMarkViewCriterion> > &landmarkview_criteria,
+                                         std::vector< std::unique_ptr<GlobalCriterion> >       &global_criteria,
+                                         CriteriaData &criteria_data
                          ){
 
     std::map<MapPoint*, SingleMatchData> matches;
     std::vector<MapPoint*> cand_lms = landmarks;
 
-    const ORBViews views = frame.getViews(); //this could get large convert to const ref eventually
+    const FeatureViews views = frame.getViews(); //this could get large convert to const ref eventually
     ORBExtractorParams orb_params = views.orbParams();
 
 
@@ -111,7 +111,7 @@ int ORBmatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoint*> 
     return matches.size();
 }
 
-int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoints, const float th)
+int FeatureMatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoints, const float th)
 {
     CriteriaData criteria_data;
     std::vector< std::unique_ptr<LandMarkCriterion> >     landmark_criteria;
@@ -132,7 +132,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
 
 }
 
-int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, const float th, const bool bMono)
+int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, const float th, const bool bMono)
 {
     CriteriaData criteria_data;
     Frame last_frame_copy = LastFrame;
@@ -168,7 +168,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, 
 
 
 
-int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame* pKF, const std::set<MapPoint*> &sAlreadyFound, const float th, const int ORBdist){
+int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame* pKF, const std::set<MapPoint*> &sAlreadyFound, const float th, const int ORBdist){
     CriteriaData criteria_data;
 
     std::vector<MapPoint*> landmarks_pKF = pKF->getAssociatedLandMarks();
@@ -203,13 +203,13 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame* pKF, const std
 }
 
 //can't yet convert this to using _SearchByBoW_ b/c Frame and KeyFrame don't have common base class - it would make sense to derive them both from a common AbstractFrame class
-//int ORBmatcher::SearchByBoW2(KeyFrame* pKF,Frame &F, std::vector<MapPoint*> &vpMapPointMatches)
-int ORBmatcher::SearchByBoW(KeyFrame *pKF, Frame &F, std::map<size_t, MapPoint*> &matches)
+//int FeatureMatcher::SearchByBoW2(KeyFrame* pKF,Frame &F, std::vector<MapPoint*> &vpMapPointMatches)
+int FeatureMatcher::SearchByBoW(KeyFrame *pKF, Frame &F, std::map<size_t, MapPoint*> &matches)
 {
     std::map<size_t, size_t> matches_internal;
 
-    const ORBViews Fviews = F.getViews();
-    const ORBViews KFviews = pKF->getViews();
+    const FeatureViews Fviews = F.getViews();
+    const FeatureViews KFviews = pKF->getViews();
 
     const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;
     // We perform the matching over ORB that belong to the same vocabulary node (at a certain level)
@@ -269,10 +269,10 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF, Frame &F, std::map<size_t, MapPoint*>
 }
 
 
-int ORBmatcher:: _SearchByBoW_(KeyFrame* pKF1, KeyFrame* pKF2, std::map<size_t, size_t> &matches,
-                               std::vector< std::unique_ptr<BoWIndexCriterion> > &index_criteria,
-                               std::vector< std::unique_ptr<BoWMatchCriterion> > &match_criteria,
-                               std::vector< std::unique_ptr<RotationConsistencyBoW> > &global_criteria
+int FeatureMatcher:: _SearchByBoW_(KeyFrame* pKF1, KeyFrame* pKF2, std::map<size_t, size_t> &matches,
+                                   std::vector< std::unique_ptr<BoWIndexCriterion> > &index_criteria,
+                                   std::vector< std::unique_ptr<BoWMatchCriterion> > &match_criteria,
+                                   std::vector< std::unique_ptr<RotationConsistencyBoW> > &global_criteria
 )
 {
     std::map<size_t, size_t> matches_internal;
@@ -284,8 +284,8 @@ int ORBmatcher:: _SearchByBoW_(KeyFrame* pKF1, KeyFrame* pKF2, std::map<size_t, 
     DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
     DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
 
-    const ORBViews views1 = pKF1->getViews();
-    const ORBViews views2 = pKF2->getViews();
+    const FeatureViews views1 = pKF1->getViews();
+    const FeatureViews views2 = pKF2->getViews();
 
     while(f1it!=f1end && f2it!=f2end)
     {
@@ -334,7 +334,7 @@ int ORBmatcher:: _SearchByBoW_(KeyFrame* pKF1, KeyFrame* pKF2, std::map<size_t, 
     return matches.size();
 
 }
-int ORBmatcher::SearchByBoW2(KeyFrame *pKF1, KeyFrame *pKF2, std::vector<MapPoint *> &vpMatches12) {
+int FeatureMatcher::SearchByBoW2(KeyFrame *pKF1, KeyFrame *pKF2, std::vector<MapPoint *> &vpMatches12) {
     std::vector< std::unique_ptr<BoWIndexCriterion> > index_criteria;
     index_criteria.push_back(std::make_unique<PreviouslyMatchedIndexCriterion>(true));
 
@@ -361,7 +361,7 @@ int ORBmatcher::SearchByBoW2(KeyFrame *pKF1, KeyFrame *pKF2, std::vector<MapPoin
     return matches.size();
 }
 
-int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
+int FeatureMatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
                                            std::vector<std::pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo){
 
     std::vector< std::unique_ptr<BoWIndexCriterion> > index_criteria;
@@ -392,11 +392,11 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
     return matches.size();
 }
 
-int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f> &vbPrevMatched, vector<int> &vnMatches12, int windowSize)
+int FeatureMatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f> &vbPrevMatched, vector<int> &vnMatches12, int windowSize)
 {
     std::map<size_t, size_t> matches; // idx in frame 2 is key, matching index in frame 1 is value
-    const ORBViews F1views = F1.getViews();
-    const ORBViews F2views = F2.getViews();
+    const FeatureViews F1views = F1.getViews();
+    const FeatureViews F2views = F2.getViews();
 
     std::vector< std::unique_ptr<MonoInitViewCriterion> > landmarkview_criteria;
     landmarkview_criteria.push_back( std::make_unique<MonoInitScoreExceedsPrevious>() );
@@ -432,8 +432,8 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
         }
     }
 
-    ORBViews views2  = F2.getViews();
-    ORBViews views1  = F1.getViews();
+    FeatureViews views2  = F2.getViews();
+    FeatureViews views1  = F1.getViews();
     matches = RotationConsistency(matches, views2, views1 );
 
     // output data: vnMatches12 matches from frame 1 to frame 2 and previously matched keypt data
@@ -456,7 +456,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
 
 }
 
-int ORBmatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoints, std::map<std::size_t, MapPoint*> &fuse_matches, const float th, const float reprojection_err) {
+int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoints, std::map<std::size_t, MapPoint*> &fuse_matches, const float th, const float reprojection_err) {
 
     std::vector< std::unique_ptr<LandMarkCriterion> >     landmark_criteria;
     landmark_criteria.push_back( std::make_unique<ProjectionCriterion>() );
@@ -468,7 +468,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoints, 
     landmarkview_criteria.push_back( std::make_unique<ProjectionViewCriterion>(reprojection_err) );
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>(TH_LOW ,1.000) );
 
-    const ORBViews views = pKF->getViews();
+    const FeatureViews views = pKF->getViews();
     ORBExtractorParams orb_params = views.orbParams();
     CriteriaData criteria_data;
 
@@ -518,9 +518,9 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoints, 
     return fuse_matches.size();
 }
 
-int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
+int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
 {
-    const ORBViews views = pKF->getViews(); 
+    const FeatureViews views = pKF->getViews();
     ORBExtractorParams orb_params = views.orbParams();
     // Get Calibration Parameters for later projection
     /*
@@ -656,7 +656,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
 
 
 //BELOW ARE LEGACY FUNCTIONS MOSTLY USED IN LOOP CLOSING THAT I"D LIKE TO give a more abstracted logical form
-int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapPoint*> &vpPoints, vector<MapPoint*> &vpMatched, int th)
+int FeatureMatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapPoint*> &vpPoints, vector<MapPoint*> &vpMatched, int th)
 {
     // Get Calibration Parameters for later projection
     const Camera camera = pKF->getCamera();
@@ -665,7 +665,7 @@ int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapP
     const float &cx = camera.cx();
     const float &cy = camera.cy();
 
-    const ORBViews KFviews = pKF->getViews(); //this could get large convert to const ref eventually
+    const FeatureViews KFviews = pKF->getViews(); //this could get large convert to const ref eventually
     ORBExtractorParams orb_params = KFviews.orbParams();
 
     // Decompose Scw
@@ -777,12 +777,12 @@ int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapP
     return nmatches;
 }
 
-int ORBmatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &vpMatches12,
-                             const float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th)
+int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &vpMatches12,
+                                 const float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th)
 {
-    const ORBViews KF1views = pKF1->getViews(); 
+    const FeatureViews KF1views = pKF1->getViews();
     ORBExtractorParams orb_params_KF1 = KF1views.orbParams();
-    const ORBViews KF2views = pKF2->getViews(); 
+    const FeatureViews KF2views = pKF2->getViews();
     ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
 
     // Camera 1 from world
@@ -999,12 +999,12 @@ int ORBmatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &
 
 
 
-int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &vpMatches12)
+int FeatureMatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &vpMatches12)
 //aim to replace this with SearchByBoW2 - but haven't been able to test in LoopClosing yet so preserving until then
 {
-    const ORBViews KF1views = pKF1->getViews();
+    const FeatureViews KF1views = pKF1->getViews();
     ORBExtractorParams orb_params_KF1 = KF1views.orbParams();
-    const ORBViews KF2views = pKF2->getViews();
+    const FeatureViews KF2views = pKF2->getViews();
     ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
 
     const vector<cv::KeyPoint> vKeysUn1 = KF1views.getKeys();
@@ -1140,7 +1140,7 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
     return nmatches;
 }
 
-void ORBmatcher::ComputeThreeMaxima(vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3)
+void FeatureMatcher::ComputeThreeMaxima(vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3)
 {
     int max1=0;
     int max2=0;
@@ -1187,7 +1187,7 @@ void ORBmatcher::ComputeThreeMaxima(vector<int>* histo, const int L, int &ind1, 
 // Bit set count operation from
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
 //Descriptor Distance is duplicated in MatchCriteria - need to deal w/ this - probably best to wait until adding new keypoint extractor
-int ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
+int FeatureMatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 {
     const int *pa = a.ptr<int32_t>();
     const int *pb = b.ptr<int32_t>();
@@ -1206,7 +1206,7 @@ int ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 }
 
 
-float ORBmatcher::RadiusByViewingCos(const float &viewCos)
+float FeatureMatcher::RadiusByViewingCos(const float &viewCos)
 {
     if(viewCos>0.998)
         return 2.5;
@@ -1215,8 +1215,8 @@ float ORBmatcher::RadiusByViewingCos(const float &viewCos)
 }
 
 
-//bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoint &kp2,const cv::Mat &F12,const KeyFrame* pKF2)
-bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoint &kp2,const cv::Mat &F12, float sigma2)
+//bool FeatureMatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoint &kp2,const cv::Mat &F12,const KeyFrame* pKF2)
+bool FeatureMatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &F12, float sigma2)
 {
     // Epipolar line in second image l = x1'F12 = [a b c]
     const float a = kp1.pt.x*F12.at<float>(0,0)+kp1.pt.y*F12.at<float>(1,0)+F12.at<float>(2,0);

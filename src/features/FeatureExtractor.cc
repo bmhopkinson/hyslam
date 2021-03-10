@@ -446,7 +446,7 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
                 if(maxX>maxBorderX)
                     maxX = maxBorderX;
 
-                vector<cv::KeyPoint> vKeysCell;
+                std::vector<cv::KeyPoint> vKeysCell;
                 feature_finder->setThreshold(iniThFAST);
                 feature_finder->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
               //  FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
@@ -462,7 +462,7 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
 
                 if(!vKeysCell.empty())
                 {
-                    for(vector<cv::KeyPoint>::iterator vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
+                    for(std::vector<cv::KeyPoint>::iterator vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
                     {
                         (*vit).pt.x+=j*wCell;
                         (*vit).pt.y+=i*hCell;
@@ -521,7 +521,7 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
         _descriptors.release();
     else
     {
-        _descriptors.create(nkeypoints, 32, CV_8U);
+        _descriptors.create(nkeypoints, feature_finder->descriptor_cols(), feature_finder->descriptor_mat_type() );
         descriptors = _descriptors.getMat();
     }
 
@@ -552,7 +552,7 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
         if (level != 0)
         {
             float scale = mvScaleFactor[level]; //getScale(level, firstLevel, scaleFactor);
-            for (vector<KeyPoint>::iterator keypoint = keypoints.begin(),
+            for (std::vector<KeyPoint>::iterator keypoint = keypoints.begin(),
                  keypointEnd = keypoints.end(); keypoint != keypointEnd; ++keypoint)
                 keypoint->pt *= scale;
         }

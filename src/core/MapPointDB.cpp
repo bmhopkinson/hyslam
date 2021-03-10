@@ -1,6 +1,6 @@
 #include <MapPointDB.h>
-#include <ORBViews.h>
-#include <ORBmatcher.h>
+#include <FeatureViews.h>
+#include <FeatureMatcher.h>
 
 namespace HYSLAM{
     // MAPPOINTDBENTRY MEMBER FUNCTIONS ////
@@ -144,7 +144,7 @@ namespace HYSLAM{
             Distances[i][i]=0;
             for(size_t j=i+1;j<N;j++)
             {
-                int distij = ORBmatcher::DescriptorDistance(descriptor_vec[i],descriptor_vec[j]);
+                int distij = FeatureMatcher::DescriptorDistance(descriptor_vec[i], descriptor_vec[j]);
                 Distances[i][j]=distij;
                 Distances[j][i]=distij;
             }

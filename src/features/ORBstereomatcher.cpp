@@ -1,5 +1,5 @@
 #include <ORBstereomatcher.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 
 
 namespace HYSLAM{
@@ -24,13 +24,14 @@ ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, Featur
 
 }
 
-ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, ORBViews views, Camera cam_data){
+ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views, DescriptorDistance* descriptor_distance_, Camera cam_data){
   mpORBextractorLeft  = mpORBextractorLeft_;
   mpORBextractorRight = mpORBextractorRight_;
   mvKeys = views.getKeys();
   mvKeysRight = views.getKeysR();
   mDescriptors = views.getDescriptors();
   mDescriptorsRight = views.getDescriptorsR();
+  descriptor_distance = descriptor_distance_;
 
   N = mvKeys.size();
 
@@ -46,7 +47,7 @@ void ORBstereomatcher::getData(std::vector<float> &mvuRight_, std::vector<float>
   mvDepth_ = mvDepth;
 }
 
-void ORBstereomatcher::getData(ORBViews &views){
+void ORBstereomatcher::getData(FeatureViews &views){
     views.setuRs(mvuRight);
     views.setDepths(mvDepth);
 }
@@ -56,7 +57,7 @@ void ORBstereomatcher::computeStereoMatches()
     mvuRight = std::vector<float>(N,-1.0f);
     mvDepth = std::vector<float>(N,-1.0f);
 
-    const int thOrbDist = (ORBmatcher::TH_HIGH+ORBmatcher::TH_LOW)/2;
+    const int thOrbDist = (FeatureMatcher::TH_HIGH + FeatureMatcher::TH_LOW) / 2;
 
     const int nRows = mpORBextractorLeft->mvImagePyramid[0].rows;
 
@@ -107,7 +108,7 @@ void ORBstereomatcher::computeStereoMatches()
         if(maxU<0)
             continue;
 
-          int bestDist = ORBmatcher::TH_HIGH;
+          int bestDist = FeatureMatcher::TH_HIGH;
           size_t bestIdxR = 0;
 
           const cv::Mat &dL = mDescriptors.row(iL);
@@ -126,7 +127,7 @@ void ORBstereomatcher::computeStereoMatches()
               if(uR>=minU && uR<=maxU)
               {
                   const cv::Mat &dR = mDescriptorsRight.row(iR);
-                  const int dist = ORBmatcher::DescriptorDistance(dL,dR);
+                  const int dist = descriptor_distance->distance(dL,dR);
 
                   if(dist<bestDist)
                   {

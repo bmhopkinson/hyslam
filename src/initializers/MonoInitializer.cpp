@@ -1,7 +1,7 @@
 
 #include <MonoInitializer.h>
-#include <ORBViews.h>
-#include <ORBmatcher.h>
+#include <FeatureViews.h>
+#include <FeatureMatcher.h>
 
 namespace HYSLAM{
 MonoInitializer::MonoInitializer(MonoInitializerParameters params_): params(params_)
@@ -31,7 +31,7 @@ bool MonoInitializer::hasValidFirstFrame(){
 int MonoInitializer::firstFrame(Frame &frame){//,  MonoInitialMatch &match_data){
     first_frame = Frame(frame);
     
-    const ORBViews views = first_frame.getViews();
+    const FeatureViews views = first_frame.getViews();
     int n_views = views.numViews();     
         
         // Set Reference Frame
@@ -75,7 +75,7 @@ int MonoInitializer::secondFrame(Frame &frame){//,  MonoInitialMatch &match_data
     }
 
     // Find correspondences
-    ORBmatcher matcher(params.match_nnratio,true);
+    FeatureMatcher matcher(params.match_nnratio, true);
     int nmatches = matcher.SearchForInitialization(first_frame, second_frame, mvbPrevMatched, mvIniMatches, 100);
     std::cout << "MonoInit: matches found: " << nmatches << std::endl; // << ", new: "<< nmatches_alt <<  std::endl;
     // Check if there are enough correspondences

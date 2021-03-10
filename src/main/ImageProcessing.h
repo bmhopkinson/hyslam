@@ -36,6 +36,7 @@ private:
 
     FeatureExtractor* mpORBextractorLeft, *mpORBextractorRight;
     FeatureExtractor* mpIniORBextractor;
+    FeatureExtractor* SURFextractor;
 
     std::string cam_cur;  //current camera
     std::map<std::string, Camera> cam_data;

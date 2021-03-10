@@ -219,7 +219,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
         {
 
             KeyFrame* pKFi = mit->first;
-            const ORBViews views = pKFi->getViews();
+            const FeatureViews views = pKFi->getViews();
             ORBExtractorParams orb_params = views.orbParams();
             const Camera camera = pKFi->getCamera();
             

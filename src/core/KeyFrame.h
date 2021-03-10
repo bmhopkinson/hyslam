@@ -22,12 +22,12 @@
 #define KEYFRAME_H
 
 #include <MapPoint.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <Frame.h>
 #include <Camera.h>
 #include <LandMarkMatches.h>
 #include <ORBVocabulary.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <SensorData.h>
 
 
@@ -151,8 +151,8 @@ public:
     //getters
     bool isStereo() const {return is_stereo; }
     const Camera& getCamera() const {return camera;}
-    const ORBViews& getViews() const {return views; }
-    ORBViews copyViews() const {return views;}
+    const FeatureViews& getViews() const {return views; }
+    FeatureViews copyViews() const {return views;}
     Map* getMap(){return pMap;}
 
     std::vector<MapPoint*> GetMapPointMatches();
@@ -267,7 +267,7 @@ protected:
     bool is_stereo;
 
     // feature data
-    ORBViews views;  //landmark views (features)
+    FeatureViews views;  //landmark views (features)
     LandMarkMatches matches;  //data association matches between landmarks and landmark views
     Map* pMap;
     

@@ -1,6 +1,6 @@
 #include <LandMarkFuser.h>
 #include <MapPoint.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 #include <KeyFrameDB.h>
 #include <Camera.h>
 
@@ -45,7 +45,7 @@ void LandMarkFuser::run(){
     }
 
     // Search matches by projection from current KF in target KFs
-    ORBmatcher matcher;
+    FeatureMatcher matcher;
     std::vector<MapPoint*> vpMapPointMatches = pKF->GetMapPointMatches();
     for(std::set<KeyFrame*>::iterator vit=KF_fuse_targets.begin(), vend=KF_fuse_targets.end(); vit!=vend; vit++)
     {

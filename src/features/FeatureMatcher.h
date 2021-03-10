@@ -37,11 +37,11 @@
 namespace HYSLAM
 {
 
-class ORBmatcher
+class FeatureMatcher
 {
 public:
 
-    ORBmatcher(float nnratio=0.6, bool checkOri=true);
+    FeatureMatcher(float nnratio=0.6, bool checkOri=true);
 
     // Computes the Hamming distance between two ORB descriptors
     static int DescriptorDistance(const cv::Mat &a, const cv::Mat &b);

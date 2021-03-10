@@ -1,5 +1,5 @@
 #include <TrackLocalMap.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 #include <Optimizer.h>
 
 namespace HYSLAM {
@@ -70,7 +70,7 @@ void TrackLocalMap::SearchLocalPoints(){
         }
     }
 
-    ORBmatcher matcher(params.match_nnratio);
+    FeatureMatcher matcher(params.match_nnratio);
     //int th = 5;
     std::vector<MapPoint*> v_lmp(local_map_points.begin(), local_map_points.end());
     int n_matches = matcher.SearchByProjection(*pcurrent_frame, v_lmp, params.match_radius_threshold);

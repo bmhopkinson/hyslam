@@ -22,7 +22,7 @@
 #include "Sim3Solver.h"
 #include "Converter.h"
 #include "Optimizer.h"
-#include "ORBmatcher.h"
+#include "FeatureMatcher.h"
 #include "GlobalBundleAdjustment.h"
 #include <MapPointDB.h>
 #include "g2o/types/sba/Trajectory_g2o.h"
@@ -235,7 +235,7 @@ bool LoopClosing::ComputeSim3()
 
     // We compute first ORB matches for each candidate
     // If enough matches are found, we setup a Sim3Solver
-    ORBmatcher matcher(0.75,true);
+    FeatureMatcher matcher(0.75, true);
 
     std::vector<Sim3Solver*> vpSim3Solvers;
     vpSim3Solvers.resize(nInitialCandidates);
@@ -603,7 +603,7 @@ void LoopClosing::CorrectLoop()
 
 void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
 {
-    ORBmatcher matcher(0.8);
+    FeatureMatcher matcher(0.8);
 
     for(KeyFrameAndPose::const_iterator mit=CorrectedPosesMap.begin(), mend=CorrectedPosesMap.end(); mit!=mend;mit++)
     {

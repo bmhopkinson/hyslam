@@ -25,7 +25,7 @@
 #include <Tracking_datastructs.h>
 #include <MapPoint.h>
 #include <Map.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <LandMarkMatches.h>
 
 #include <opencv2/core/core.hpp>
@@ -64,7 +64,7 @@ protected:
     std::vector<cv::KeyPoint> mvCurrentKeys;
     std::vector<cv::KeyPoint> mvIniKeys;
     std::vector<int> mvIniMatches;
-    ORBViews views;
+    FeatureViews views;
     LandMarkMatches lm_matches;
     eTrackingState mState;
 

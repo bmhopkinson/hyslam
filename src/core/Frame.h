@@ -28,7 +28,7 @@
 #include <Camera.h>
 
 #include <ORBVocabulary.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <ORBSLAM_datastructs.h>
 #include <LandMarkMatches.h>
 #include <SensorData.h>
@@ -61,7 +61,7 @@ class Frame
 public:
     Frame();
     // Constructor
-    Frame( const double &timeStamp, ORBViews views_, ORBVocabulary* voc, const Camera &camdata,
+    Frame( const double &timeStamp, FeatureViews views_, ORBVocabulary* voc, const Camera &camdata,
                   const std::string img_name, const  SensorData sensor_d, bool stereo);
 
     // Copy constructor.
@@ -137,8 +137,8 @@ public:
 
    //getters
     const Camera& getCamera() const {return camera;}
-    const ORBViews& getViews() const {return views; }
-    ORBViews copyViews() const {return views;}
+    const FeatureViews& getViews() const {return views; }
+    FeatureViews copyViews() const {return views;}
     const LandMarkMatches& getLandMarkMatches() {return matches;}
     LandMarkMatches copyLandMarkMatches() {return matches;}
     SensorData getSensorData(){return sensor_data;}
@@ -201,7 +201,7 @@ private:
     bool is_empty;
     bool is_tracked = false;
 
-    ORBViews views;  //landmark views (features)
+    FeatureViews views;  //landmark views (features)
     LandMarkMatches matches; //data association matches between landmarks and landmark views
 
     SensorData sensor_data;

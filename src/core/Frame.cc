@@ -35,7 +35,7 @@ Frame::Frame() : is_empty(true)
 
 //constructor
 
-Frame::Frame(const double &timeStamp, ORBViews views_, ORBVocabulary* voc,
+Frame::Frame(const double &timeStamp, FeatureViews views_, ORBVocabulary* voc,
      const Camera &camdata,  const std::string img_name, const  SensorData sensor_d, bool stereo)
     :mTimeStamp(timeStamp),mpORBvocabulary(voc), camera(camdata), fimgName(img_name), sensor_data(sensor_d),
      mpReferenceKF(static_cast<KeyFrame*>(NULL)), views(views_), is_stereo(stereo), is_empty(false), is_tracked(false)

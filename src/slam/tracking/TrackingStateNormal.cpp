@@ -67,7 +67,7 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsi
     int nNonTrackedClose = 0;
     int nTrackedClose= 0;
     Camera camera = current_frame.getCamera();
-    const ORBViews views = current_frame.getViews();
+    const FeatureViews views = current_frame.getViews();
     if(camera.sensor !=0) //if not a monocular camera
     {
         for(int i =0; i<current_frame.N; i++)

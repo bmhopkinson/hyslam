@@ -10,7 +10,7 @@ HYSLAM_ADD_SOURCES(
   MapPoint.h MapPoint.cc
   MapPointDB.h MapPointDB.cpp
   MapPointFactory.h MapPointFactory.cpp
-  ORBViews.h ORBViews.cpp
+        FeatureViews.h FeatureViews.cpp
         ORBExtractorParams.h
   PlaceRecognizer.h PlaceRecognizer.cpp
   SensorData.h SensorData.cpp

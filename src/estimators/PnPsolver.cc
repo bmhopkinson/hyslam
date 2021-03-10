@@ -51,7 +51,7 @@
 #include <iostream>
 
 #include "PnPsolver.h"
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <ORBExtractorParams.h>
 
 #include <vector>
@@ -78,7 +78,7 @@ PnPsolver::PnPsolver(const Frame &F, const vector<MapPoint*> &vpMapPointMatches)
     mvAllIndices.reserve(F.N);
 
     int idx=0;
-    const ORBViews views = F.getViews();
+    const FeatureViews views = F.getViews();
     ORBExtractorParams orb_params = views.orbParams();
     for(size_t i=0, iend=vpMapPointMatches.size(); i<iend; i++)
     {

@@ -41,7 +41,7 @@ cv::Mat FrameDrawer::DrawFrame()
     std::vector<int> vMatches; // Initialization: correspondeces with reference keypoints
     std::vector<cv::KeyPoint> vCurrentKeys; // KeyPoints in current frame
     eTrackingState state; // Tracking state
-    ORBViews views_current;
+    FeatureViews views_current;
     LandMarkMatches lm_matches_current;
 
     //Copy variables within scoped mutex

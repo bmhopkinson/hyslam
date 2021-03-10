@@ -410,7 +410,7 @@ void System::ExportCOLMAP(const std::string &foldername){
 
     //now write out keypoints and corresponding mappt ids - all pts from a single keyframe go on one line
     std::vector<MapPoint*> mappts_indexed = pKF->GetMapPointMatches();
-    const ORBViews views = pKF->getViews();
+    const FeatureViews views = pKF->getViews();
     std::vector<cv::KeyPoint> keypts_indexed = views.getKeys();
     int n_keypts = keypts_indexed.size();
     for(int i = 0; i < n_keypts; ++i){

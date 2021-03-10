@@ -24,7 +24,7 @@
 #include <src/main/Tracking.h>
 #include <MapPoint.h>
 #include <Map.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <LandMarkMatches.h>
 
 #include <opencv2/core/core.hpp>

@@ -1,5 +1,5 @@
 #include <TrackReferenceKeyFrame.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 #include <Optimizer.h>
 
 namespace HYSLAM{
@@ -13,7 +13,7 @@ namespace HYSLAM{
         const Frame& last_frame = frames[0];
 
         // first try BoW feature match w/ reference keyframe, if successful optimize pose
-        ORBmatcher matcher(params.match_nnratio,false);
+        FeatureMatcher matcher(params.match_nnratio, false);
         std::map<size_t, MapPoint*> matches_bow;
         int nmatches = matcher.SearchByBoW(pKF,current_frame,matches_bow);
 

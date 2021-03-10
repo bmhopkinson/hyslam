@@ -1,5 +1,5 @@
-#ifndef ORBVIEWS_H_
-#define ORBVIEWS_H_
+#ifndef HYSLAM_FEATUREVIEWS_H_
+#define HYSLAM_FEATUREVIEWS_H_
 
 #include <ORBExtractorParams.h>
 #include <opencv2/opencv.hpp>
@@ -8,16 +8,16 @@
 
 namespace HYSLAM{
 
-class ORBViews{
+class FeatureViews{
 //ORB keypoints in a frame
 public:
-  ORBViews(){};
-  ORBViews(const ORBViews &views);
-  ORBViews& operator=(const ORBViews&);
-  ORBViews(std::vector<cv::KeyPoint> mvKeys_, cv::Mat mDescriptors_, ORBExtractorParams orb_params_ );  // mono constructor
-  ORBViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
+  FeatureViews(){};
+  FeatureViews(const FeatureViews &views);
+  FeatureViews& operator=(const FeatureViews&);
+  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, cv::Mat mDescriptors_, ORBExtractorParams orb_params_ );  // mono constructor
+  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
             cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - partial data
-  ORBViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
+  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
             cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - full data
 
   //getters

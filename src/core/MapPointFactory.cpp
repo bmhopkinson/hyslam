@@ -1,6 +1,6 @@
 
 #include <MapPointFactory.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include "ORBSLAM_datastructs.h"
 
 namespace HYSLAM{
@@ -30,7 +30,7 @@ MapPoint* MapPointFactory::construct(const cv::Mat &Pos, Frame* frame, int idx){
     pMP->setNormal(normal);
 
     
-    const ORBViews views = frame->getViews();
+    const FeatureViews views = frame->getViews();
     ORBExtractorParams orb_params = views.getOrbParams();
     const int level = views.keypt(idx).octave;
     const float levelScaleFactor =  orb_params.mvScaleFactors[level];

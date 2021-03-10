@@ -1,8 +1,8 @@
-#include <ORBViews.h>
+#include <FeatureViews.h>
 
 namespace HYSLAM{
 //copy constructor
-ORBViews::ORBViews(const ORBViews &views){
+FeatureViews::FeatureViews(const FeatureViews &views){
   is_stereo = views.is_stereo;
   is_empty = views.is_empty;
   N = views.N;
@@ -17,7 +17,7 @@ ORBViews::ORBViews(const ORBViews &views){
 }
 
 //assignment operator
-ORBViews& ORBViews::operator=(const ORBViews& views){
+FeatureViews& FeatureViews::operator=(const FeatureViews& views){
     if(this == &views)
         return *this;
 
@@ -37,7 +37,7 @@ ORBViews& ORBViews::operator=(const ORBViews& views){
 }
 
 // mono constructor
-ORBViews::ORBViews(std::vector<cv::KeyPoint> mvKeys_,cv::Mat  mDescriptors_, ORBExtractorParams orb_params_ ){
+FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_,cv::Mat  mDescriptors_, ORBExtractorParams orb_params_ ){
   is_stereo = false;
   N = mvKeys_.size();
   if(N>0){
@@ -52,7 +52,7 @@ ORBViews::ORBViews(std::vector<cv::KeyPoint> mvKeys_,cv::Mat  mDescriptors_, ORB
 }
 
 //stereo constructor- partial data
-ORBViews::ORBViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
+FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
             cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_){
   is_stereo = true;
   N = mvKeys_.size();
@@ -68,7 +68,7 @@ ORBViews::ORBViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> 
 }  
 
 //stereo constructor- full data
-ORBViews::ORBViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
+FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
             cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_)
 {
   is_stereo = true;
@@ -88,7 +88,7 @@ ORBViews::ORBViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> 
 
 }
 
-cv::KeyPoint ORBViews::keyptR(int i ) const {
+cv::KeyPoint FeatureViews::keyptR(int i ) const {
 if(is_stereo){
     return mvKeysRight[i];  }
 else {
@@ -96,7 +96,7 @@ else {
 }
 }
 
-cv::Mat ORBViews::descriptorR(int i ) const {
+cv::Mat FeatureViews::descriptorR(int i ) const {
 if(is_stereo){
     return mDescriptorsRight.row(i).clone();  }
 else {
@@ -104,7 +104,7 @@ else {
 }
 }
 
-float ORBViews::uR(int i) const {
+float FeatureViews::uR(int i) const {
 if(is_stereo){
     return mvuRight[i]; }
 else {
@@ -112,7 +112,7 @@ else {
 }
 }
 
-float ORBViews::depth(int i) const{
+float FeatureViews::depth(int i) const{
 if(is_stereo){
     return mvDepth[i]; }
 else {

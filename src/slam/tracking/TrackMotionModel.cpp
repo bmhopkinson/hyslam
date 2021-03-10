@@ -1,5 +1,5 @@
 #include <TrackMotionModel.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 #include <Optimizer.h>
 #include <GenUtils.h>
 #include <Camera.h>
@@ -14,7 +14,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
     const Frame& last_slamframe = frames[1];
     Camera camera = current_frame.getCamera();
 
-    ORBmatcher matcher(params.match_nnratio, true);
+    FeatureMatcher matcher(params.match_nnratio, true);
     //  std::cout << "TrackwMotionModel, Frame: " << mCurrentFrame.mnId << std::endl;
 
     cv::Mat Vcw;

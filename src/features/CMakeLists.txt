@@ -1,13 +1,12 @@
+add_subdirectory(low_level)
 
 HYSLAM_ADD_SOURCES(
         FeatureExtractor.h FeatureExtractor.cc
         MatchCriteria.h MatchCriteria.cpp
-  ORBmatcher.h ORBmatcher.cc
+        FeatureMatcher.h FeatureMatcher.cc
   ORBstereomatcher.h ORBstereomatcher.cpp
   ORBUtil.h  ORBUtil.cpp
-        FeatureFinder.h FeatureFinder.cpp
-        SURFFinder.h    SURFFinder.cpp
-        ORBFinder.h ORBFinder.cpp
+
 )
 
 set(HYSLAM_PUBLIC_INCLUDE_DIRS ${HYSLAM_PUBLIC_INCLUDE_DIRS} 

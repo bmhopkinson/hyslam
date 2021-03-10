@@ -165,7 +165,7 @@ private:
 
 class MonoInitViewCriterion{  //abstract base class defining interface
 public:
-    virtual std::vector<size_t> apply(  std::vector<size_t> &candidate_matches, const ORBViews &views,  MonoCriteriaData &data) = 0;
+    virtual std::vector<size_t> apply(  std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data) = 0;
 };
 /*
 class MonoInitGlobalCriterion{ //abstract base class defining interface
@@ -177,14 +177,14 @@ class MonoInitBestScore : public MonoInitViewCriterion{
 public:
     MonoInitBestScore(){};
     MonoInitBestScore( int score_threshold_, float second_best_ratio_);
-    std::vector<size_t> apply( std::vector<size_t> &candidate_matches, const ORBViews &views,  MonoCriteriaData &data);
+    std::vector<size_t> apply( std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data);
 private:
     int score_threshold = 80;
     float second_best_ratio = 0.7;
 };
 class MonoInitScoreExceedsPrevious : public MonoInitViewCriterion{
 public:
-    std::vector<size_t> apply(  std::vector<size_t> &candidate_matches, const ORBViews &views,  MonoCriteriaData &data);
+    std::vector<size_t> apply(  std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data);
 
 };
 
@@ -197,7 +197,7 @@ public:
 
 class BoWMatchCriterion{
 public:
-    virtual std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const ORBViews &views1, const ORBViews &views2 ) = 0;
+    virtual std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 ) = 0;
 };
 
 class PreviouslyMatchedIndexCriterion : public BoWIndexCriterion{
@@ -218,7 +218,7 @@ class BestMatchBoWCriterion : public BoWMatchCriterion{
 public:
     BestMatchBoWCriterion(){};
     BestMatchBoWCriterion(int score_threshold_, float second_best_ratio_);
-    std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const ORBViews &views1, const ORBViews &views2 );
+    std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 );
 private:
     int score_threshold = 80;
     float second_best_ratio = 0.7;
@@ -228,7 +228,7 @@ class EpipolarConsistencyBoWCriterion : public BoWMatchCriterion {
 public:
     EpipolarConsistencyBoWCriterion(){};
     EpipolarConsistencyBoWCriterion(cv::Mat Fmatrix_, float ex, float ey);
-    std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const ORBViews &views1, const ORBViews &views2 );
+    std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 );
 private:
     cv::Mat Fmatrix;
     float ex;
@@ -239,20 +239,20 @@ private:
 
 class RotationConsistencyBoW{
 public:
-    MatchesIdx apply(MatchesIdx current_matches, const ORBViews &views1, const ORBViews &views2 );
+    MatchesIdx apply(MatchesIdx current_matches, const FeatureViews &views1, const FeatureViews &views2 );
 };
 
 //Free functions
-int DescriptorDistance(const cv::Mat &a, const cv::Mat &b);
+int descriptorDistance(const cv::Mat &a, const cv::Mat &b);
 int determinePredictedLevel(Frame &frame, MapPoint* lm, CriteriaData &data);
 int determinePredictedLevel(KeyFrame* pKF, MapPoint* lm, CriteriaData &data);
 std::vector<MapPoint*> DistanceCriterionCore(cv::Mat camera_center, std::vector<MapPoint*> &candidate_lms);
 std::vector<MapPoint*>  ViewingAngleCriterionCore(cv::Mat camera_center, std::vector<MapPoint*> &candidate_lms, float max_angle);
 std::vector<size_t> PreviouslyMatchedCriterionCore(const LandMarkMatches &lm_matches, std::vector<size_t> & candidate_views);
-SingleMatchData BestScoreCriterionCore(const ORBViews &views,MapPoint* lm, std::vector<size_t> &candidate_views);
-std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, int n_above, const ORBViews &views, MapPoint* lm, std::vector<size_t> &candidate_views );
+SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, std::vector<size_t> &candidate_views);
+std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, int n_above, const FeatureViews &views, MapPoint* lm, std::vector<size_t> &candidate_views );
 //MatchesIdx RotationConsistency(MatchesIdx current_matches,Frame &frame_current, Frame &frame_previous);
-MatchesIdx RotationConsistency(MatchesIdx current_matches, const ORBViews &views_curr,  const ORBViews &views_prev );
+MatchesIdx RotationConsistency(MatchesIdx current_matches, const FeatureViews &views_curr,  const FeatureViews &views_prev );
 void ComputeThreeMaxima(std::vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3);
 
 }//end namespace

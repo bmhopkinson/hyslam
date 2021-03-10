@@ -6,7 +6,7 @@
 #define HYSLAM_INTERTHREAD_H
 
 #include <mutex>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <SensorData.h>
 #include <ORBSLAM_datastructs.h>
 
@@ -14,7 +14,7 @@ namespace HYSLAM {
 
 
 struct ImageFeatureData{
-    ORBViews LMviews;
+    FeatureViews LMviews;
     cv::Mat image;
     Imgdata img_data;
     SensorData sensor_data;

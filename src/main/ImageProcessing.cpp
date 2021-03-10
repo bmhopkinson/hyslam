@@ -4,7 +4,8 @@
 
 #include "ImageProcessing.h"
 #include <ORBFinder.h>
-#include <ORBViews.h>
+#include <SURFFinder.h>
+#include <FeatureViews.h>
 #include <ORBUtil.h>
 #include <ORBstereomatcher.h>
 
@@ -23,6 +24,7 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, std::map<std
     
     mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
     mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
+    SURFextractor = new FeatureExtractor(std::make_unique<SURFFinder>(), ORBextractor_settings);
 
     ORBextractorSettings ORBextractor_settings_init;
     ORBextractor_settings_init = ORBextractor_settings;
@@ -47,7 +49,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
     }
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
     ORBExtractorParams orb_params = setORBExtractorParams(extractor);
-    ORBViews LMviews(mvKeys, mDescriptors,  orb_params);
+    FeatureViews LMviews(mvKeys, mDescriptors,  orb_params);
 
     ImageFeatureData track_data;
     track_data.img_data = img_data;
@@ -74,8 +76,14 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     orb_thread.join();
     ORBExtractorParams orb_params = setORBExtractorParams(mpORBextractorLeft);
 
-    ORBViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
-    ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, cam_data[cam_cur]);
+    std::vector<cv::KeyPoint> surf_keys;
+    cv::Mat surf_descriptors;
+    (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
+
+
+    FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
+    DescriptorDistance* dist_calc = new ORBDistance();
+    ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, dist_calc, cam_data[cam_cur]);
     stereomatch.computeStereoMatches();
     stereomatch.getData(LMviews);
 

@@ -1,9 +1,9 @@
 #include <LandMarkTriangulator.h>
 #include <Camera.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <ORBExtractorParams.h>
 #include <GenUtils.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 
 namespace HYSLAM {
 LandMarkTriangulator::LandMarkTriangulator(KeyFrame *pKF_, Map *pMap_, std::list<MapPoint *> *new_mpts_,LandMarkTriangulatorParameters params_, std::ofstream &log_ ) :
@@ -21,11 +21,11 @@ void LandMarkTriangulator::run() {
         nn = params.N_neighborKFs_mono;
     const std::vector<KeyFrame*> vpNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, nn);
 
-    const ORBViews KFcur_views = pKF->getViews();
+    const FeatureViews KFcur_views = pKF->getViews();
     ORBExtractorParams orb_params_KFcur = KFcur_views.orbParams();
     const Camera camera_KFcur = pKF->getCamera();
 
-    ORBmatcher matcher(params.match_nnratio,false);
+    FeatureMatcher matcher(params.match_nnratio, false);
 
     cv::Mat Ow1 = pKF->GetCameraCenter();
 
@@ -43,7 +43,7 @@ void LandMarkTriangulator::run() {
         }
 
         KeyFrame* pKF2 = vpNeighKFs[i];
-        const ORBViews KF2views = pKF2->getViews();
+        const FeatureViews KF2views = pKF2->getViews();
         ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
         const Camera camera_KF2 = pKF2->getCamera();
 

@@ -17,9 +17,11 @@ public:
     double getThreshold(){return threshold;};
     void detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints); //detect features
     void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors); //compute descriptors
+    int descriptor_mat_type(){return 5; } // CV_32F : 5
+    int descriptor_cols(){return 64;}  //SURF 64 element descriptor
 private:
     double threshold = 20;
-    int nOctaves =1;
+    int nOctaves = 1;
     int nOctaveLayers = 1;
     cv::Ptr<cv::xfeatures2d::SURF> detector;
 };

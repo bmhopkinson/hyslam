@@ -39,9 +39,9 @@ Sim3Solver::Sim3Solver(KeyFrame *pKF1, KeyFrame *pKF2, const std::vector<MapPoin
     mpKF1 = pKF1;
     mpKF2 = pKF2;
     
-    const ORBViews KF1views = pKF1->getViews(); 
+    const FeatureViews KF1views = pKF1->getViews();
     ORBExtractorParams orb_params_KF1 = KF1views.orbParams();
-    const ORBViews KF2views = pKF2->getViews(); 
+    const FeatureViews KF2views = pKF2->getViews();
     ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
 
     std::vector<MapPoint*> vpKeyFrameMP1 = pKF1->GetMapPointMatches();

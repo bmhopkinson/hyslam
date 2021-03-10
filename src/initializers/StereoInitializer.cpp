@@ -1,5 +1,5 @@
 #include <StereoInitializer.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <MapPoint.h>
 
 namespace HYSLAM{
@@ -28,7 +28,7 @@ int StereoInitializer::createMap( KeyFrame* &pKF1, KeyFrame* &pKF2, std::vector<
     pKFinit->SetRefGPS(frame_init.getSensorData());
 
     // Create MapPoints and associate to Frame/KeyFrame
-    const ORBViews views = frame_init.getViews();
+    const FeatureViews views = frame_init.getViews();
     for(int i=0; i<frame_init.N;i++)
     {
         float z = views.depth(i);
@@ -114,7 +114,7 @@ int StereoInitializer::initialize(Frame &frame){
         pMap->AddKeyFrame(pKFinit);
 
         // Create MapPoints and asscoiate to KeyFrame
-        const ORBViews views = frame.getViews();
+        const FeatureViews views = frame.getViews();
         for(int i=0; i<frame.N;i++)
         {
             float z = views.depth(i);

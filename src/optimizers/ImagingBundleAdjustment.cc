@@ -1,6 +1,6 @@
 #include "ImagingBundleAdjustment.h"
 #include "OptHelpers.h"
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 #include <MapPointDB.h>
 #include <Converter.h>
 
@@ -435,7 +435,7 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 
       std::cout << "found visible mappts for KF: " << pKFi->mnId << std::endl;
       //determine fuse candidates by excluding any mappoints already tracked in keyframe
-      ORBmatcher matcher;
+      FeatureMatcher matcher;
       float search_radius_thresh = 5.0; //larger than default of 3.00
       float reprojection_err_thresh = 10.0; //allow a bit more than default of 5.99
       std::map<std::size_t, MapPoint*> fuse_matches;

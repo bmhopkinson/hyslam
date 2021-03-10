@@ -36,7 +36,7 @@ std::vector<KeyFrame*>  TrackingState::createNewKeyFrame(Frame &current_frame, M
         // If there are less than 100 close points we create the 100 closest.
         std::vector<std::pair<float,int> > vDepthIdx;
         vDepthIdx.reserve(current_frame.N);
-        const ORBViews views = current_frame.getViews();
+        const FeatureViews views = current_frame.getViews();
         for(int i=0; i<current_frame.N; i++)
         {
             float z = views.depth(i);

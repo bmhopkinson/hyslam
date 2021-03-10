@@ -1,5 +1,5 @@
 #include <TrackPlaceRecognition.h>
-#include <ORBmatcher.h>
+#include <FeatureMatcher.h>
 #include <Optimizer.h>
 #include <PnPsolver.h>
 
@@ -23,7 +23,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
 
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
-    ORBmatcher matcher(params.match_nnratio_1 ,true);
+    FeatureMatcher matcher(params.match_nnratio_1 , true);
 
     std::vector<PnPsolver*> vpPnPsolvers;
     vpPnPsolvers.resize(nKFs);
@@ -76,7 +76,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     // Until we found a camera pose supported by enough inliers
     int nGood = 0;
     bool bMatch = false;
-    ORBmatcher matcher2(params.match_nnratio_2,true);
+    FeatureMatcher matcher2(params.match_nnratio_2, true);
 
     while(nCandidates>0 && !bMatch)
     {

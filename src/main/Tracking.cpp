@@ -137,7 +137,7 @@ void Tracking::Run(){
 bool Tracking::inputAvailable(){
     return (input_queue->size() > 0);
 }
-//cv::Mat Tracking::track(ORBViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
+//cv::Mat Tracking::track(FeatureViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
 cv::Mat Tracking::track(ImageFeatureData &track_data){
     cam_cur = track_data.img_data.camera;
     mImGray = track_data.image;

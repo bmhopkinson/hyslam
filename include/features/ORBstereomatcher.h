@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <FeatureExtractor.h>
 #include <src/main/ORBSLAM_datastructs.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <Camera.h>
 
 namespace HYSLAM{

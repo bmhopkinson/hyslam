@@ -1,6 +1,6 @@
 #include <MatchCriteria.h>
 #include <LandMarkMatches.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
 #include <ORBExtractorParams.h>
 #include <Camera.h>
 #include <math.h>
@@ -157,7 +157,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(Frame &frame, MapPoint* lm
         return candidate_views;
     }
 
-    const ORBViews views = frame.getViews();
+    const FeatureViews views = frame.getViews();
     ORBExtractorParams orb_params = views.orbParams();
     Frame* frame_prev = data.getPreviousFrame();
 
@@ -192,7 +192,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(KeyFrame* pKF, MapPoint* l
         return candidate_views;
     }
 
-    const ORBViews views = pKF->getViews();
+    const FeatureViews views = pKF->getViews();
     ORBExtractorParams orb_params = views.orbParams();
     Frame* frame_prev = data.getPreviousFrame();
 
@@ -225,7 +225,7 @@ score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
    // const cv::Mat lm_descriptor = lm->GetDescriptor();
-    const ORBViews views = frame.getViews();
+    const FeatureViews views = frame.getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
 /*
     int bestDist=256;
@@ -238,7 +238,7 @@ std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::
         size_t idx = *it;
         const cv::Mat &d = views.descriptor(idx);
 
-        const int dist_orb = DescriptorDistance(lm_descriptor, d);
+        const int dist_orb = descriptorDistance(lm_descriptor, d);
 
         if(dist_orb<bestDist)
         {
@@ -270,7 +270,7 @@ std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::
 
 std::vector<size_t> BestScoreCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
-    const ORBViews views = pKF->getViews();
+    const FeatureViews views = pKF->getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
 
     if(best_view.score <= score_threshold) {
@@ -284,7 +284,7 @@ std::vector<size_t> BestScoreCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std:
     return views_passed;
 }
 
-SingleMatchData BestScoreCriterionCore(const ORBViews &views,MapPoint* lm, std::vector<size_t> &candidate_views){
+SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, std::vector<size_t> &candidate_views){
     SingleMatchData best_view;
     const cv::Mat lm_descriptor = lm->GetDescriptor();
 
@@ -298,7 +298,7 @@ SingleMatchData BestScoreCriterionCore(const ORBViews &views,MapPoint* lm, std::
         size_t idx = *it;
         const cv::Mat &d = views.descriptor(idx);
 
-        const int dist_orb = DescriptorDistance(lm_descriptor, d);
+        const int dist_orb = descriptorDistance(lm_descriptor, d);
 
         if(dist_orb<bestDist)
         {
@@ -330,7 +330,7 @@ ProjectionViewCriterion::ProjectionViewCriterion(float  error_threshold_):  erro
 
 std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
-    const ORBViews views = frame.getViews();
+    const FeatureViews views = frame.getViews();
     ORBExtractorParams orb_params = views.orbParams();
 
     cv::Mat lm_position = lm->GetWorldPos();
@@ -354,7 +354,7 @@ std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  
 
 std::vector<size_t> ProjectionViewCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
-    const ORBViews views = pKF->getViews();
+    const FeatureViews views = pKF->getViews();
     ORBExtractorParams orb_params = views.orbParams();
 
     cv::Mat lm_position = lm->GetWorldPos();
@@ -383,17 +383,17 @@ PyramidLevelCriterion::PyramidLevelCriterion(int n_below_, int n_above_) : n_bel
 
 std::vector<size_t> PyramidLevelCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     int predicted_level = determinePredictedLevel( frame, lm, data);
-    const ORBViews views = frame.getViews();
+    const FeatureViews views = frame.getViews();
     return PyramidLevelCriterionCore(predicted_level, n_below, n_above, views, lm, candidate_views);
 }
 
 std::vector<size_t> PyramidLevelCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     int predicted_level = determinePredictedLevel( pKF, lm, data);
-    const ORBViews views = pKF->getViews();
+    const FeatureViews views = pKF->getViews();
     return PyramidLevelCriterionCore(predicted_level, n_below, n_above, views, lm, candidate_views);
 }
 
-std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, int n_above, const ORBViews &views, MapPoint* lm, std::vector<size_t> &candidate_views ){
+std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, int n_above, const FeatureViews &views, MapPoint* lm, std::vector<size_t> &candidate_views ){
     std::vector<size_t> views_passed;
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
         size_t idx = *it;
@@ -413,7 +413,7 @@ std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, 
 MatchesFound RotationConsistencyCriterion::apply(MatchesFound current_matches, Frame &frame, CriteriaData &data){
     MatchesFound matches_passed = current_matches;
 
-    const ORBViews views = frame.getViews();
+    const FeatureViews views = frame.getViews();
     Frame* frame_prev = data.getPreviousFrame();
     if(!frame_prev){  //need prev frame to check rotational consistency
         return current_matches;
@@ -435,8 +435,8 @@ MatchesFound RotationConsistencyCriterion::apply(MatchesFound current_matches, F
     }
 
     //do rotation consistency check
-    const ORBViews &views_curr = frame.getViews();
-    const ORBViews &views_prev = frame_prev->getViews();
+    const FeatureViews &views_curr = frame.getViews();
+    const FeatureViews &views_prev = frame_prev->getViews();
     MatchesIdx matches_passed_idx_alt = RotationConsistency(current_matches_idx, views_curr, views_prev);
 
     //translate results into proper format for output
@@ -533,7 +533,7 @@ MonoInitBestScore::MonoInitBestScore( int score_threshold_, float second_best_ra
 score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 {}
 
-std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_matches, const ORBViews &views,  MonoCriteriaData &data){
+std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data){
     std::vector<size_t> views_passed;
 
     int bestDist = INT_MAX;
@@ -548,7 +548,7 @@ std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_mat
 
         cv::Mat d2 = views.descriptor(i2);
 
-        int dist = DescriptorDistance(d1,d2);
+        int dist = descriptorDistance(d1, d2);
 
         if(dist<bestDist)
         {
@@ -573,7 +573,7 @@ std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_mat
     return views_passed;
 }
 
-std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &candidate_matches, const ORBViews &views,  MonoCriteriaData &data) {
+std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data) {
     std::vector<size_t> views_passed;
 
     cv::Mat d1 = data.getDescriptor();
@@ -588,7 +588,7 @@ std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &ca
 
         } else {
             cv::Mat d2 = views.descriptor(i2);
-            int dist = DescriptorDistance(d1, d2);
+            int dist = descriptorDistance(d1, d2);
 
             if(dist < dist_prev){
                 views_passed.push_back(i2);
@@ -634,7 +634,7 @@ std::vector<unsigned int>  StereoIndexCriterion::apply(KeyFrame* pKF, std::vecto
         return cand_idxs;
     }
 
-    const ORBViews KFviews = pKF->getViews();
+    const FeatureViews KFviews = pKF->getViews();
     for(auto it = cand_idxs.begin(); it != cand_idxs.end(); ++it) {
         unsigned int idx = *it;
         bool is_stereo = KFviews.uR(idx) >= 0;
@@ -650,7 +650,7 @@ score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 {}
 
 
-std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<unsigned int> cand_idx2, const ORBViews &views1, const ORBViews &views2 ){
+std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 ){
     std::vector<unsigned int> idxs_passed;
     cv::Mat d1 = views1.descriptor(idx1);
 
@@ -664,7 +664,7 @@ std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<
 
         const cv::Mat &d2 = views2.descriptor(idx2);
 
-        int dist = DescriptorDistance(d1,d2);
+        int dist = descriptorDistance(d1, d2);
 
         if(dist<bestDist1)
         {
@@ -690,7 +690,7 @@ EpipolarConsistencyBoWCriterion::EpipolarConsistencyBoWCriterion(cv::Mat Fmatrix
 Fmatrix(Fmatrix_), ex(ex_), ey(ey_)
 {}
 
-std::vector<unsigned int> EpipolarConsistencyBoWCriterion::apply(size_t idx1, std::vector<unsigned int> cand_idx2, const ORBViews &views1, const ORBViews &views2 ){
+std::vector<unsigned int> EpipolarConsistencyBoWCriterion::apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 ){
     std::vector<unsigned int> idxs_passed;
 
     const cv::KeyPoint &kp1 = views1.keypt(idx1);
@@ -735,14 +735,14 @@ bool EpipolarConsistencyBoWCriterion::CheckDistEpipolarLine(const cv::KeyPoint &
 }
 
 
-MatchesIdx RotationConsistencyBoW::apply(std::map<size_t, size_t> current_matches, const ORBViews &views1, const ORBViews &views2 ){
+MatchesIdx RotationConsistencyBoW::apply(std::map<size_t, size_t> current_matches, const FeatureViews &views1, const FeatureViews &views2 ){
 
     return RotationConsistency(current_matches, views1, views2 );
 }
 
 // Bit set count operation from
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-int DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
+int descriptorDistance(const cv::Mat &a, const cv::Mat &b)
 {
     const int *pa = a.ptr<int32_t>();
     const int *pb = b.ptr<int32_t>();
@@ -775,7 +775,7 @@ int determinePredictedLevel(Frame &frame, MapPoint* lm, CriteriaData &data) {
     }
 
     if (use_previous) {
-        const ORBViews views_prev = frame_prev->getViews();
+        const FeatureViews views_prev = frame_prev->getViews();
         nPredictedLevel = views_prev.keypt(idx_prev).octave;
     } else {
         cv::Mat PO = lm->GetWorldPos() - frame.GetCameraCenter();
@@ -792,7 +792,7 @@ int determinePredictedLevel(KeyFrame* pKF, MapPoint* lm, CriteriaData &data){
 }
 
 //MatchesIdx RotationConsistency(MatchesIdx current_matches,Frame &frame_current, Frame &frame_previous){
-MatchesIdx RotationConsistency(MatchesIdx current_matches, const ORBViews &views_curr,  const ORBViews &views_prev ){
+MatchesIdx RotationConsistency(MatchesIdx current_matches, const FeatureViews &views_curr,  const FeatureViews &views_prev ){
     int HISTO_LENGTH = 30;
     MatchesIdx matches_passed = current_matches;
 

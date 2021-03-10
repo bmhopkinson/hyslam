@@ -5,7 +5,8 @@
 #include <opencv2/opencv.hpp>
 #include <FeatureExtractor.h>
 #include <ORBExtractorParams.h>
-#include <ORBViews.h>
+#include <FeatureViews.h>
+#include <DescriptorDistance.h>
 #include <Camera.h>
 
 namespace HYSLAM{
@@ -14,16 +15,17 @@ class ORBstereomatcher{
 public:
   ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, std::vector<cv::KeyPoint> mvKeys_,
                    std::vector<cv::KeyPoint> mvKeysRight_ , cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, Camera cam_data, ORBExtractorParams orb_params_);
-  ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, ORBViews views, Camera cam_data);
+  ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views, DescriptorDistance* descriptor_distance_, Camera cam_data);
   void computeStereoMatches();
   void getData(std::vector<float> &mvuRight_, std::vector<float> &mvDepth_);
-  void getData(ORBViews &views);
+  void getData(FeatureViews &views);
 
 private:
   FeatureExtractor* mpORBextractorLeft;
   FeatureExtractor* mpORBextractorRight;
   std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
   cv::Mat mDescriptors, mDescriptorsRight;
+  DescriptorDistance* descriptor_distance;
 
   ORBExtractorParams orb_params;
 
