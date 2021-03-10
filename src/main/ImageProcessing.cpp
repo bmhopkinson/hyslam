@@ -21,15 +21,17 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, std::map<std
     ORBextractorSettings ORBextractor_settings;
     std::string tracking_config_file;
     LoadSettings(strSettingPath, ORBextractor_settings);
+
+    dist_func = std::make_shared<ORBDistance>();
     
-    mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
-    mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings);
-    SURFextractor = new FeatureExtractor(std::make_unique<SURFFinder>(), ORBextractor_settings);
+    mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
+    mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
+  //  SURFextractor = new FeatureExtractor(std::make_unique<SURFFinder>(), ORBextractor_settings);
 
     ORBextractorSettings ORBextractor_settings_init;
     ORBextractor_settings_init = ORBextractor_settings;
     ORBextractor_settings_init.nFeatures = 3 * ORBextractor_settings.nFeatures;
-    mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), ORBextractor_settings_init);
+    mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings_init);
 }
 
 
@@ -39,7 +41,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
     mImGray = PreProcessImg(mImGray, cam_data[cam_cur].RGB, cam_data[cam_cur].scale);
 
     std::vector<cv::KeyPoint> mvKeys;
-    cv::Mat mDescriptors;
+    std::vector<FeatureDescriptor> mDescriptors;
     FeatureExtractor* extractor;
     if(tracking_state==eTrackingState::INITIALIZATION || tracking_state==eTrackingState::NO_IMAGES_YET){
         extractor = mpIniORBextractor;
@@ -70,7 +72,8 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     imGrayRight = PreProcessImg(imGrayRight, cam_data[cam_cur].RGB, cam_data[cam_cur].scale);
 
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
-    cv::Mat mDescriptors, mDescriptorsRight;
+    std::vector<FeatureDescriptor> mDescriptors;
+    std::vector<FeatureDescriptor> mDescriptorsRight;
     std::thread orb_thread(ORBUtil::extractORB, mpORBextractorLeft, std::ref(mImGray), std::ref(mvKeys),std::ref( mDescriptors) );
     (*mpORBextractorRight)(imGrayRight, cv::Mat(), mvKeysRight,  mDescriptorsRight );
     orb_thread.join();
@@ -78,7 +81,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
 
     std::vector<cv::KeyPoint> surf_keys;
     cv::Mat surf_descriptors;
-    (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
+ //   (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
 
 
     FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);

@@ -5,7 +5,8 @@
 namespace HYSLAM{
 
 
-ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_ , cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, Camera cam_data, ORBExtractorParams orb_params_)
+ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, std::vector<cv::KeyPoint> mvKeys_,
+                                   std::vector<cv::KeyPoint> mvKeysRight_ , std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, Camera cam_data, ORBExtractorParams orb_params_)
 {
   mpORBextractorLeft  = mpORBextractorLeft_;
   mpORBextractorRight = mpORBextractorRight_;
@@ -111,7 +112,7 @@ void ORBstereomatcher::computeStereoMatches()
           int bestDist = FeatureMatcher::TH_HIGH;
           size_t bestIdxR = 0;
 
-          const cv::Mat &dL = mDescriptors.row(iL);
+          const FeatureDescriptor &dL = mDescriptors[iL];
 
           // Compare descriptor to right keypoints
           for(size_t iC=0; iC<vCandidates.size(); iC++)
@@ -126,8 +127,8 @@ void ORBstereomatcher::computeStereoMatches()
 
               if(uR>=minU && uR<=maxU)
               {
-                  const cv::Mat &dR = mDescriptorsRight.row(iR);
-                  const int dist = descriptor_distance->distance(dL,dR);
+                  const FeatureDescriptor &dR = mDescriptorsRight[iR];
+                  const int dist = dL.distance(dR);
 
                   if(dist<bestDist)
                   {

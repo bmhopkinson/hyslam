@@ -4,6 +4,8 @@
 #include <MapPoint.h>
 #include <Frame.h>
 #include <KeyFrame.h>
+#include <FeatureDescriptor.h>
+
 #include <map>
 #include <vector>
 
@@ -150,14 +152,14 @@ private:
 class MonoCriteriaData{
 public:
     MonoCriteriaData(){};
-    void setDescriptor( cv::Mat desc_){descriptor = desc_.clone();}
-    cv::Mat getDescriptor() {return descriptor.clone(); };
+    void setDescriptor( FeatureDescriptor desc_){descriptor = desc_;}
+    FeatureDescriptor getDescriptor() {return descriptor; };
     void setIndex(size_t idx){idx_current = idx;}
     size_t getIndex(){return idx_current;}
     void setDistance(size_t idx, int dist);
     int getDistance(size_t idx);
 private:
-    cv::Mat descriptor;
+    FeatureDescriptor descriptor;
     size_t idx_current;
     std::map<size_t, int> distances;
 

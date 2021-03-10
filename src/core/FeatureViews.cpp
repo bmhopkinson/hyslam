@@ -2,6 +2,7 @@
 
 namespace HYSLAM{
 //copy constructor
+/*
 FeatureViews::FeatureViews(const FeatureViews &views){
   is_stereo = views.is_stereo;
   is_empty = views.is_empty;
@@ -35,9 +36,9 @@ FeatureViews& FeatureViews::operator=(const FeatureViews& views){
 
     return *this;
 }
-
+*/
 // mono constructor
-FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_,cv::Mat  mDescriptors_, ORBExtractorParams orb_params_ ){
+FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, ORBExtractorParams orb_params_ ){
   is_stereo = false;
   N = mvKeys_.size();
   if(N>0){
@@ -53,7 +54,7 @@ FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_,cv::Mat  mDescripto
 
 //stereo constructor- partial data
 FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
-            cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_){
+                           std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_){
   is_stereo = true;
   N = mvKeys_.size();
   if(N>0){
@@ -69,7 +70,7 @@ FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::Ke
 
 //stereo constructor- full data
 FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
-            cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_)
+                           std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_)
 {
   is_stereo = true;
   N = mvKeys_.size();
@@ -96,11 +97,11 @@ else {
 }
 }
 
-cv::Mat FeatureViews::descriptorR(int i ) const {
+FeatureDescriptor FeatureViews::descriptorR(int i ) const {
 if(is_stereo){
-    return mDescriptorsRight.row(i).clone();  }
+    return mDescriptorsRight[i];  }
 else {
-   return cv::Mat(); //empty mat
+   return FeatureDescriptor(); //empty descriptor
 }
 }
 

@@ -15,12 +15,15 @@ namespace HYSLAM {
 
 class FeatureDescriptor {
 public:
+    FeatureDescriptor(){};
     FeatureDescriptor(cv::Mat desc, std::shared_ptr<DescriptorDistance> distfunc_ );
     int distance(const FeatureDescriptor &d2) const;
     cv::Mat rawDescriptor() const {return descriptor.clone(); };
+    bool isEmpty() {return is_empty;}
 private:
     cv::Mat descriptor;
     std::shared_ptr<DescriptorDistance> distfunc;
+    bool is_empty = true;
 
 };
 }

@@ -73,9 +73,10 @@ const int N_CELLS = 30;
 const int PATCH_SIZE = 31;
 const int EDGE_THRESHOLD = 19;
 
-FeatureExtractor::FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, ORBextractorSettings settings)
+FeatureExtractor::FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::shared_ptr<DescriptorDistance> dist_func_, ORBextractorSettings settings)
 {
     feature_finder = std::move(feature_finder_);
+    dist_func = dist_func_;
     nfeatures = settings.nFeatures;
     scaleFactor = settings.fScaleFactor;
     nlevels = settings.nLevels;
@@ -498,7 +499,7 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
 }
 
 void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<KeyPoint>& _keypoints,
-                                  OutputArray _descriptors)
+                                  std::vector<FeatureDescriptor> &descriptors)
 { 
     if(_image.empty())
         return;
@@ -512,17 +513,17 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
     std::vector < std::vector<cv::KeyPoint> > allKeypoints;
     ComputeKeyPointsOctTree(allKeypoints);
 
-    cv::Mat descriptors;
+    cv::Mat descriptors_raw;
 
     int nkeypoints = 0;
     for (int level = 0; level < nlevels; ++level)
         nkeypoints += (int)allKeypoints[level].size();
     if( nkeypoints == 0 )
-        _descriptors.release();
+        descriptors_raw.release();
     else
     {
-        _descriptors.create(nkeypoints, feature_finder->descriptor_cols(), feature_finder->descriptor_mat_type() );
-        descriptors = _descriptors.getMat();
+        descriptors_raw.create(nkeypoints, feature_finder->descriptor_cols(), feature_finder->descriptor_mat_type() );
+      //  descriptors = descriptors_raw.getMat();
     }
 
     _keypoints.clear();
@@ -542,8 +543,9 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
         GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
 
         // Compute the descriptors
-        cv::Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
+        cv::Mat desc = descriptors_raw.rowRange(offset, offset + nkeypointsLevel);
         feature_finder->compute(workingMat, keypoints,desc);
+
         //computeDescriptors(workingMat, keypoints, desc, pattern);
 
         offset += nkeypointsLevel;
@@ -558,6 +560,11 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
         }
         // And add the keypoints to the output
         _keypoints.insert(_keypoints.end(), keypoints.begin(), keypoints.end());
+    }
+
+    //reformat descriptors
+    for(int j = 0; j < nkeypoints ; ++j){
+        descriptors.push_back(FeatureDescriptor(descriptors_raw.row(j), dist_func )  );
     }
 }
 

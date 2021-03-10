@@ -21,6 +21,8 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
 
+#include <FeatureDescriptor.h>
+
 #include<opencv2/core/core.hpp>
 
 #include<Eigen/Dense>
@@ -35,7 +37,7 @@ typedef Eigen::Transform<double ,3,Eigen::Isometry,Eigen::ColMajor> Isometry3;
 class Converter
 {
 public:
-    static std::vector<cv::Mat> toDescriptorVector(const cv::Mat &Descriptors);
+    static std::vector<cv::Mat> toDescriptorVector(const std::vector<FeatureDescriptor> &Descriptors);
 
     static g2o::SE3Quat toSE3Quat(const cv::Mat &cvT);
     static g2o::SE3Quat toSE3Quat(const g2o::Sim3 &gSim3);

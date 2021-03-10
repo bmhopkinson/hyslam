@@ -3,7 +3,7 @@
 
 #include <ORBExtractorParams.h>
 #include <opencv2/opencv.hpp>
-
+#include <FeatureDescriptor.h>
 #include <vector>
 
 namespace HYSLAM{
@@ -12,13 +12,13 @@ class FeatureViews{
 //ORB keypoints in a frame
 public:
   FeatureViews(){};
-  FeatureViews(const FeatureViews &views);
-  FeatureViews& operator=(const FeatureViews&);
-  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, cv::Mat mDescriptors_, ORBExtractorParams orb_params_ );  // mono constructor
+ // FeatureViews(const FeatureViews &views);
+//  FeatureViews& operator=(const FeatureViews&);
+  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, ORBExtractorParams orb_params_ );  // mono constructor
   FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
-            cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - partial data
+               std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - partial data
   FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
-            cv::Mat mDescriptors_, cv::Mat mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - full data
+               std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - full data
 
   //getters
   bool empty() const {return is_empty;}
@@ -26,8 +26,8 @@ public:
   int numViews() const {return N;}
   cv::KeyPoint keypt(int i ) const {return mvKeys[i];  }
   cv::KeyPoint keyptR(int i ) const;
-  cv::Mat descriptor(int i ) const {return mDescriptors.row(i).clone();  }
-  cv::Mat descriptorR(int i ) const;
+  FeatureDescriptor descriptor(int i ) const {return mDescriptors[i];  }
+  FeatureDescriptor  descriptorR(int i ) const;
   float uR(int i) const;
   float depth(int i) const;
   ORBExtractorParams orbParams() const { return orb_params; }
@@ -38,8 +38,8 @@ public:
   std::vector<cv::KeyPoint> getKeysR() const {return mvKeysRight; }
   std::vector<float> getuRs() const {return mvuRight; }
   std::vector<float> getDepths() const {return mvDepth; }
-  cv::Mat getDescriptors() const { return mDescriptors.clone(); }
-  cv::Mat getDescriptorsR() const { return mDescriptorsRight.clone(); }
+  std::vector<FeatureDescriptor> getDescriptors() const { return mDescriptors; }
+  std::vector<FeatureDescriptor> getDescriptorsR() const { return mDescriptorsRight; }
   
   //setters
   void setOrbParams(ORBExtractorParams params ) {  orb_params  = params; }
@@ -47,8 +47,8 @@ public:
   void setKeysR(std::vector<cv::KeyPoint> keyptsR) { mvKeysRight = keyptsR; }
   void setuRs(std::vector<float> uRs ) { mvuRight = uRs; }
   void setDepths(std::vector<float> depths)  {mvDepth = depths; }
-  void setDescriptors(cv::Mat descriptors)  {  mDescriptors = descriptors.clone(); }
-  void setDescriptorsR(cv::Mat descriptorsR) { mDescriptorsRight = descriptorsR.clone();}
+//  void setDescriptors(cv::Mat descriptors)  {  mDescriptors = descriptors.clone(); }
+ // void setDescriptorsR(cv::Mat descriptorsR) { mDescriptorsRight = descriptorsR.clone();}
 
 private:
 
@@ -67,9 +67,9 @@ private:
   std::vector<float> mvuRight;
   std::vector<float> mvDepth;
 
-//ORB descriptors
-  cv::Mat mDescriptors;
-  cv::Mat mDescriptorsRight;
+//Feature descriptors
+    std::vector<FeatureDescriptor> mDescriptors;
+    std::vector<FeatureDescriptor> mDescriptorsRight;
 
   // Scale pyramid info.
  ORBExtractorParams orb_params;

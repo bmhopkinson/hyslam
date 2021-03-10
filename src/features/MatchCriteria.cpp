@@ -286,7 +286,7 @@ std::vector<size_t> BestScoreCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std:
 
 SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, std::vector<size_t> &candidate_views){
     SingleMatchData best_view;
-    const cv::Mat lm_descriptor = lm->GetDescriptor();
+    const FeatureDescriptor lm_descriptor = lm->GetDescriptor();
 
     int bestDist=256;
     int bestLevel= -1;
@@ -296,9 +296,9 @@ SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, s
 
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
         size_t idx = *it;
-        const cv::Mat &d = views.descriptor(idx);
+        const FeatureDescriptor &d = views.descriptor(idx);
 
-        const int dist_orb = descriptorDistance(lm_descriptor, d);
+        const int dist_orb = lm_descriptor.distance(d);
 
         if(dist_orb<bestDist)
         {
@@ -539,16 +539,16 @@ std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_mat
     int bestDist = INT_MAX;
     int bestDist2 = INT_MAX;
     int bestIdx = -1;
-    cv::Mat d1 = data.getDescriptor();
+    FeatureDescriptor d1 = data.getDescriptor();
    // size_t idx1 = data.getIndex();
 
     for(std::vector<size_t>::iterator vit=candidate_matches.begin(); vit!=candidate_matches.end(); vit++)
     {
         size_t i2 = *vit;
 
-        cv::Mat d2 = views.descriptor(i2);
+        FeatureDescriptor d2 = views.descriptor(i2);
 
-        int dist = descriptorDistance(d1, d2);
+        int dist = d1.distance(d2);
 
         if(dist<bestDist)
         {
@@ -576,7 +576,7 @@ std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_mat
 std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data) {
     std::vector<size_t> views_passed;
 
-    cv::Mat d1 = data.getDescriptor();
+    FeatureDescriptor d1 = data.getDescriptor();
  //   size_t idx1 = data.getIndex();
 
     for (std::vector<size_t>::iterator vit = candidate_matches.begin(); vit != candidate_matches.end(); vit++) {
@@ -587,8 +587,8 @@ std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &ca
             views_passed.push_back(i2);
 
         } else {
-            cv::Mat d2 = views.descriptor(i2);
-            int dist = descriptorDistance(d1, d2);
+            FeatureDescriptor d2 = views.descriptor(i2);
+            int dist = d1.distance(d2);
 
             if(dist < dist_prev){
                 views_passed.push_back(i2);
@@ -652,7 +652,7 @@ score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 
 std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 ){
     std::vector<unsigned int> idxs_passed;
-    cv::Mat d1 = views1.descriptor(idx1);
+    FeatureDescriptor d1 = views1.descriptor(idx1);
 
     int bestDist1=256;
     int bestIdx2 =-1 ;
@@ -662,9 +662,9 @@ std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<
     {
         unsigned int idx2 = *it;
 
-        const cv::Mat &d2 = views2.descriptor(idx2);
+        const FeatureDescriptor &d2 = views2.descriptor(idx2);
 
-        int dist = descriptorDistance(d1, d2);
+        int dist = d1.distance(d2);
 
         if(dist<bestDist1)
         {

@@ -22,6 +22,8 @@
 #define FEATUREEXTRACTOR_H
 
 #include <FeatureFinder.h>
+#include <FeatureDescriptor.h>
+#include <DescriptorDistance.h>
 
 #include <opencv/cv.h>
 #include <vector>
@@ -62,7 +64,7 @@ public:
     
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };
 
-    FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, ORBextractorSettings settings);
+    FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::shared_ptr<DescriptorDistance> dist_func_, ORBextractorSettings settings);
 
     ~FeatureExtractor(){}
 
@@ -71,7 +73,7 @@ public:
     // Mask is ignored in the current implementation.
     void operator()( cv::InputArray image, cv::InputArray mask,
       std::vector<cv::KeyPoint>& keypoints,
-      cv::OutputArray descriptors);
+      std::vector<FeatureDescriptor> &descriptors);
 
     int inline GetLevels(){
         return nlevels;}
@@ -106,6 +108,7 @@ protected:
 
 
     std::unique_ptr<FeatureFinder> feature_finder;
+    std::shared_ptr<DescriptorDistance> dist_func;
 
     int nfeatures;
     double scaleFactor;

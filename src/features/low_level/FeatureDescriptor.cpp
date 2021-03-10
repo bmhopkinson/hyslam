@@ -6,8 +6,10 @@
 
 namespace HYSLAM {
 FeatureDescriptor::FeatureDescriptor(cv::Mat desc, std::shared_ptr<DescriptorDistance> distfunc_ ):
-        descriptor(desc), distfunc(distfunc_)
-{}
+        distfunc(distfunc_), is_empty(false)
+{
+    descriptor = desc.clone();
+}
 
 int FeatureDescriptor::distance(const FeatureDescriptor &d2) const
 {

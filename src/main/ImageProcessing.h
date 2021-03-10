@@ -6,6 +6,7 @@
 #define HYSLAM_IMAGEPROCESSING_H
 
 #include <FeatureExtractor.h>
+#include <DescriptorDistance.h>
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
 #include <InterThread.h>
@@ -36,7 +37,8 @@ private:
 
     FeatureExtractor* mpORBextractorLeft, *mpORBextractorRight;
     FeatureExtractor* mpIniORBextractor;
-    FeatureExtractor* SURFextractor;
+   // FeatureExtractor* SURFextractor;
+    std::shared_ptr<DescriptorDistance> dist_func;
 
     std::string cam_cur;  //current camera
     std::map<std::string, Camera> cam_data;

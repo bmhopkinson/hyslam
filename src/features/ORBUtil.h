@@ -8,7 +8,7 @@ namespace HYSLAM{
 
 class ORBUtil{
     public:
-    static void extractORB(FeatureExtractor* extractor, const cv::Mat &img, std::vector<cv::KeyPoint> &keys, cv::Mat &desc);
+    static void extractORB(FeatureExtractor* extractor, const cv::Mat &img, std::vector<cv::KeyPoint> &keys, std::vector<FeatureDescriptor> &desc);
 };
 
 }

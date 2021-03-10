@@ -24,13 +24,18 @@
 namespace HYSLAM
 {
 
-std::vector<cv::Mat> Converter::toDescriptorVector(const cv::Mat &Descriptors)
+std::vector<cv::Mat> Converter::toDescriptorVector(const std::vector<FeatureDescriptor> &Descriptors)
 {
     std::vector<cv::Mat> vDesc;
-    vDesc.reserve(Descriptors.rows);
+    vDesc.reserve(Descriptors.size());
+    for(auto it = Descriptors.cbegin(); it != Descriptors.cend(); ++it){
+        vDesc.push_back(it->rawDescriptor());
+    }
+
+    /*
     for (int j=0;j<Descriptors.rows;j++)
         vDesc.push_back(Descriptors.row(j));
-
+*/
     return vDesc;
 }
 
