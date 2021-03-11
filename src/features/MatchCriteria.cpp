@@ -157,7 +157,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(Frame &frame, MapPoint* lm
         return candidate_views;
     }
 
-    const FeatureViews views = frame.getViews();
+    const FeatureViews& views = frame.getViews();
     ORBExtractorParams orb_params = views.orbParams();
     Frame* frame_prev = data.getPreviousFrame();
 
@@ -192,7 +192,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(KeyFrame* pKF, MapPoint* l
         return candidate_views;
     }
 
-    const FeatureViews views = pKF->getViews();
+    const FeatureViews& views = pKF->getViews();
     ORBExtractorParams orb_params = views.orbParams();
     Frame* frame_prev = data.getPreviousFrame();
 
@@ -225,7 +225,7 @@ score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
    // const cv::Mat lm_descriptor = lm->GetDescriptor();
-    const FeatureViews views = frame.getViews();
+    const FeatureViews& views = frame.getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
 /*
     int bestDist=256;
@@ -270,7 +270,7 @@ std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::
 
 std::vector<size_t> BestScoreCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
-    const FeatureViews views = pKF->getViews();
+    const FeatureViews& views = pKF->getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
 
     if(best_view.score <= score_threshold) {
@@ -286,7 +286,7 @@ std::vector<size_t> BestScoreCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std:
 
 SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, std::vector<size_t> &candidate_views){
     SingleMatchData best_view;
-    const FeatureDescriptor lm_descriptor = lm->GetDescriptor();
+    const FeatureDescriptor& lm_descriptor = lm->GetDescriptor();
 
     int bestDist=256;
     int bestLevel= -1;
@@ -330,7 +330,7 @@ ProjectionViewCriterion::ProjectionViewCriterion(float  error_threshold_):  erro
 
 std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
-    const FeatureViews views = frame.getViews();
+    const FeatureViews& views = frame.getViews();
     ORBExtractorParams orb_params = views.orbParams();
 
     cv::Mat lm_position = lm->GetWorldPos();
@@ -354,7 +354,7 @@ std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  
 
 std::vector<size_t> ProjectionViewCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
-    const FeatureViews views = pKF->getViews();
+    const FeatureViews& views = pKF->getViews();
     ORBExtractorParams orb_params = views.orbParams();
 
     cv::Mat lm_position = lm->GetWorldPos();
@@ -383,13 +383,13 @@ PyramidLevelCriterion::PyramidLevelCriterion(int n_below_, int n_above_) : n_bel
 
 std::vector<size_t> PyramidLevelCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     int predicted_level = determinePredictedLevel( frame, lm, data);
-    const FeatureViews views = frame.getViews();
+    const FeatureViews& views = frame.getViews();
     return PyramidLevelCriterionCore(predicted_level, n_below, n_above, views, lm, candidate_views);
 }
 
 std::vector<size_t> PyramidLevelCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     int predicted_level = determinePredictedLevel( pKF, lm, data);
-    const FeatureViews views = pKF->getViews();
+    const FeatureViews& views = pKF->getViews();
     return PyramidLevelCriterionCore(predicted_level, n_below, n_above, views, lm, candidate_views);
 }
 
@@ -413,7 +413,7 @@ std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, 
 MatchesFound RotationConsistencyCriterion::apply(MatchesFound current_matches, Frame &frame, CriteriaData &data){
     MatchesFound matches_passed = current_matches;
 
-    const FeatureViews views = frame.getViews();
+    const FeatureViews& views = frame.getViews();
     Frame* frame_prev = data.getPreviousFrame();
     if(!frame_prev){  //need prev frame to check rotational consistency
         return current_matches;
@@ -634,7 +634,7 @@ std::vector<unsigned int>  StereoIndexCriterion::apply(KeyFrame* pKF, std::vecto
         return cand_idxs;
     }
 
-    const FeatureViews KFviews = pKF->getViews();
+    const FeatureViews& KFviews = pKF->getViews();
     for(auto it = cand_idxs.begin(); it != cand_idxs.end(); ++it) {
         unsigned int idx = *it;
         bool is_stereo = KFviews.uR(idx) >= 0;
@@ -775,7 +775,7 @@ int determinePredictedLevel(Frame &frame, MapPoint* lm, CriteriaData &data) {
     }
 
     if (use_previous) {
-        const FeatureViews views_prev = frame_prev->getViews();
+        const FeatureViews& views_prev = frame_prev->getViews();
         nPredictedLevel = views_prev.keypt(idx_prev).octave;
     } else {
         cv::Mat PO = lm->GetWorldPos() - frame.GetCameraCenter();

@@ -52,8 +52,13 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
     else
         th = params.match_radius_threshold_other;
 
+  //  std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
     int nmatches = matcher.SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
-   // std::cout << "TrackMotionModel, SearchByProj matches" << nmatches << std::endl;
+  //  std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
+  //  std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
+  //  std::cout << "MoMo SearchByProj duration (ms):  " << t_elapsed.count() << std::endl;
+   // std::cout << "TrackMotionModel, SearchByProj matches: " << nmatches << std::endl;
+
 
     //   std::cout << "TrackwMotionModel, Frame: " << mCurrentFrame.mnId << std::endl;
     //   mCurrentFrame.validateNewAssociations();
@@ -63,7 +68,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
         current_frame.clearAssociations();
         th =  params.match_theshold_inflation_factor*th;
         nmatches = matcher.SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
-      //  std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
+        std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
     }
 
     if(nmatches < params.N_min_matches){
@@ -71,7 +76,11 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
     }
 
     // Optimize frame pose with all matches
+  //  std::chrono::steady_clock::time_point t_start2 = std::chrono::steady_clock::now();
     Optimizer::PoseOptimization(&current_frame, optimizer_info);
+  //  std::chrono::steady_clock::time_point t_stop2 = std::chrono::steady_clock::now();
+  //  std::chrono::duration<int, std::milli> t_elapsed2 = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop2-t_start2);
+   // std::cout << "MoMo PoseOptimization duration (ms):  " << t_elapsed2.count() << std::endl;
 
     // Discard outliers
     int nmatchesMap = 0;

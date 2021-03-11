@@ -139,6 +139,7 @@ bool Tracking::inputAvailable(){
 }
 //cv::Mat Tracking::track(FeatureViews LMviews, cv::Mat &image, std::string cam_name, const Imgdata &img_data, const SensorData &sensor_data){
 cv::Mat Tracking::track(ImageFeatureData &track_data){
+    std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
     cam_cur = track_data.img_data.camera;
     mImGray = track_data.image;
     Camera cam_data_cur = cam_data[cam_cur];
@@ -153,6 +154,11 @@ cv::Mat Tracking::track(ImageFeatureData &track_data){
     mCurrentFrame = Frame( track_data.img_data.time_stamp, track_data.LMviews, mpORBVocabulary,cam_data[cam_cur], track_data.img_data.name, track_data.sensor_data, is_stereo);
 
     _Track_();
+
+    std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
+    std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
+   // std::cout << "tracking duration (ms):  " << t_elapsed.count() << std::endl;
+
     return mCurrentFrame.mTcw.clone();
 }
 

@@ -64,6 +64,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
 }
 
 void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data,  eTrackingState tracking_state){
+    std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
     cam_cur = img_data.camera;
     mImGray = imRectLeft;
     cv::Mat imGrayRight = imRectRight;
@@ -97,6 +98,9 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     track_data.LMviews = LMviews;
 
     output_queue->push(track_data);
+    std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
+    std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
+   // std::cout << "stereo feature extraction duration (ms):  " << t_elapsed.count() << std::endl;
 
 }
 

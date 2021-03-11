@@ -97,13 +97,15 @@ else {
 }
 }
 
-FeatureDescriptor FeatureViews::descriptorR(int i ) const {
+/*
+const FeatureDescriptor& FeatureViews::descriptorR(int i ) const {
 if(is_stereo){
     return mDescriptorsRight[i];  }
 else {
    return FeatureDescriptor(); //empty descriptor
 }
 }
+*/
 
 float FeatureViews::uR(int i) const {
 if(is_stereo){

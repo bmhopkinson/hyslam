@@ -26,8 +26,8 @@ public:
   int numViews() const {return N;}
   cv::KeyPoint keypt(int i ) const {return mvKeys[i];  }
   cv::KeyPoint keyptR(int i ) const;
-  FeatureDescriptor descriptor(int i ) const {return mDescriptors[i];  }
-  FeatureDescriptor  descriptorR(int i ) const;
+  const FeatureDescriptor& descriptor(int i ) const {return mDescriptors[i];  }
+//  const FeatureDescriptor&  descriptorR(int i ) const;
   float uR(int i) const;
   float depth(int i) const;
   ORBExtractorParams orbParams() const { return orb_params; }

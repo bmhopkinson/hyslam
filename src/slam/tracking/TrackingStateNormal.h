@@ -9,6 +9,7 @@
 #include <TrackLocalMap.h>
 
 #include <opencv2/core/core.hpp>
+#include <chrono>
 
 namespace HYSLAM {
 class TrackingStateNormal : public TrackingState {
@@ -28,6 +29,10 @@ private:
     int thresh_refine;
     int mnMatchesInliers = 0; // number of tracked points after refinePoseEstimate
 
+    //timing
+    static int n_calls;
+    static std::chrono::duration<int, std::milli> init_pose_duration;
+    static std::chrono::duration<int, std::milli> refine_pose_duration;
 };
 
 }

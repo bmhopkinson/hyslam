@@ -563,6 +563,7 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
     }
 
     //reformat descriptors
+    descriptors.reserve(nkeypoints);
     for(int j = 0; j < nkeypoints ; ++j){
         descriptors.push_back(FeatureDescriptor(descriptors_raw.row(j), dist_func )  );
     }

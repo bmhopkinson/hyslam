@@ -3,6 +3,11 @@
 #include <Tracking_datastructs.h>
 
 namespace HYSLAM {
+
+int TrackingStateNormal::n_calls =0;
+std::chrono::duration<int, std::milli> TrackingStateNormal::init_pose_duration;
+std::chrono::duration<int, std::milli> TrackingStateNormal::refine_pose_duration;
+
 TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_) :
     params(params_),  TrackingState(log, thread_status_)
 {
@@ -13,6 +18,8 @@ TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalPara
 }
 
 bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+    n_calls++;
+    std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
     int nmatches = 0;
     Camera camera = current_frame.getCamera();
     if(!trajectories.at(camera.camName)->getLastVelocityValid())
@@ -22,11 +29,11 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
     }
     else     //track with motion model - default when tracking is going smoothly
     {
-       // std::cout << "trying to track with motion model: " << std::endl;
+       //std::cout << "trying to track with motion model: " << std::endl;
          nmatches = track_motion_model->track(current_frame, frames, pKF, pMap,trajectories.at("SLAM").get() );
 
         if(nmatches < params.thresh_init){
-         //         std::cout << "tracking with motion model failed...will need to track with reference key frame." << std::endl;
+        //    std::cout << "tracking with motion model failed...will need to track with reference key frame." << std::endl;
             nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );
             (*pftracking) << "RefKF" << "\t";
         } else {
@@ -35,11 +42,36 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
     }
     bool success = nmatches > params.thresh_init;
     (*pftracking) << success << "\t";
+
+
+    std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
+    std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
+   // std::cout << "MoMo Init Pose estimation duration (ms):  " << t_elapsed.count() << std::endl;
+
+    init_pose_duration+= t_elapsed;
+    if(n_calls % 50 == 0){
+        std::cout << "frames tracked: " << n_calls << std::endl;
+        std::cout << "avg init_pose_est per frame (ms): " << static_cast<float>(init_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
+    }
+
     return success;
 }
 
 bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+    std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
+
     mnMatchesInliers =  track_local_map->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );
+
+    std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
+    std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
+ //   std::cout << "MoMo Refine pose duration duration (ms):  " << t_elapsed.count() << std::endl;
+
+    refine_pose_duration+= t_elapsed;
+
+    if(n_calls % 50 == 0){
+        std::cout << "avg refine_pose_est per frame (ms): " << static_cast<float>(refine_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
+    }
+
     (*pftracking) <<  mnMatchesInliers << "\t";
     return mnMatchesInliers > params.thresh_refine;
 }

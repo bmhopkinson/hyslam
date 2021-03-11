@@ -59,17 +59,23 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
     std::map<MapPoint*, SingleMatchData> matches;
     std::vector<MapPoint*> cand_lms = landmarks;
 
-    const FeatureViews views = frame.getViews(); //this could get large convert to const ref eventually
+    //const FeatureViews views = frame.getViews(); //this could get large convert to const ref eventually
+    const FeatureViews &views = frame.getViews();
     ORBExtractorParams orb_params = views.orbParams();
 
 
     //apply landmark criteria
+
     for(auto criterion = landmark_criteria.begin(); criterion != landmark_criteria.end(); ++criterion){//winnow down potential landmark matches
         cand_lms = (*criterion)->apply(frame, cand_lms, criteria_data);
     }
 
+
+  //  std::chrono::duration<int, std::micro> t_elapsed;
+   // std::chrono::duration<int, std::micro> t_elapsed2;
     //apply keypoint criteria to all passing landmarks
     for(auto it = cand_lms.begin(); it != cand_lms.end(); ++it ){
+     //   std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
         MapPoint* lm = *it;
         if(!lm){
             continue;
@@ -83,9 +89,21 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
         float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
         std::vector<size_t> cand_lmviews = frame.GetFeaturesInArea(u,v,radius,nPredictedLevel-1,nPredictedLevel+1);
+
+
+       // std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
+      //  t_elapsed += std::chrono::duration_cast<std::chrono::microseconds>(t_stop-t_start);
+
+
+      //  std::chrono::steady_clock::time_point t_start2 = std::chrono::steady_clock::now();
+
         for(auto criterion  = landmarkview_criteria.begin(); criterion != landmarkview_criteria.end(); ++criterion ){ //winnow down potential views
             cand_lmviews = (*criterion)->apply(frame, lm, cand_lmviews, criteria_data);
         }
+
+      //  std::chrono::steady_clock::time_point t_stop2 = std::chrono::steady_clock::now();
+      //  t_elapsed2 += std::chrono::duration_cast<std::chrono::microseconds>(t_stop2-t_start2);
+
 
         if(!cand_lmviews.empty()){  //at this point should have match or not
             size_t idx = cand_lmviews[0];
@@ -95,6 +113,9 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
             matches.insert(std::make_pair(lm, match_data) );
         }
     }
+
+   // std::cout << "SearchbyProj keypoint criteria preliminaries duration (us):  " << t_elapsed.count() << std::endl;
+   // std::cout << "SearchbyProj keypoint criteria application duration (us):  " << t_elapsed2.count() << std::endl;
 
     //APPLY GLOBAL CRITERIA and remove matches that don't pass from "matches"
     for(auto criterion  = global_criteria.begin(); criterion != global_criteria.end(); ++criterion ){
