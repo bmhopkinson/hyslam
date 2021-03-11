@@ -6,7 +6,7 @@
 
 namespace HYSLAM{
 
-int ORBDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
+float ORBDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
     const int *pa = D1.ptr<int32_t>();
     const int *pb = D2.ptr<int32_t>();
 
@@ -20,7 +20,7 @@ int ORBDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
         dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
     }
 
-    return dist;
+    return static_cast<float>(dist);
 }
 
 

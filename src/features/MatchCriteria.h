@@ -156,12 +156,12 @@ public:
     FeatureDescriptor getDescriptor() {return descriptor; };
     void setIndex(size_t idx){idx_current = idx;}
     size_t getIndex(){return idx_current;}
-    void setDistance(size_t idx, int dist);
-    int getDistance(size_t idx);
+    void setDistance(size_t idx, float dist);
+    float getDistance(size_t idx);
 private:
     FeatureDescriptor descriptor;
     size_t idx_current;
-    std::map<size_t, int> distances;
+    std::map<size_t, float> distances;
 
 };
 

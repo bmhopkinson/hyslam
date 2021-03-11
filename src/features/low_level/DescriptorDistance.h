@@ -12,12 +12,12 @@ namespace HYSLAM {
 
 class DescriptorDistance {
 public:
-    virtual int distance(const cv::Mat &D1, const cv::Mat &D2) = 0;
+    virtual float distance(const cv::Mat &D1, const cv::Mat &D2) = 0;
 
 };
 
 class ORBDistance : public DescriptorDistance{
-    int distance(const cv::Mat &D1, const cv::Mat &D2);
+    float distance(const cv::Mat &D1, const cv::Mat &D2);
 };
 
 }

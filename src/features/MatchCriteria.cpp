@@ -288,30 +288,30 @@ SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, s
     SingleMatchData best_view;
     const FeatureDescriptor& lm_descriptor = lm->GetDescriptor();
 
-    int bestDist=256;
-    int bestLevel= -1;
-    int bestDist2=256;
-    int bestLevel2 = -1;
-    int bestIdx =-1 ;
+    float bestDist = 256;
+    float bestLevel = -1;
+    float bestDist2 =256;
+    float bestLevel2 = -1;
+    float bestIdx =-1 ;
 
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
         size_t idx = *it;
         const FeatureDescriptor &d = views.descriptor(idx);
 
-        const int dist_orb = lm_descriptor.distance(d);
+        const float dist_feature = lm_descriptor.distance(d);
 
-        if(dist_orb<bestDist)
+        if(dist_feature<bestDist)
         {
             bestDist2=bestDist;
-            bestDist=dist_orb;
+            bestDist=dist_feature;
             bestLevel2 = bestLevel;
             bestLevel = views.keypt(idx).octave;
             bestIdx=idx;
         }
-        else if(dist_orb<bestDist2)
+        else if(dist_feature<bestDist2)
         {
             bestLevel2 = views.keypt(idx).octave;
-            bestDist2=dist_orb;
+            bestDist2=dist_feature;
         }
 
     }
@@ -516,11 +516,11 @@ MatchesFound GlobalBestScoreCriterion::apply(MatchesFound current_matches, Frame
     return matches_passed;
 }
 
-void  MonoCriteriaData::setDistance(size_t idx, int dist){
+void  MonoCriteriaData::setDistance(size_t idx, float dist){
     distances[idx] = dist;
 }
 
-int  MonoCriteriaData::getDistance(size_t idx){
+float  MonoCriteriaData::getDistance(size_t idx){
     auto it = distances.find(idx);
     if(it != distances.end()){
         return it->second;
@@ -536,8 +536,8 @@ score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data){
     std::vector<size_t> views_passed;
 
-    int bestDist = INT_MAX;
-    int bestDist2 = INT_MAX;
+    float bestDist = std::numeric_limits<float>::max();
+    float bestDist2 = std::numeric_limits<float>::max();
     int bestIdx = -1;
     FeatureDescriptor d1 = data.getDescriptor();
    // size_t idx1 = data.getIndex();
@@ -548,7 +548,7 @@ std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_mat
 
         FeatureDescriptor d2 = views.descriptor(i2);
 
-        int dist = d1.distance(d2);
+        float dist = d1.distance(d2);
 
         if(dist<bestDist)
         {
@@ -582,7 +582,7 @@ std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &ca
     for (std::vector<size_t>::iterator vit = candidate_matches.begin(); vit != candidate_matches.end(); vit++) {
         size_t i2 = *vit;
 
-        int dist_prev = data.getDistance(i2);
+        float dist_prev = data.getDistance(i2);
         if(dist_prev < 0) { //no previous match so it passes
             views_passed.push_back(i2);
 
@@ -654,9 +654,9 @@ std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<
     std::vector<unsigned int> idxs_passed;
     FeatureDescriptor d1 = views1.descriptor(idx1);
 
-    int bestDist1=256;
+    float bestDist1 = std::numeric_limits<float>::max();
     int bestIdx2 =-1 ;
-    int bestDist2=256;
+    float bestDist2 = std::numeric_limits<float>::max();
 
     for(auto it = cand_idx2.begin(); it != cand_idx2.end(); ++it)
     {
@@ -664,7 +664,7 @@ std::vector<unsigned int> BestMatchBoWCriterion::apply(size_t idx1, std::vector<
 
         const FeatureDescriptor &d2 = views2.descriptor(idx2);
 
-        int dist = d1.distance(d2);
+        float dist = d1.distance(d2);
 
         if(dist<bestDist1)
         {

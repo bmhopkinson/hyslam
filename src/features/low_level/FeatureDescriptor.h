@@ -17,7 +17,7 @@ class FeatureDescriptor {
 public:
     FeatureDescriptor(){};
     FeatureDescriptor(cv::Mat desc, std::shared_ptr<DescriptorDistance> distfunc_ );
-    int distance(const FeatureDescriptor &d2) const;
+    float distance(const FeatureDescriptor &d2) const;
     cv::Mat rawDescriptor() const {return descriptor.clone(); };
     bool isEmpty() {return is_empty;}
 private:

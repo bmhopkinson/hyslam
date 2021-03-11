@@ -11,7 +11,7 @@ FeatureDescriptor::FeatureDescriptor(cv::Mat desc, std::shared_ptr<DescriptorDis
     descriptor = desc.clone();
 }
 
-int FeatureDescriptor::distance(const FeatureDescriptor &d2) const
+float FeatureDescriptor::distance(const FeatureDescriptor &d2) const
 {
     cv::Mat d2_raw = d2.rawDescriptor();
     return distfunc->distance(descriptor, d2_raw);

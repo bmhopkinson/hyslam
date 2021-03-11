@@ -109,7 +109,7 @@ void ORBstereomatcher::computeStereoMatches()
         if(maxU<0)
             continue;
 
-          int bestDist = FeatureMatcher::TH_HIGH;
+          float bestDist = FeatureMatcher::TH_HIGH;
           size_t bestIdxR = 0;
 
           const FeatureDescriptor &dL = mDescriptors[iL];
@@ -128,7 +128,7 @@ void ORBstereomatcher::computeStereoMatches()
               if(uR>=minU && uR<=maxU)
               {
                   const FeatureDescriptor &dR = mDescriptorsRight[iR];
-                  const int dist = dL.distance(dR);
+                  const float dist = dL.distance(dR);
 
                   if(dist<bestDist)
                   {
@@ -154,7 +154,7 @@ void ORBstereomatcher::computeStereoMatches()
               IL.convertTo(IL,CV_32F);
               IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
 
-              int bestDist = INT_MAX;
+              float bestDist = std::numeric_limits<float>::max();
               int bestincR = 0;
               const int L = 5;
               std::vector<float> vDists;
