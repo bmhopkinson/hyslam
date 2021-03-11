@@ -20,6 +20,10 @@ class ORBDistance : public DescriptorDistance{
     float distance(const cv::Mat &D1, const cv::Mat &D2);
 };
 
+class SURFDistance : public DescriptorDistance{
+    float distance(const cv::Mat &D1, const cv::Mat &D2);
+};
+
 }
 
 #endif //HYSLAM_DESCRIPTORDISTANCE_H

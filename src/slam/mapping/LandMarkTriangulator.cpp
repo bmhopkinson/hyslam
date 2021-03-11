@@ -14,7 +14,7 @@ log = &log_;
 void LandMarkTriangulator::run() {
     // Retrieve neighbor keyframes in covisibility graph
     const Camera camera_KF1 = pKF->getCamera();
-
+    
     bool is_mono = camera_KF1.sensor == 0;
     int nn = params.N_neighborKFs_stereo;
     if(is_mono) //monocular

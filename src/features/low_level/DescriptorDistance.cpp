@@ -23,6 +23,10 @@ float ORBDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
     return static_cast<float>(dist);
 }
 
+float SURFDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
+    return cv::norm(D1, D1, cv::NORM_L1);
+}
+
 
 
 }
