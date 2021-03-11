@@ -1017,7 +1017,7 @@ int FeatureMatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint 
     const vector<cv::KeyPoint> vKeysUn2 = KF2views.getKeys();
     const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
     const vector<MapPoint*> vpMapPoints2 = pKF2->GetMapPointMatches();
-    const std::vector<FeatureDescriptor>t Descriptors2 = KF2views.getDescriptors();
+    const std::vector<FeatureDescriptor> Descriptors2 = KF2views.getDescriptors();
 
     vpMatches12 = vector<MapPoint*>(vpMapPoints1.size(),static_cast<MapPoint*>(NULL));
     vector<bool> vbMatched2(vpMapPoints2.size(),false);

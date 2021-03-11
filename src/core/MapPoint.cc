@@ -119,10 +119,10 @@ bool MapPoint::isBad()
     return mbBad;
 }
 
-cv::Mat MapPoint::GetDescriptor()
+FeatureDescriptor MapPoint::GetDescriptor()
 {
     std::unique_lock<std::mutex> lock(mMutexFeatures);
-    return mDescriptor.clone();
+    return mDescriptor;
 }
 
 int MapPoint::GetIndexInKeyFrame(KeyFrame *pKF)

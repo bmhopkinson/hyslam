@@ -21,6 +21,7 @@
 #ifndef MAPPOINT_H
 #define MAPPOINT_H
 
+#include <FeatureDescriptor.h>
 
 #include <opencv2/core/core.hpp>
 #include <mutex>
@@ -65,8 +66,8 @@ public:
     int GetIndexInKeyFrame(KeyFrame* pKF);
     bool IsInKeyFrame(KeyFrame* pKF);
 
-    cv::Mat GetDescriptor();
-    void setDescriptor(const cv::Mat desc){mDescriptor = desc.clone();}
+    FeatureDescriptor GetDescriptor();
+    void setDescriptor(const FeatureDescriptor desc){mDescriptor = desc;}
    // std::map<KeyFrame*, cv::Mat> GetAllDescriptors();
 
     float GetMinDistanceInvariance();
@@ -121,8 +122,8 @@ protected:
      // Mean viewing direction
      cv::Mat mNormalVector;
 
-     // Best descriptor to fast matching
-     cv::Mat mDescriptor;
+     // Best descriptor to enable fast matching
+     FeatureDescriptor mDescriptor;
 
      // Reference KeyFrame
      KeyFrame* mpRefKF;

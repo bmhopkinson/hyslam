@@ -4,7 +4,8 @@
 #include <MapPoint.h>
 #include <Frame.h>
 #include <KeyFrame.h>
-#include<opencv2/core/core.hpp>
+#include <FeatureDescriptor.h>
+#include <opencv2/core/core.hpp>
 
 #include <map>
 #include <mutex>
@@ -23,12 +24,12 @@ namespace HYSLAM{
         void setNObs(int n);
 
 
-        void setBestDescriptor(cv::Mat bd);
-        void addDescriptor(KeyFrame* pKF, cv::Mat d);
+        void setBestDescriptor( FeatureDescriptor best_desc);
+        void addDescriptor(KeyFrame* pKF, FeatureDescriptor desc);
         void eraseDescriptor(KeyFrame* pKF);
 
-        cv::Mat getDescriptor();
-        std::map<KeyFrame*, cv::Mat>  getAllDescriptors()  { return descriptors; }
+        FeatureDescriptor getDescriptor();
+        std::map<KeyFrame*, FeatureDescriptor>  getAllDescriptors()  { return descriptors; }
         void computeDistinctiveDescriptor();
 
         void UpdateNormalAndDepth();
@@ -45,10 +46,10 @@ namespace HYSLAM{
     private:
         MapPoint* pMP_entry;
         KeyFrame* pKF_ref = nullptr;
-        std::map<KeyFrame*,size_t>  observations;
-        std::map<KeyFrame*,cv::Mat> descriptors;
+        std::map<KeyFrame*, size_t>  observations;
+        std::map<KeyFrame*, FeatureDescriptor> descriptors;
         cv::Mat normal_vector;
-        cv::Mat best_descriptor;
+        FeatureDescriptor best_descriptor;
         float min_distance = 0;  //scale invariance distances
         float max_distance = 0;
         int n_obs = 0;

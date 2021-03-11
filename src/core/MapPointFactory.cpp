@@ -1,6 +1,7 @@
 
 #include <MapPointFactory.h>
 #include <FeatureViews.h>
+#include <FeatureDescriptor.h>
 #include "ORBSLAM_datastructs.h"
 
 namespace HYSLAM{
@@ -42,8 +43,8 @@ MapPoint* MapPointFactory::construct(const cv::Mat &Pos, Frame* frame, int idx){
     pMP->setMinDistanceInvariance(min_dist);
     pMP->setMaxDistanceInvariance(max_dist);
 
-    cv::Mat descriptor = views.descriptor(idx);
-    std::cout << " MPFac: descriptor: " << descriptor << std::endl;
+    FeatureDescriptor descriptor = views.descriptor(idx);
+  //  std::cout << " MPFac: descriptor: " << descriptor << std::endl;
     pMP->setDescriptor(descriptor);
     
     return pMP;

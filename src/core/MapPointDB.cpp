@@ -9,7 +9,7 @@ namespace HYSLAM{
         normal_vector = cv::Mat::zeros(3,1,CV_32F);
         setRefKF(pKF_ref_);
         addObservation(pKF_ref_, idx);
-        cv::Mat descriptor = pKF_ref_->getViews().descriptor(idx);
+        FeatureDescriptor descriptor = pKF_ref_->getViews().descriptor(idx);
         addDescriptor(pKF_ref_, descriptor);
         setBestDescriptor(descriptor); //only descriptor right now
         UpdateNormalAndDepth();
@@ -86,28 +86,28 @@ namespace HYSLAM{
         return observations.count(pKF);
     }
 
-    void MapPointDBEntry::setBestDescriptor(cv::Mat bd){
+    void MapPointDBEntry::setBestDescriptor(FeatureDescriptor bd){
         std::unique_lock<std::mutex> lock(entry_mutex);
-        best_descriptor = bd.clone();
+        best_descriptor = bd;
         pMP_entry->setDescriptor(bd);
     }
-    
-    cv::Mat MapPointDBEntry::getDescriptor(){
+
+    FeatureDescriptor MapPointDBEntry::getDescriptor(){
         if(desc_needs_update){
             computeDistinctiveDescriptor();
             desc_needs_update = false;
         }
         std::unique_lock<std::mutex> lock(entry_mutex);
-        return best_descriptor.clone();
+        return best_descriptor;
         
     }
 
 
-    void MapPointDBEntry::addDescriptor(KeyFrame* pKF, cv::Mat d){
+    void MapPointDBEntry::addDescriptor(KeyFrame* pKF, FeatureDescriptor d){
         std::unique_lock<std::mutex> lock(entry_mutex);
         if(descriptors.count(pKF)) //don't allow replacement
             return;
-        descriptors[pKF] = d.clone();
+        descriptors[pKF] = d;
         desc_needs_update = true;
     }
 
@@ -122,7 +122,7 @@ namespace HYSLAM{
 
     void MapPointDBEntry::computeDistinctiveDescriptor(){
         // Compute distances between them -
-        std::vector<cv::Mat> descriptor_vec;
+        std::vector<FeatureDescriptor> descriptor_vec;
         {
             std::unique_lock<std::mutex> lock(entry_mutex);
             for(auto it = descriptors.begin(); it != descriptors.end(); ++it){
@@ -141,10 +141,11 @@ namespace HYSLAM{
         float Distances[N][N];
         for(size_t i=0;i<N;i++)
         {
+            FeatureDescriptor desc_i = descriptor_vec[i];
             Distances[i][i]=0;
             for(size_t j=i+1;j<N;j++)
             {
-                int distij = FeatureMatcher::DescriptorDistance(descriptor_vec[i], descriptor_vec[j]);
+                int distij =desc_i.distance(descriptor_vec[j]);
                 Distances[i][j]=distij;
                 Distances[j][i]=distij;
             }
@@ -314,7 +315,7 @@ namespace HYSLAM{
         }
         else {
             mappoint_db[pMP]->addObservation(pKF, idx);
-            cv::Mat desc = pKF->getViews().descriptor(idx);
+            FeatureDescriptor desc = pKF->getViews().descriptor(idx);
             mappoint_db[pMP]->addDescriptor(pKF, desc);
         }
         return 0;
