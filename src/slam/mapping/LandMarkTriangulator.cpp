@@ -21,7 +21,7 @@ void LandMarkTriangulator::run() {
         nn = params.N_neighborKFs_mono;
     const std::vector<KeyFrame*> vpNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, nn);
 
-    const FeatureViews KFcur_views = pKF->getViews();
+    const FeatureViews& KFcur_views = pKF->getViews();
     ORBExtractorParams orb_params_KFcur = KFcur_views.orbParams();
     const Camera camera_KFcur = pKF->getCamera();
 
@@ -43,7 +43,7 @@ void LandMarkTriangulator::run() {
         }
 
         KeyFrame* pKF2 = vpNeighKFs[i];
-        const FeatureViews KF2views = pKF2->getViews();
+        const FeatureViews& KF2views = pKF2->getViews();
         ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
         const Camera camera_KF2 = pKF2->getCamera();
 

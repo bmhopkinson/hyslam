@@ -31,7 +31,7 @@ void KeyFrameCuller::run(){
         if(pKFi->mnId==0 )//|| pKFi->mnId == pKF->mnId)  //second condition really shouldn't happen but for some reason it is.
             continue;
         const std::vector<MapPoint*> vpMapPoints = pKFi->GetMapPointMatches();
-        const FeatureViews KFviews = pKFi->getViews();
+        const FeatureViews& KFviews = pKFi->getViews();
 
         const int thObs= params.LMobservations_thresh;
         int nRedundantObservations=0;
@@ -65,7 +65,7 @@ void KeyFrameCuller::run(){
                                 continue;
 
                             //const int &scaleLeveli = pKFi->mvKeysUn[mit->second].octave;
-                            const FeatureViews KF2views = pKFi2->getViews();
+                            const FeatureViews& KF2views = pKFi2->getViews();
                             const int &scaleLeveli = KF2views.keypt(mit->second).octave;
 
                             if(scaleLeveli<=scaleLevel+1)
