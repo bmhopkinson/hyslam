@@ -28,10 +28,16 @@ ORBVocabulary::ORBVocabulary(std::string vocab_file){
     printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 }
 
-void ORBVocabulary::transform(const std::vector<cv::Mat> &features, DBoW2::BowVector &BoW_vector, DBoW2::FeatureVector &feature_vector,
+void ORBVocabulary::transform(const std::vector<FeatureDescriptor> &features, DBoW2::BowVector &BoW_vector, DBoW2::FeatureVector &feature_vector,
           int Nlevel)
 {
-    orb_vocab->transform(features,BoW_vector, feature_vector, Nlevel );
+    std::vector<cv::Mat> features_raw;
+    features_raw.reserve(features.size());
+    for(auto it = features.cbegin(); it != features.cend(); ++it){
+        features_raw.push_back(it->rawDescriptor());
+    }
+
+    orb_vocab->transform(features_raw,BoW_vector, feature_vector, Nlevel );
 
 }
 

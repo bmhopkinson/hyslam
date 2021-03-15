@@ -417,8 +417,9 @@ void Frame::ComputeBoW()
 {
     if(mBowVec.empty())
     {
-        std::vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(views.getDescriptors());
-        mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,4);
+     //   std::vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(views.getDescriptors());
+        std::vector<FeatureDescriptor> descriptors =  views.getDescriptors();
+        mpORBvocabulary->transform(descriptors,mBowVec,mFeatVec,4);
     }
 }
 

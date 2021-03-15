@@ -7,6 +7,7 @@ HYSLAM_ADD_SOURCES(
         FeatureDescriptor.h     FeatureDescriptor.cpp
         FeatureVocabulary.h     FeatureVocabulary.cpp
         ORBVocabulary.h ORBVocabulary.cpp
+        SURFVocabulary.h        SURFVocabulary.cpp
         )
         
         

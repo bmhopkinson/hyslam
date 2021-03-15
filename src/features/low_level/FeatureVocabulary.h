@@ -5,6 +5,8 @@
 #ifndef HYSLAM_FEATUREVOCABULARY_H
 #define HYSLAM_FEATUREVOCABULARY_H
 
+#include <FeatureDescriptor.h>
+
 #include <DBoW2/BowVector.h>
 #include <DBoW2/FeatureVector.h>
 #include <opencv2/opencv.hpp>
@@ -15,7 +17,7 @@ namespace HYSLAM {
 
 class FeatureVocabulary {
 public:
-    virtual void transform(const std::vector<cv::Mat> &features, DBoW2::BowVector &BoW_vector, DBoW2::FeatureVector &feature_vector, int Nlevel ) = 0;
+    virtual void transform(const std::vector<FeatureDescriptor> &features, DBoW2::BowVector &BoW_vector, DBoW2::FeatureVector &feature_vector, int Nlevel ) = 0;
     virtual double score(const DBoW2::BowVector &a, const DBoW2::BowVector &b) const = 0;
     virtual unsigned int size() const = 0;
 };

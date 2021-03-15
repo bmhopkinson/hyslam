@@ -21,7 +21,7 @@ typedef DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB>
 class ORBVocabulary : public FeatureVocabulary{
 public:
     ORBVocabulary(std::string vocab_file);
-    void transform(const std::vector<cv::Mat> &features, DBoW2::BowVector &BoW_vector, DBoW2::FeatureVector &feature_vector, int Nlevel );
+    void transform(const std::vector<FeatureDescriptor> &features, DBoW2::BowVector &BoW_vector, DBoW2::FeatureVector &feature_vector, int Nlevel );
     double score(const DBoW2::BowVector &a, const DBoW2::BowVector &b) const;
     unsigned int size() const;
 private:
