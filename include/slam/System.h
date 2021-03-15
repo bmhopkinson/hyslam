@@ -35,7 +35,7 @@
 #include "MapDrawer.h"
 #include "Viewer.h"
 #include "Map.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include "ORBSLAM_datastructs.h"
 #include <SensorData.h>
 

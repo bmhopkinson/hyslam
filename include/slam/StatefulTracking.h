@@ -32,7 +32,7 @@
 #include "LocalMapping.h"
 #include "LoopClosing.h"
 #include "Frame.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include "FeatureExtractor.h"
 #include "MonoEstimator.h"
 #include <MonoInitializer.h>

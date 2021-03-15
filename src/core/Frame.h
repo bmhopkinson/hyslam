@@ -27,7 +27,7 @@
 #include <MapPoint.h>
 #include <Camera.h>
 
-#include <ORBVocabulary.h>
+#include <FeatureVocabulary.h>
 #include <FeatureViews.h>
 #include <ORBSLAM_datastructs.h>
 #include <LandMarkMatches.h>
@@ -61,8 +61,8 @@ class Frame
 public:
     Frame();
     // Constructor
-    Frame( const double &timeStamp, FeatureViews views_, ORBVocabulary* voc, const Camera &camdata,
-                  const std::string img_name, const  SensorData sensor_d, bool stereo);
+    Frame(const double &timeStamp, FeatureViews views_, FeatureVocabulary* voc, const Camera &camdata,
+          const std::string img_name, const  SensorData sensor_d, bool stereo);
 
     // Copy constructor.
     Frame(const Frame &frame);
@@ -148,7 +148,7 @@ public:
 
 public:
     // Vocabulary used for relocalization.
-    ORBVocabulary* mpORBvocabulary;
+    FeatureVocabulary* mpORBvocabulary;
 
     //Camera data
     Camera camera; //mCamdata

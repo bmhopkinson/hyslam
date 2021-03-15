@@ -32,7 +32,7 @@
 #include <ORBSLAM_datastructs.h>
 #include <InterThread.h>
 #include "Frame.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include "FeatureExtractor.h"
 #include <MonoInitializer.h>
 #include "MapDrawer.h"
@@ -60,7 +60,7 @@ class Tracking
 //
 public:
 
-    Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
+    Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
              std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_);
     ~Tracking();
 
@@ -139,7 +139,7 @@ protected:
     std::map<std::string, std::map<std::string, TrackingState*> > state_options; //state name to state pointer map
 
     //BoW
-    ORBVocabulary* mpORBVocabulary;
+    FeatureVocabulary* mpORBVocabulary;
 
     // Initalization
     int stereoInitFeatures;

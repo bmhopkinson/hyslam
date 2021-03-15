@@ -34,7 +34,7 @@
 namespace HYSLAM
 {
 
-LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, ORBVocabulary *pVoc,  MainThreadsStatus* thread_status_, const bool bFixScale):
+LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, FeatureVocabulary *pVoc, MainThreadsStatus* thread_status_, const bool bFixScale):
     mbResetRequested(false), mbFinishRequested(false), mbFinished(true), maps(_maps),
     mpORBVocabulary(pVoc), thread_status(thread_status_),  mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
     mbStopGBA(false), mbFixScale(bFixScale)

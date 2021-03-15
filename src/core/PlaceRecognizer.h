@@ -27,7 +27,7 @@
 
 #include "KeyFrame.h"
 #include "Frame.h"
-#include "ORBVocabulary.h"
+#include <FeatureVocabulary.h>
 
 #include <mutex>
 
@@ -45,7 +45,7 @@ public:
 
     PlaceRecognizer();
 
-    void setVocab(ORBVocabulary* mpVoc_);
+    void setVocab(FeatureVocabulary* mpVoc_);
 
    void add(KeyFrame* pKF);
 
@@ -62,7 +62,7 @@ public:
 protected:
 
   // Associated vocabulary
-  ORBVocabulary* mpVoc;
+  FeatureVocabulary* mpVoc;
 
   std::vector<KeyFrame*> logged_frames;
 

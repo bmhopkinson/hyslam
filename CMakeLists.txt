@@ -56,8 +56,3 @@ set(INSTALL_INCLUDEDIR "/usr/local/include")
  
 unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 
-# Build tools
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/tools)
-add_executable(bin_vocabulary
-tools/bin_vocabulary.cc)
-target_link_libraries(bin_vocabulary ${PROJECT_NAME})

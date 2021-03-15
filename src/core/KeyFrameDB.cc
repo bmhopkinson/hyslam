@@ -28,7 +28,7 @@ namespace HYSLAM
 
 KeyFrameDB::KeyFrameDB(){}
 
-void KeyFrameDB::setVocab(ORBVocabulary* pVoc)
+void KeyFrameDB::setVocab(FeatureVocabulary* pVoc)
 {
     place_recog.setVocab(pVoc);
 }

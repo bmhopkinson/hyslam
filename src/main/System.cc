@@ -27,6 +27,7 @@
 #include <Camera.h>
 #include "ORBSLAM_datastructs.h"
 #include <ImagingBundleAdjustment.h>
+#include <ORBVocabulary.h>
 
 #include <thread>
 #include <pangolin/pangolin.h>
@@ -66,8 +67,8 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     }
 
     LoadSettings(strSettingsFile);
-    mpVocabulary = new ORBVocabulary();
-    LoadVocabulary( strVocFile, mpVocabulary);
+    mpVocabulary = new ORBVocabulary(strVocFile);
+   // LoadVocabulary( strVocFile, mpVocabulary);
 
     //Load Camera data and create per camera data structures
     cv::FileNode cameras = fsSettings["Cameras"];
@@ -690,8 +691,8 @@ void System::LoadSettings(std::string settings_path) {
     optParams.GBAinterval = fSettings["Opt.GBAinterval"];
 
 }
-
-void System::LoadVocabulary(const std::string vocab_file, ORBVocabulary* vocab){
+/*
+void System::LoadVocabulary(const std::string vocab_file, FeatureVocabulary* vocab){
     clock_t tStart = clock();
     bool bVocLoad = false; // chose loading method based on file extension
     if (has_suffix(vocab_file, ".txt"))
@@ -706,5 +707,5 @@ void System::LoadVocabulary(const std::string vocab_file, ORBVocabulary* vocab){
     }
     printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 }
-
+*/
 } //namespace ORB_SLAM

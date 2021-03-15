@@ -25,7 +25,7 @@
 
 #include <KeyFrame.h>
 #include <Frame.h>
-#include <ORBVocabulary.h>
+#include <ORBVocab.h>
 #include <CovisibilityGraph.h>
 #include <SpanningTree.h>
 #include <PlaceRecognizer.h>

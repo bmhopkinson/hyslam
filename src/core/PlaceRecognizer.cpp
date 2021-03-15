@@ -34,7 +34,7 @@ PlaceRecognizer::PlaceRecognizer()
 
 }
 
-void PlaceRecognizer::setVocab(ORBVocabulary* mpVoc_)
+void PlaceRecognizer::setVocab(FeatureVocabulary* mpVoc_)
 {
    mpVoc = mpVoc_;
    mvInvertedFile.resize(mpVoc->size());

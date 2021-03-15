@@ -26,7 +26,7 @@
 #include <Frame.h>
 #include <Camera.h>
 #include <LandMarkMatches.h>
-#include <ORBVocabulary.h>
+#include <FeatureVocabulary.h>
 #include <FeatureViews.h>
 #include <SensorData.h>
 
@@ -247,7 +247,7 @@ protected:
     // MapPoints associated to keypoints
     std::vector<MapPoint*> mvpMapPoints;
 
-    ORBVocabulary* mpORBvocabulary;
+    FeatureVocabulary* mpORBvocabulary;
 
     // Grid over the image to speed up feature matching
     std::vector< std::vector <std::vector<size_t> > > mGrid;

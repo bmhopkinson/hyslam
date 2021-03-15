@@ -31,11 +31,12 @@
 #include "MapDrawer.h"
 #include "Viewer.h"
 #include "Map.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include "ORBSLAM_datastructs.h"
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
 #include <ThreadSafeQueue.h>
+#include <FeatureVocabulary.h>
 
 
 #include <opencv2/core/core.hpp>
@@ -147,8 +148,8 @@ private:
     eSensor mSensor;
 
     // ORB vocabulary used for place recognition and feature matching.
-    ORBVocabulary* mpVocabulary;
-    void LoadVocabulary(const std::string vocab_file, ORBVocabulary* vocab);
+    FeatureVocabulary* mpVocabulary;
+   // void LoadVocabulary(const std::string vocab_file, FeatureVocabulary* vocab);
 
     void LoadSettings(std::string settings_path);
 

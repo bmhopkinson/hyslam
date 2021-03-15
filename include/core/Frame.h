@@ -27,7 +27,7 @@
 #include <MapPoint.h>
 #include <Camera.h>
 
-#include <ORBVocabulary.h>
+#include <ORBVocab.h>
 #include <FeatureViews.h>
 #include <src/main/ORBSLAM_datastructs.h>
 #include <LandMarkMatches.h>

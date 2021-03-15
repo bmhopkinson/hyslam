@@ -110,7 +110,7 @@ int Map::GetLastBigChangeIdx()
     return mnBigChangeIdx;
 }
 
-void Map::setKeyFrameDBVocab(ORBVocabulary* pVoc){
+void Map::setKeyFrameDBVocab(FeatureVocabulary* pVoc){
   //  pkeyframe_db->setVocab(pVoc);
    keyframe_db.setVocab(pVoc);
 }

@@ -24,7 +24,7 @@
 #include "KeyFrame.h"
 #include <src/main/Mapping.h>
 #include "Map.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include <src/main/Tracking.h>
 
 #include <thread>

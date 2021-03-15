@@ -23,7 +23,7 @@
 
 #include <MapPoint.h>
 #include <KeyFrame.h>
-#include <ORBVocabulary.h>
+#include <FeatureVocabulary.h>
 #include <KeyFrameDB.h>
 #include <MapPointDB.h>
 #include <MapPointFactory.h>
@@ -47,7 +47,7 @@ public:
     void EraseKeyFrame(KeyFrame* pKF);  //details on erasing KFs is complicated due to multithreading/loop closing - probably should rename these functions
     void ClearKeyFrameProtection(KeyFrame* pKF);   //used once loop closing is done w/ a keyframe to allow its removal, and to erase it if it was marked for removal during the loop closing attempt - this isn't the best - would be better to clearprotection directly on keyframe, add keyframes to be deleted to a queue for later deletion once protection is cleared
     void SetBadKeyFrame(KeyFrame* pKF);
-    void setKeyFrameDBVocab(ORBVocabulary* pVoc); // this is a hack right now to preserve old functions of keyframe db
+    void setKeyFrameDBVocab(FeatureVocabulary* pVoc); // this is a hack right now to preserve old functions of keyframe db
  //   void validateCovisiblityGraph();
     KeyFrameDB* getKeyFrameDB(){return &keyframe_db;}
     long unsigned  KeyFramesInMap();

@@ -47,8 +47,8 @@ using namespace std;
 namespace HYSLAM
 {
 
-Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-           std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_):
+Tracking::Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
+                   std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_):
             mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
             mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), thread_status(thread_status_)
 {

@@ -32,7 +32,7 @@
 #include <src/main/Mapping.h>
 #include "LoopClosing.h"
 #include "Frame.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include "FeatureExtractor.h"
 #include <MonoInitializer.h>
 #include "MapDrawer.h"

@@ -26,7 +26,7 @@
 #include <Frame.h>
 #include <Camera.h>
 #include <LandMarkMatches.h>
-#include <ORBVocabulary.h>
+#include <ORBVocab.h>
 #include <FeatureViews.h>
 #include <SensorData.h>
 

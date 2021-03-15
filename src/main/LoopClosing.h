@@ -23,7 +23,7 @@
 
 #include "KeyFrame.h"
 #include "Map.h"
-#include "ORBVocabulary.h"
+#include "ORBVocab.h"
 #include <Tracking.h>
 #include <InterThread.h>
 #include <ThreadSafeQueue.h>
@@ -47,7 +47,7 @@ public:
 
 public:
 
-    LoopClosing(std::map<std::string, Map*> &_maps,  ORBVocabulary* pVoc,  MainThreadsStatus* thread_status_, const bool bFixScale);
+    LoopClosing(std::map<std::string, Map*> &_maps, FeatureVocabulary* pVoc, MainThreadsStatus* thread_status_, const bool bFixScale);
 
     void SetTracker(Tracking* pTracker);
     void setInputQueue(ThreadSafeQueue<KeyFrame*>* input_queue_){input_queue = input_queue_;}
@@ -102,7 +102,7 @@ protected:
     MainThreadsStatus* thread_status;
     ThreadSafeQueue<KeyFrame*>* input_queue;
 
-    ORBVocabulary* mpORBVocabulary;
+    FeatureVocabulary* mpORBVocabulary;
 
    // Mapping *mpLocalMapper;
 

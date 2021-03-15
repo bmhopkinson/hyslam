@@ -23,7 +23,7 @@
 
 #include <MapPoint.h>
 #include <KeyFrame.h>
-#include <ORBVocabulary.h>
+#include <ORBVocab.h>
 #include <KeyFrameDB.h>
 #include <MapPointDB.h>
 #include <MapPointFactory.h>

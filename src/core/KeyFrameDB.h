@@ -25,7 +25,7 @@
 
 #include <KeyFrame.h>
 #include <Frame.h>
-#include <ORBVocabulary.h>
+#include <FeatureVocabulary.h>
 #include <CovisibilityGraph.h>
 #include <SpanningTree.h>
 #include <PlaceRecognizer.h>
@@ -47,9 +47,9 @@ class KeyFrameDB
 public:
     KeyFrameDB();
 
-    KeyFrameDB( ORBVocabulary &voc);
+    KeyFrameDB(FeatureVocabulary &voc);
 
-   void setVocab(ORBVocabulary* pVoc);
+   void setVocab(FeatureVocabulary* pVoc);
 
    void add(KeyFrame* pKF);
 

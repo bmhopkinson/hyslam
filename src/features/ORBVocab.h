@@ -19,8 +19,8 @@
 */
 
 
-#ifndef ORBVOCABULARY_H
-#define ORBVOCABULARY_H
+#ifndef ORBVOCAB_H
+#define ORBVOCAB_H
 
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"
@@ -29,7 +29,7 @@ namespace HYSLAM
 {
 
 typedef DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB>
-  ORBVocabulary;
+  ORBVocab;
 
 } //namespace ORB_SLAM
 

@@ -5,6 +5,8 @@ HYSLAM_ADD_SOURCES(
         ORBFinder.h ORBFinder.cpp
         DescriptorDistance.h    DescriptorDistance.cpp
         FeatureDescriptor.h     FeatureDescriptor.cpp
+        FeatureVocabulary.h     FeatureVocabulary.cpp
+        ORBVocabulary.h ORBVocabulary.cpp
         )
         
         
