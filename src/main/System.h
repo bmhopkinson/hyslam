@@ -37,6 +37,7 @@
 #include <SensorData.h>
 #include <ThreadSafeQueue.h>
 #include <FeatureVocabulary.h>
+#include <FeatureFactory.h>
 
 
 #include <opencv2/core/core.hpp>
@@ -148,6 +149,7 @@ private:
     eSensor mSensor;
 
     // ORB vocabulary used for place recognition and feature matching.
+    std::unique_ptr<FeatureFactory> feature_factory;
     FeatureVocabulary* mpVocabulary;
    // void LoadVocabulary(const std::string vocab_file, FeatureVocabulary* vocab);
 

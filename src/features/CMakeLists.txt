@@ -6,6 +6,9 @@ HYSLAM_ADD_SOURCES(
         FeatureMatcher.h FeatureMatcher.cc
   ORBstereomatcher.h ORBstereomatcher.cpp
   ORBUtil.h  ORBUtil.cpp
+        FeatureFactory.h    FeatureFactory.cpp
+        ORBFactory.h    ORBFactory.cpp
+        SURFFactory.h   SURFFactory.cpp
 
 )
 

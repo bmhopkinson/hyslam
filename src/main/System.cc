@@ -27,7 +27,8 @@
 #include <Camera.h>
 #include "ORBSLAM_datastructs.h"
 #include <ImagingBundleAdjustment.h>
-#include <ORBVocabulary.h>
+#include <ORBFactory.h>
+#include <SURFFactory.h>
 
 #include <thread>
 #include <pangolin/pangolin.h>
@@ -67,7 +68,8 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     }
 
     LoadSettings(strSettingsFile);
-    mpVocabulary = new ORBVocabulary(strVocFile);
+    feature_factory = std::make_unique<ORBFactory>();
+    mpVocabulary = feature_factory->getVocabulary(strVocFile);
    // LoadVocabulary( strVocFile, mpVocabulary);
 
     //Load Camera data and create per camera data structures
@@ -105,7 +107,9 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     loopclosing_queue = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
 
 
-    mpImageProcessor = new ImageProcessing(strSettingsFile,cam_data);
+    std::string feature_settings_file = fsSettings["Feature_Config"].string();
+    std::cout <<"feature_settings_file: " << feature_settings_file << std::endl;
+    mpImageProcessor = new ImageProcessing(feature_factory.get() , feature_settings_file,cam_data);
     mpImageProcessor->setOutputQueue(tracking_queue.get());
 
     //Initialize Tracking thread
@@ -118,6 +122,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
 
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
+
     mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path, thread_status.get());
     mpLocalMapper->setInputQueue( mapping_queue.get() );
     mpLocalMapper->setOutputQueue( loopclosing_queue.get() );

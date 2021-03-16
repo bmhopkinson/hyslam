@@ -6,6 +6,7 @@
 #define HYSLAM_IMAGEPROCESSING_H
 
 #include <FeatureExtractor.h>
+#include <FeatureFactory.h>
 #include <DescriptorDistance.h>
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
@@ -23,7 +24,7 @@ namespace HYSLAM {
 
 class ImageProcessing {
 public:
-    ImageProcessing(const std::string &strSettingPath,std::map<std::string, Camera> cam_data_);
+    ImageProcessing(FeatureFactory* factory, const std::string &strSettingPath, std::map<std::string, Camera> cam_data_);
     void ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data, eTrackingState tracking_state);
     void ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data, eTrackingState tracking_state);
     void setOutputQueue(ThreadSafeQueue<ImageFeatureData>* output_queue_){output_queue = output_queue_;}

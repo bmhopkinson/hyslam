@@ -14,7 +14,7 @@
 #include <thread>
 
 namespace HYSLAM{
-ImageProcessing::ImageProcessing(const std::string &strSettingPath, std::map<std::string, Camera> cam_data_)
+ImageProcessing::ImageProcessing(FeatureFactory* factory, const std::string &strSettingPath, std::map<std::string, Camera> cam_data_)
  : cam_data(cam_data_)
 {
     // Load camera parameters from settings file
@@ -24,14 +24,18 @@ ImageProcessing::ImageProcessing(const std::string &strSettingPath, std::map<std
 
     dist_func = std::make_shared<ORBDistance>();
     
-    mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
-    mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
+    //mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
+    //mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
   //  SURFextractor = new FeatureExtractor(std::make_unique<SURFFinder>(), ORBextractor_settings);
+
+    mpORBextractorLeft = factory->getExtractor(ORBextractor_settings);
+    mpORBextractorRight = factory->getExtractor(ORBextractor_settings);
 
     ORBextractorSettings ORBextractor_settings_init;
     ORBextractor_settings_init = ORBextractor_settings;
     ORBextractor_settings_init.nFeatures = 3 * ORBextractor_settings.nFeatures;
-    mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings_init);
+    mpIniORBextractor = factory->getExtractor(ORBextractor_settings_init);
+   // mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings_init);
 }
 
 

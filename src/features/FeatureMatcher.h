@@ -37,11 +37,19 @@
 namespace HYSLAM
 {
 
+struct FeatureMatcherSettings{
+    float nnratio = 0.6;
+    int TH_HIGH = 100;
+    int TH_LOW = 50;
+    bool checkOri = true;
+};
+
 class FeatureMatcher
 {
 public:
 
     FeatureMatcher(float nnratio=0.6, bool checkOri=true);
+    FeatureMatcher(FeatureMatcherSettings settings);
 
     // Computes the Hamming distance between two ORB descriptors
     static int DescriptorDistance(const cv::Mat &a, const cv::Mat &b);
@@ -88,8 +96,8 @@ public:
 
 public:
 
-    static const int TH_LOW;
-    static const int TH_HIGH;
+//    static const int TH_LOW;
+//    static const int TH_HIGH;
     static const int HISTO_LENGTH;
 
 
@@ -103,6 +111,8 @@ protected:
 
     float mfNNratio;
     bool mbCheckOrientation;
+    int TH_LOW = 50;
+    int TH_HIGH = 100;
 
     int _SearchByProjection_(Frame &frame, const std::vector<MapPoint*> &landmarks, const float th,
                              std::vector< std::unique_ptr<LandMarkCriterion> >     &landmark_criteria,

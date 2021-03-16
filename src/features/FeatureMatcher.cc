@@ -40,14 +40,19 @@ using namespace std;
 namespace HYSLAM
 {
 
-const int FeatureMatcher::TH_HIGH = 100;
-const int FeatureMatcher::TH_LOW = 50;
 const int FeatureMatcher::HISTO_LENGTH = 30;
 
 FeatureMatcher::FeatureMatcher(float nnratio, bool checkOri): mfNNratio(nnratio), mbCheckOrientation(checkOri)
 {
 }
 
+
+FeatureMatcher::FeatureMatcher(FeatureMatcherSettings settings){
+    mfNNratio = settings.nnratio;
+    mbCheckOrientation = settings.checkOri;
+    TH_LOW = settings.TH_LOW;
+    TH_HIGH = settings.TH_HIGH;
+}
 
 int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoint*> &landmarks, const float th,
                                          std::vector< std::unique_ptr<LandMarkCriterion> >     &landmark_criteria,
