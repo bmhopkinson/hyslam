@@ -22,3 +22,5 @@ ORBextractor.nLevels: 8
 ORBextractor.iniThFAST: 20
 ORBextractor.minThFAST: 4
 
+ORBextractor.match_thresh_high : 100
+ORBextractor.match_thresh_low : 50

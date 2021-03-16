@@ -10,6 +10,7 @@
 #include <ORBstereomatcher.h>
 
 
+
 #include <iostream>
 #include <thread>
 
@@ -19,8 +20,9 @@ ImageProcessing::ImageProcessing(FeatureFactory* factory, const std::string &str
 {
     // Load camera parameters from settings file
     ORBextractorSettings ORBextractor_settings;
+
     std::string tracking_config_file;
-    LoadSettings(strSettingPath, ORBextractor_settings);
+    LoadSettings(strSettingPath, ORBextractor_settings, feature_settings);
 
     dist_func = std::make_shared<ORBDistance>();
     
@@ -91,7 +93,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
 
     FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
     DescriptorDistance* dist_calc = new ORBDistance();
-    ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, dist_calc, cam_data[cam_cur]);
+    ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, dist_calc, cam_data[cam_cur], feature_settings);
     stereomatch.computeStereoMatches();
     stereomatch.getData(LMviews);
 
@@ -130,7 +132,7 @@ cv::Mat ImageProcessing::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
     return img;
 }
 
-void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings){
+void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings, FeatureMatcherSettings &feature_settings){
     cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
 
     ORBext_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
@@ -138,6 +140,10 @@ void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettin
     ORBext_settings.nLevels = fSettings["ORBextractor.nLevels"];
     ORBext_settings.fIniThFAST = fSettings["ORBextractor.iniThFAST"];
     ORBext_settings.fMinThFAST = fSettings["ORBextractor.minThFAST"];
+
+    feature_settings.TH_HIGH = fSettings["ORBextractor.match_thresh_high"];
+    feature_settings.TH_LOW  = fSettings["ORBextractor.match_thresh_low"];
+
     std::cout << std::endl  << "ORB Extractor Parameters: " << std::endl;
     std::cout << "- Number of Features: " << ORBext_settings.nFeatures << std::endl;
     std::cout << "- Scale Levels: " << ORBext_settings.nLevels << std::endl;
@@ -145,6 +151,8 @@ void ImageProcessing::LoadSettings(std::string settings_path, ORBextractorSettin
     std::cout << "- Initial Fast Threshold: " << ORBext_settings.fIniThFAST << std::endl;
     std::cout << "- Minimum Fast Threshold: " << ORBext_settings.fMinThFAST << std::endl;
 
+    std::cout << "TH_HIGH: " << feature_settings.TH_HIGH << std::endl;
+    std::cout << "TH_LOW: " << feature_settings.TH_LOW<< std::endl;
     fSettings.release();
 
 }

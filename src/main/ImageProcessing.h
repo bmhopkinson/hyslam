@@ -7,6 +7,7 @@
 
 #include <FeatureExtractor.h>
 #include <FeatureFactory.h>
+#include <FeatureMatcher.h>
 #include <DescriptorDistance.h>
 #include <Tracking_datastructs.h>
 #include <SensorData.h>
@@ -30,9 +31,10 @@ public:
     void setOutputQueue(ThreadSafeQueue<ImageFeatureData>* output_queue_){output_queue = output_queue_;}
 
 private:
-    void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings);
+    void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings, FeatureMatcherSettings &feature_settings);
     cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
     ORBExtractorParams setORBExtractorParams(FeatureExtractor* extractor);
+    FeatureMatcherSettings feature_settings;
 
     ThreadSafeQueue<ImageFeatureData>* output_queue;
 

@@ -4,28 +4,8 @@
 
 namespace HYSLAM{
 
-
-ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, std::vector<cv::KeyPoint> mvKeys_,
-                                   std::vector<cv::KeyPoint> mvKeysRight_ , std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, Camera cam_data, ORBExtractorParams orb_params_)
-{
-  mpORBextractorLeft  = mpORBextractorLeft_;
-  mpORBextractorRight = mpORBextractorRight_;
-  mvKeys = mvKeys_;
-  mvKeysRight = mvKeysRight_;
-  mDescriptors = mDescriptors_;
-  mDescriptorsRight = mDescriptorsRight_;
-
-  N = mvKeys.size();
-
-  orb_params = orb_params_;
-
-  float fx = cam_data.fx();
-  mbf = cam_data.mbf;
-  mb = mbf/fx;
-
-}
-
-ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views, DescriptorDistance* descriptor_distance_, Camera cam_data){
+ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
+                                   DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings){
   mpORBextractorLeft  = mpORBextractorLeft_;
   mpORBextractorRight = mpORBextractorRight_;
   mvKeys = views.getKeys();
@@ -33,6 +13,9 @@ ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, Featur
   mDescriptors = views.getDescriptors();
   mDescriptorsRight = views.getDescriptorsR();
   descriptor_distance = descriptor_distance_;
+
+  TH_HIGH = settings.TH_HIGH;
+  TH_LOW = settings.TH_LOW;
 
   N = mvKeys.size();
 
@@ -58,7 +41,7 @@ void ORBstereomatcher::computeStereoMatches()
     mvuRight = std::vector<float>(N,-1.0f);
     mvDepth = std::vector<float>(N,-1.0f);
 
-    const int thOrbDist = (FeatureMatcher::TH_HIGH + FeatureMatcher::TH_LOW) / 2;
+    const int thOrbDist = (TH_HIGH + TH_LOW) / 2;
 
     const int nRows = mpORBextractorLeft->mvImagePyramid[0].rows;
 
@@ -109,7 +92,7 @@ void ORBstereomatcher::computeStereoMatches()
         if(maxU<0)
             continue;
 
-          float bestDist = FeatureMatcher::TH_HIGH;
+          float bestDist = TH_HIGH;
           size_t bestIdxR = 0;
 
           const FeatureDescriptor &dL = mDescriptors[iL];
