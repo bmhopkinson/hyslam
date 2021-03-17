@@ -41,7 +41,7 @@ void ORBstereomatcher::computeStereoMatches()
     mvuRight = std::vector<float>(N,-1.0f);
     mvDepth = std::vector<float>(N,-1.0f);
 
-    const int thOrbDist = (TH_HIGH + TH_LOW) / 2;
+    const float dist_threshold = (TH_HIGH + TH_LOW) / 2;
 
     const int nRows = mpORBextractorLeft->mvImagePyramid[0].rows;
 
@@ -112,6 +112,7 @@ void ORBstereomatcher::computeStereoMatches()
               {
                   const FeatureDescriptor &dR = mDescriptorsRight[iR];
                   const float dist = dL.distance(dR);
+                //  std::cout << "StereoMatcher, dist:  " << dist << std::endl;
 
                   if(dist<bestDist)
                   {
@@ -120,9 +121,10 @@ void ORBstereomatcher::computeStereoMatches()
                   }
               }
           }
+         // std::cout << "StereoMatcher, bestDist:  " << bestDist << std::endl;
 
           // Subpixel match by correlation
-          if(bestDist<thOrbDist)
+          if(bestDist < dist_threshold)
           {
               // coordinates in image pyramid at keypoint scale
               const float uR0 = mvKeysRight[bestIdxR].pt.x;

@@ -24,7 +24,7 @@ float ORBDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
 }
 
 float SURFDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
-    return cv::norm(D1, D1, cv::NORM_L1);
+    return cv::norm(D1, D2, cv::NORM_L1);
 }
 
 

@@ -97,11 +97,11 @@ private:
 class BestScoreCriterion : public LandMarkViewCriterion {
 public:
     BestScoreCriterion(){};
-    BestScoreCriterion( int score_threshold_, float second_best_ratio_);
+    BestScoreCriterion( float score_threshold_, float second_best_ratio_);
     std::vector<size_t> apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data);
     std::vector<size_t> apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data);
 private:
-    int score_threshold = 80;
+    float score_threshold = 80;
     float second_best_ratio = 0.7;
 
 };
@@ -178,10 +178,10 @@ public:
 class MonoInitBestScore : public MonoInitViewCriterion{
 public:
     MonoInitBestScore(){};
-    MonoInitBestScore( int score_threshold_, float second_best_ratio_);
+    MonoInitBestScore( float score_threshold_, float second_best_ratio_);
     std::vector<size_t> apply( std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data);
 private:
-    int score_threshold = 80;
+    float score_threshold = 80;
     float second_best_ratio = 0.7;
 };
 class MonoInitScoreExceedsPrevious : public MonoInitViewCriterion{
@@ -219,10 +219,10 @@ public:
 class BestMatchBoWCriterion : public BoWMatchCriterion{
 public:
     BestMatchBoWCriterion(){};
-    BestMatchBoWCriterion(int score_threshold_, float second_best_ratio_);
+    BestMatchBoWCriterion(float score_threshold_, float second_best_ratio_);
     std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 );
 private:
-    int score_threshold = 80;
+    float score_threshold = 80;
     float second_best_ratio = 0.7;
 };
 

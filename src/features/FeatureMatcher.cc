@@ -642,7 +642,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &v
         const FeatureDescriptor dMP = pMP->GetDescriptor();
 
         float bestDist = std::numeric_limits<float>::max();
-        float bestIdx = -1;
+        int bestIdx = -1;
         for(vector<size_t>::const_iterator vit=vIndices.begin(); vit!=vIndices.end(); vit++)
         {
             const size_t idx = *vit;
@@ -899,7 +899,7 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
         // Match to the most similar keypoint in the radius
         const FeatureDescriptor dMP = pMP->GetDescriptor();
 
-        int bestDist = std::numeric_limits<float>::max();
+        float bestDist = std::numeric_limits<float>::max();
         int bestIdx = -1;
         for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
         {

@@ -39,8 +39,8 @@ namespace HYSLAM
 
 struct FeatureMatcherSettings{
     float nnratio = 0.6;
-    int TH_HIGH = 100;
-    int TH_LOW = 50;
+    float TH_HIGH = 100.0;
+    float TH_LOW = 50.0;
     bool checkOri = true;
 };
 
@@ -111,8 +111,8 @@ protected:
 
     float mfNNratio;
     bool mbCheckOrientation;
-    int TH_LOW = 50;
-    int TH_HIGH = 100;
+    float TH_LOW;
+    float TH_HIGH;
 
     int _SearchByProjection_(Frame &frame, const std::vector<MapPoint*> &landmarks, const float th,
                              std::vector< std::unique_ptr<LandMarkCriterion> >     &landmark_criteria,

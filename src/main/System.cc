@@ -68,7 +68,8 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     }
 
     LoadSettings(strSettingsFile);
-    feature_factory = std::make_unique<ORBFactory>();
+    //feature_factory = std::make_unique<ORBFactory>();
+    feature_factory = std::make_unique<SURFFactory>();
     mpVocabulary = feature_factory->getVocabulary(strVocFile);
    // LoadVocabulary( strVocFile, mpVocabulary);
 

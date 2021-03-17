@@ -218,7 +218,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(KeyFrame* pKF, MapPoint* l
     return views_passed;
 }
 
-BestScoreCriterion::BestScoreCriterion( int score_threshold_, float second_best_ratio_) :
+BestScoreCriterion::BestScoreCriterion( float score_threshold_, float second_best_ratio_) :
 score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 {}
 
@@ -227,35 +227,7 @@ std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::
    // const cv::Mat lm_descriptor = lm->GetDescriptor();
     const FeatureViews& views = frame.getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
-/*
-    int bestDist=256;
-    int bestLevel= -1;
-    int bestDist2=256;
-    int bestLevel2 = -1;
-    int bestIdx =-1 ;
 
-    for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
-        size_t idx = *it;
-        const cv::Mat &d = views.descriptor(idx);
-
-        const int dist_orb = descriptorDistance(lm_descriptor, d);
-
-        if(dist_orb<bestDist)
-        {
-            bestDist2=bestDist;
-            bestDist=dist_orb;
-            bestLevel2 = bestLevel;
-            bestLevel = views.keypt(idx).octave;
-            bestIdx=idx;
-        }
-        else if(dist_orb<bestDist2)
-        {
-            bestLevel2 = views.keypt(idx).octave;
-            bestDist2=dist_orb;
-        }
-
-    }
-*/
     if(best_view.score <= score_threshold) {
         if (best_view.level == best_view.level_2ndbest && best_view.score >  second_best_ratio * best_view.score_2ndbest) {
         } else {
@@ -288,11 +260,11 @@ SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, s
     SingleMatchData best_view;
     const FeatureDescriptor& lm_descriptor = lm->GetDescriptor();
 
-    float bestDist = 256;
-    float bestLevel = -1;
-    float bestDist2 =256;
-    float bestLevel2 = -1;
-    float bestIdx =-1 ;
+    float bestDist = std::numeric_limits<float>::max();
+    int bestLevel = -1;
+    float bestDist2 = std::numeric_limits<float>::max();
+    int bestLevel2 = -1;
+    int bestIdx =-1 ;
 
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
         size_t idx = *it;
@@ -529,7 +501,7 @@ float  MonoCriteriaData::getDistance(size_t idx){
     }
 }
 
-MonoInitBestScore::MonoInitBestScore( int score_threshold_, float second_best_ratio_) :
+MonoInitBestScore::MonoInitBestScore( float score_threshold_, float second_best_ratio_) :
 score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 {}
 
@@ -645,7 +617,7 @@ std::vector<unsigned int>  StereoIndexCriterion::apply(KeyFrame* pKF, std::vecto
     return idxs_passed;
 }
 
-BestMatchBoWCriterion::BestMatchBoWCriterion(int score_threshold_, float second_best_ratio_) :
+BestMatchBoWCriterion::BestMatchBoWCriterion(float score_threshold_, float second_best_ratio_) :
 score_threshold(score_threshold_), second_best_ratio(second_best_ratio_)
 {}
 
