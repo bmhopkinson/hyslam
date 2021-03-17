@@ -68,7 +68,6 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
     const FeatureViews &views = frame.getViews();
     ORBExtractorParams orb_params = views.orbParams();
 
-
     //apply landmark criteria
 
     for(auto criterion = landmark_criteria.begin(); criterion != landmark_criteria.end(); ++criterion){//winnow down potential landmark matches

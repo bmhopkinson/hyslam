@@ -1,4 +1,5 @@
 %YAML:1.0
+Interrupt_if_NWaiting: 2
 Jobs: 
     ProcessNewKF: none
 

@@ -40,6 +40,7 @@ namespace HYSLAM
 {
         std::cout << "mapping config path " << config_path << std::endl;
     config_data = cv::FileStorage(config_path ,cv::FileStorage::READ );
+    interrupt_threshold = config_data["Interrupt_if_NWaiting"];
 
     std::string flocalmap_name = "./run_data/localmapping_data.txt";
     flocalmap.open(flocalmap_name);
@@ -211,7 +212,9 @@ void Mapping::SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> > &optional
 
 void Mapping::RunOptionalJobs(std::vector< std::unique_ptr<MapJob> >  &optional_jobs, bool multithreaded){
         // testing didn't show any advantage of multithreading right now - all jobs almost always finish before next keyframe arrives.
-        // multithreading did seem to have somewhat more frequent segfaults but generally worked ok - so it could be possible to multithread if needed but will take some work 
+        // multithreading did seem to have somewhat more frequent segfaults but generally worked ok - so it could be possible to multithread if needed but will take some work
+
+bool completed_jobs = true; //will get set false if aborted
 if(multithreaded){
     using JobThread = std::pair<MapJob *, std::thread>;
     std::list<JobThread> active_jobs;
@@ -225,8 +228,9 @@ if(multithreaded){
 
     bool abort = false;
     while (!active_jobs.empty()) {
-        if (CheckNewKeyFrames() || stopRequested() || interruptJobs() ) {
+        if ( interruptJobs() ) {
             abort = true;
+            completed_jobs = false;
             //  std::cout << "attempting to abort jobs" << std::endl;
         }
         for (auto it = active_jobs.begin(); it != active_jobs.end(); ++it) {
@@ -248,8 +252,9 @@ if(multithreaded){
 }
 else {
     for(auto job = optional_jobs.begin(); job != optional_jobs.end(); ++job){
-        if (CheckNewKeyFrames() || stopRequested()  || interruptJobs()) {
+        if ( interruptJobs()) {
             std::cout << "stopping optional jobs" << std::endl;
+            completed_jobs = false;
            break;
         } else {   //run job
             std::thread job_thread(&MapJob::run, (*job).get());
@@ -265,6 +270,11 @@ else {
 bool Mapping::CheckNewKeyFrames() {
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
     return (input_queue->size() > 0);
+}
+
+int  Mapping::NWaitingKeyFrames(){
+    std::unique_lock<std::mutex> lock(mMutexNewKFs);
+    return input_queue->size();
 }
 
 bool Mapping::Stop()
@@ -295,7 +305,9 @@ void Mapping::SetAcceptKeyFrames(bool flag)
 
 bool Mapping::interruptJobs()
 {
-   return thread_status->mapping.isInterrupt();
+
+    bool interrupt = (NWaitingKeyFrames() > interrupt_threshold || stopRequested() || thread_status->mapping.isInterrupt());
+    return interrupt;
 }
 
 void Mapping::RunGlobalBA(){

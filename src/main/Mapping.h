@@ -61,6 +61,7 @@ public:
 protected:
 
     bool CheckNewKeyFrames();
+    int  NWaitingKeyFrames();
     void SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandatory_jobs);
     void SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> >  &optional_jobs);
     void RunOptionalJobs(std::vector< std::unique_ptr<MapJob> >  &optional_jobs, bool multithreaded);
@@ -96,6 +97,9 @@ protected:
     ThreadSafeQueue<KeyFrame*>* input_queue;
     ThreadSafeQueue<KeyFrame*>* output_queue;
 
+    int interrupt_threshold = 1;
+    int N_optional_jobs_stopped = 0;
+    int max_optional_jobs_stopped = 4; 
     FeatureFactory* feature_factory;
 
     long unsigned int nKFs_created = 0; // used for determining when to do global BA
