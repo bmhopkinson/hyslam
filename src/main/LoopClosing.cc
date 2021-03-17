@@ -34,9 +34,9 @@
 namespace HYSLAM
 {
 
-LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, FeatureVocabulary *pVoc, MainThreadsStatus* thread_status_, const bool bFixScale):
+LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, FeatureVocabulary* pVoc, FeatureFactory* factory, MainThreadsStatus* thread_status_, const bool bFixScale):
     mbResetRequested(false), mbFinishRequested(false), mbFinished(true), maps(_maps),
-    mpORBVocabulary(pVoc), thread_status(thread_status_),  mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
+    feature_factory(factory), feature_vocabulary(pVoc), thread_status(thread_status_),  mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
     mbStopGBA(false), mbFixScale(bFixScale)
 {
     mnCovisibilityConsistencyTh = 3;
@@ -125,7 +125,7 @@ bool LoopClosing::DetectLoop()
             continue;
         const DBoW2::BowVector &BowVec = pKF->mBowVec;
 
-        float score = mpORBVocabulary->score(CurrentBowVec, BowVec);
+        float score = feature_vocabulary->score(CurrentBowVec, BowVec);
 
         if(score<minScore)
             minScore = score;
@@ -235,7 +235,13 @@ bool LoopClosing::ComputeSim3()
 
     // We compute first ORB matches for each candidate
     // If enough matches are found, we setup a Sim3Solver
-    FeatureMatcher matcher(0.75, true);
+
+    //FeatureMatcher matcher(0.75, true);
+    FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = 0.75;
+    fm_settings.checkOri = true;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
 
     std::vector<Sim3Solver*> vpSim3Solvers;
     vpSim3Solvers.resize(nInitialCandidates);
@@ -261,7 +267,7 @@ bool LoopClosing::ComputeSim3()
             continue;
         }
 
-        int nmatches = matcher.SearchByBoW2(mpCurrentKF,pKF,vvpMapPointMatches[i]);
+        int nmatches = matcher->SearchByBoW2(mpCurrentKF,pKF,vvpMapPointMatches[i]);
 
         if(nmatches<20)
         {
@@ -319,7 +325,7 @@ bool LoopClosing::ComputeSim3()
                 cv::Mat R = pSolver->GetEstimatedRotation();
                 cv::Mat t = pSolver->GetEstimatedTranslation();
                 const float s = pSolver->GetEstimatedScale();
-                matcher.SearchBySim3(mpCurrentKF,pKF,vpMapPointMatches,s,R,t,7.5);
+                matcher->SearchBySim3(mpCurrentKF,pKF,vpMapPointMatches,s,R,t,7.5);
 
                 g2o::Sim3 gScm(Converter::toMatrix3d(R),Converter::toVector3d(t),s);
                 const int nInliers = Optimizer::OptimizeSim3(mpCurrentKF, pKF, vpMapPointMatches, gScm, 10, mbFixScale);
@@ -375,7 +381,7 @@ bool LoopClosing::ComputeSim3()
     }
 
     // Find more matches projecting with the computed Sim3
-    matcher.SearchByProjection(mpCurrentKF, mScw, mvpLoopMapPoints, mvpCurrentMatchedPoints,10);
+    matcher->SearchByProjection(mpCurrentKF, mScw, mvpLoopMapPoints, mvpCurrentMatchedPoints,10);
 
     // If enough matches accept Loop
     int nTotalMatches = 0;
@@ -603,7 +609,11 @@ void LoopClosing::CorrectLoop()
 
 void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
 {
-    FeatureMatcher matcher(0.8);
+  //  FeatureMatcher matcher(0.8);
+    FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = 0.8;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
 
     for(KeyFrameAndPose::const_iterator mit=CorrectedPosesMap.begin(), mend=CorrectedPosesMap.end(); mit!=mend;mit++)
     {
@@ -613,7 +623,7 @@ void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
         cv::Mat cvScw = Converter::toCvMat(g2oScw);
 
         std::vector<MapPoint*> vpReplacePoints(mvpLoopMapPoints.size(),static_cast<MapPoint*>(NULL));
-        matcher.Fuse(pKF,cvScw,mvpLoopMapPoints,4,vpReplacePoints);
+        matcher->Fuse(pKF,cvScw,mvpLoopMapPoints,4,vpReplacePoints);
 
         // Get Map Mutex
         std::unique_lock<std::mutex> lock(maps[curKF_cam]->mMutexMapUpdate);

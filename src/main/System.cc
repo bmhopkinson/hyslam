@@ -115,7 +115,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     //Initialize Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
-                             maps, cam_data, strSettingsFile, thread_status.get());
+                             maps, cam_data, strSettingsFile, thread_status.get(), feature_factory.get() );
     mpTracker->setInputQueue(tracking_queue.get());
     mpTracker->setOutputQueue( mapping_queue.get() );
     mptTracking = new std::thread(&HYSLAM::Tracking::Run, mpTracker);
@@ -123,13 +123,13 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     //Initialize the Local Mapping thread and launch
     std::string mapping_config_path = fsSettings["Mapping_Config"].string();
 
-    mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path, thread_status.get());
+    mpLocalMapper = new Mapping(maps, mSensor==MONOCULAR, mapping_config_path, thread_status.get(), feature_factory.get());
     mpLocalMapper->setInputQueue( mapping_queue.get() );
     mpLocalMapper->setOutputQueue( loopclosing_queue.get() );
     mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
-    mpLoopCloser = new LoopClosing(maps, mpVocabulary,thread_status.get(), mSensor!=MONOCULAR);
+    mpLoopCloser = new LoopClosing(maps, mpVocabulary, feature_factory.get() ,thread_status.get(), mSensor!=MONOCULAR);
     mpLoopCloser->setInputQueue( loopclosing_queue.get() );
     mptLoopClosing = new std::thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
 

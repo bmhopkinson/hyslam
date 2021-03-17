@@ -9,6 +9,7 @@
 #include <Trajectory.h>
 #include <MonoEstimator.h>
 #include <Tracking_datastructs.h>
+#include <FeatureFactory.h>
 
 #include <opencv2/opencv.hpp>
 #include <vector>
@@ -33,7 +34,7 @@ namespace HYSLAM{
  
 class MonoInitializer : public Initializer {
     public:
-        MonoInitializer(MonoInitializerParameters params_);
+        MonoInitializer(MonoInitializerParameters params_, FeatureFactory* factory);
         int initialize(Frame &frame);
         bool hasValidFirstFrame();
         int firstFrame(Frame &frame); //, MonoInitialMatch &match_data);
@@ -50,6 +51,7 @@ class MonoInitializer : public Initializer {
     private:
         MonoInitializerParameters params;
         MonoEstimatorParams estimator_params;
+        FeatureFactory* feature_factory;
 
         //frames for attempted initialization
         Frame first_frame;

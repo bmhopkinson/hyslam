@@ -4,9 +4,11 @@
 #include <GenUtils.h>
 #include <Camera.h>
 
+#include <memory>
+
 namespace HYSLAM{
-TrackMotionModel::TrackMotionModel(optInfo optimizer_info_, const TrackMotionModelParameters &params_)
-: optimizer_info(optimizer_info_), params(params_)
+TrackMotionModel::TrackMotionModel(optInfo optimizer_info_, const TrackMotionModelParameters &params_, FeatureFactory* factory)
+: optimizer_info(optimizer_info_), params(params_), feature_factory(factory)
 {}
 
 int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, Trajectory* slam_trajectory){
@@ -14,7 +16,12 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
     const Frame& last_slamframe = frames[1];
     Camera camera = current_frame.getCamera();
 
-    FeatureMatcher matcher(params.match_nnratio, true);
+   // FeatureMatcher matcher(params.match_nnratio, true);
+   FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+   fm_settings.nnratio = params.match_nnratio;
+   fm_settings.checkOri =true;
+   feature_factory->setFeatureMatcherSettings(fm_settings);
+   std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
     //  std::cout << "TrackwMotionModel, Frame: " << mCurrentFrame.mnId << std::endl;
 
     cv::Mat Vcw;
@@ -53,7 +60,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
         th = params.match_radius_threshold_other;
 
   //  std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
-    int nmatches = matcher.SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
+    int nmatches = matcher->SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
   //  std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
   //  std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
   //  std::cout << "MoMo SearchByProj duration (ms):  " << t_elapsed.count() << std::endl;
@@ -67,7 +74,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
     {
         current_frame.clearAssociations();
         th =  params.match_theshold_inflation_factor*th;
-        nmatches = matcher.SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
+        nmatches = matcher->SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
         std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
     }
 

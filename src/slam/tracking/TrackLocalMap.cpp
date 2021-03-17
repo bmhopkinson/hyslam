@@ -3,8 +3,8 @@
 #include <Optimizer.h>
 
 namespace HYSLAM {
-TrackLocalMap::TrackLocalMap(optInfo optimizer_info_,  const TrackLocalMapParameters &params_ )
-: optimizer_info(optimizer_info_), params(params_) {}
+TrackLocalMap::TrackLocalMap(optInfo optimizer_info_,  const TrackLocalMapParameters &params_ ,  FeatureFactory* factory)
+: optimizer_info(optimizer_info_), params(params_), feature_factory(factory) {}
 
 int TrackLocalMap::track(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap_, Trajectory* trajectory){
 
@@ -70,10 +70,15 @@ void TrackLocalMap::SearchLocalPoints(){
         }
     }
 
-    FeatureMatcher matcher(params.match_nnratio);
+    //FeatureMatcher matcher(params.match_nnratio);
+    FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = params.match_nnratio;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
+
     //int th = 5;
     std::vector<MapPoint*> v_lmp(local_map_points.begin(), local_map_points.end());
-    int n_matches = matcher.SearchByProjection(*pcurrent_frame, v_lmp, params.match_radius_threshold);
+    int n_matches = matcher->SearchByProjection(*pcurrent_frame, v_lmp, params.match_radius_threshold);
 
 //    std::cout << "tracklocal map, N_local_mpts: " << v_lmp.size() << ", matches SearchByProjection: "  << n_matches << std::endl;
 

@@ -7,6 +7,7 @@
 #include <TrackMotionModel.h>
 #include <TrackReferenceKeyFrame.h>
 #include <TrackLocalMap.h>
+#include <FeatureFactory.h>
 
 #include <opencv2/core/core.hpp>
 #include <chrono>
@@ -14,7 +15,8 @@
 namespace HYSLAM {
 class TrackingStateNormal : public TrackingState {
 public:
-    TrackingStateNormal(optInfo optimizer_info_, StateNormalParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_);
+    TrackingStateNormal(optInfo optimizer_info_, StateNormalParameters params_, std::ofstream &log,
+                        MainThreadsStatus* thread_status_, FeatureFactory* factory);
     bool initialPoseEstimation( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
     bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
 
@@ -28,6 +30,8 @@ private:
     int thresh_init;
     int thresh_refine;
     int mnMatchesInliers = 0; // number of tracked points after refinePoseEstimate
+
+    FeatureFactory* feature_factory;
 
     //timing
     static int n_calls;

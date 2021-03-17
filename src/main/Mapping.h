@@ -25,6 +25,7 @@
 #include "Map.h"
 #include "LoopClosing.h"
 #include <ORBSLAM_datastructs.h>
+#include <FeatureFactory.h>
 #include <InterThread.h>
 #include <Tracking.h>
 #include <MapJob.h>
@@ -44,7 +45,8 @@ class Tracking;
 
 class Mapping {
 public:
-    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path, MainThreadsStatus* thread_status_);
+    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path,
+            MainThreadsStatus* thread_status_, FeatureFactory* factory);
 
     void SetTracker(Tracking* pTracker);
     void setInputQueue(ThreadSafeQueue<KeyFrame*>* input_queue_){input_queue = input_queue_;}
@@ -93,6 +95,8 @@ protected:
     MainThreadsStatus* thread_status;
     ThreadSafeQueue<KeyFrame*>* input_queue;
     ThreadSafeQueue<KeyFrame*>* output_queue;
+
+    FeatureFactory* feature_factory;
 
     long unsigned int nKFs_created = 0; // used for determining when to do global BA
     bool bNeedGBA = false; //indicates global BA needed

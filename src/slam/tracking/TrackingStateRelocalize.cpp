@@ -3,11 +3,12 @@
 
 namespace HYSLAM{
 
-TrackingStateRelocalize::TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log,  MainThreadsStatus* thread_status_) :
-TrackingState(log, thread_status_), params(params_)
+TrackingStateRelocalize::TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log,
+                                                 MainThreadsStatus* thread_status_, FeatureFactory* factory) :
+TrackingState(log, thread_status_), params(params_), feature_factory(factory)
 {
-    track_place_recognition = std::make_unique<TrackPlaceRecognition>(optimizer_info_, params.tplacerecog_params);
-    track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params);
+    track_place_recognition = std::make_unique<TrackPlaceRecognition>(optimizer_info_, params.tplacerecog_params, feature_factory);
+    track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params, feature_factory);
 }
 
 bool TrackingStateRelocalize::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){

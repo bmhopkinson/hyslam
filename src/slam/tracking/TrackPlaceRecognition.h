@@ -4,16 +4,18 @@
 #include <TrackingStrategy.h>
 #include <ORBSLAM_datastructs.h>
 #include <Tracking_datastructs.h>
+#include <FeatureFactory.h>
 
 namespace HYSLAM{
 
     class TrackPlaceRecognition : public TrackingStrategy{
     public:
-        TrackPlaceRecognition(optInfo optimizer_info_,TrackPlaceRecognitionParameters params_ );
+        TrackPlaceRecognition(optInfo optimizer_info_,TrackPlaceRecognitionParameters params_, FeatureFactory* factory );
         int track(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, Trajectory* trajectory);
     private:
         optInfo optimizer_info;
         TrackPlaceRecognitionParameters params;
+        FeatureFactory* feature_factory;
     };
 
 }//end namespace

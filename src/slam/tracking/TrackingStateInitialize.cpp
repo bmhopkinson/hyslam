@@ -5,8 +5,10 @@
 #include <GlobalBundleAdjustment.h>
 
 namespace HYSLAM {
-TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_,  StateInitializeParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_) :
-    TrackingState(log, thread_status_), optimizer_info(optimizer_info_), camera(camera_), params(params_)
+TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_,
+                                                 StateInitializeParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_,
+                                                 FeatureFactory* factory) :
+    TrackingState(log, thread_status_), optimizer_info(optimizer_info_), camera(camera_), params(params_), feature_factory(factory)
 {
  //   cv::FileNode config_data_strategies =config_data["Strategies"];
  //   cv::FileNode config_init = config_data_strategies["Initialize"];
@@ -16,7 +18,7 @@ TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera
         initializer = std::make_unique<StereoInitializer>(params.stereo_params );
     } else if (camera.sensor == 0){ //mono camera
       //  MonoInitializerParameters miparams(config_init["Mono"]);
-        initializer = std::make_unique<MonoInitializer>(params.mono_params );
+        initializer = std::make_unique<MonoInitializer>(params.mono_params , feature_factory);
     } else {
         std::cout << "no initializer available for requested camera type: "  << camera_.sensor << std::endl;
     }

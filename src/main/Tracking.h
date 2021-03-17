@@ -34,6 +34,7 @@
 #include "Frame.h"
 #include "ORBVocab.h"
 #include "FeatureExtractor.h"
+#include <FeatureFactory.h>
 #include <MonoInitializer.h>
 #include "MapDrawer.h"
 #include "System.h"
@@ -61,7 +62,7 @@ class Tracking
 public:
 
     Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
-             std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_);
+             std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_, FeatureFactory* factory);
     ~Tracking();
 
     void Run();
@@ -140,6 +141,7 @@ protected:
 
     //BoW
     FeatureVocabulary* mpORBVocabulary;
+    FeatureFactory* feature_factory;
 
     // Initalization
     int stereoInitFeatures;

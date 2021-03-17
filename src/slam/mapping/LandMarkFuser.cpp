@@ -6,10 +6,11 @@
 
 #include <vector>
 #include <set>
+#include <memory>
 
 namespace HYSLAM{
-LandMarkFuser::LandMarkFuser(KeyFrame* pKF_, Map* pMap_,LandMarkFuserParameters params_, std::ofstream &log_) :
-pKF(pKF_), pMap(pMap_), params(params_)
+LandMarkFuser::LandMarkFuser(KeyFrame* pKF_, Map* pMap_,LandMarkFuserParameters params_, FeatureFactory* factory, std::ofstream &log_) :
+pKF(pKF_), pMap(pMap_), params(params_), feature_factory(factory)
 {
     log = &log_;
 }
@@ -45,7 +46,8 @@ void LandMarkFuser::run(){
     }
 
     // Search matches by projection from current KF in target KFs
-    FeatureMatcher matcher;
+   // FeatureMatcher matcher;
+   std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
     std::vector<MapPoint*> vpMapPointMatches = pKF->GetMapPointMatches();
     for(std::set<KeyFrame*>::iterator vit=KF_fuse_targets.begin(), vend=KF_fuse_targets.end(); vit!=vend; vit++)
     {
@@ -54,7 +56,7 @@ void LandMarkFuser::run(){
       //  matcher.Fuse(pKFi,vpMapPointMatches, fuse_matches); //find fuse matches
 
         std::map<std::size_t, MapPoint*> fuse_matches;
-        matcher.Fuse(pKFi,vpMapPointMatches, fuse_matches); //find fuse matches
+        matcher->Fuse(pKFi,vpMapPointMatches, fuse_matches); //find fuse matches
         fuse_mappoints(pKFi,  fuse_matches);
     }
 
@@ -80,7 +82,7 @@ void LandMarkFuser::run(){
 
     std::vector<MapPoint*> vlandmark_fuse_candidates(landmark_fuse_candidates.begin(), landmark_fuse_candidates.end());
     std::map<std::size_t, MapPoint*> fuse_matches;
-    matcher.Fuse(pKF,vlandmark_fuse_candidates, fuse_matches);  //would like to move the actual fusing out of the matchers - have matcher return landmarks for fusing and fuse here
+    matcher->Fuse(pKF,vlandmark_fuse_candidates, fuse_matches);  //would like to move the actual fusing out of the matchers - have matcher return landmarks for fusing and fuse here
     fuse_mappoints(pKF,  fuse_matches);
     // std::cout <<"finished Fuse in SearchInNeighbors for KF:" << mpCurrentKeyFrame->mnId << std::endl;
 

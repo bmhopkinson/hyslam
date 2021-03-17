@@ -34,8 +34,9 @@
 namespace HYSLAM
 {
 
-    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path, MainThreadsStatus* thread_status_):
-    mbMonocular(bMonocular), mbResetRequested(false), maps(_maps), thread_status(thread_status_)
+    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path,
+                     MainThreadsStatus* thread_status_, FeatureFactory* factory):
+    mbMonocular(bMonocular), mbResetRequested(false), maps(_maps), thread_status(thread_status_), feature_factory(factory)
 {
         std::cout << "mapping config path " << config_path << std::endl;
     config_data = cv::FileStorage(config_path ,cv::FileStorage::READ );
@@ -179,12 +180,13 @@ void Mapping::SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> > &optional
 
     LandMarkTriangulatorParameters lmtriang_params(config_data["Jobs"]["LandMarkTriangulator"]);
     optional_jobs.push_back(
-            std::make_unique<LandMarkTriangulator>(mpCurrentKeyFrame, maps[curKF_cam], &mlpRecentAddedMapPoints, lmtriang_params, flocalmap )
+            std::make_unique<LandMarkTriangulator>(mpCurrentKeyFrame, maps[curKF_cam],
+                                                   &mlpRecentAddedMapPoints, lmtriang_params, feature_factory, flocalmap )
     );
 
     LandMarkFuserParameters lmfuser_params(config_data["Jobs"]["LandMarkFuser"]);
     optional_jobs.push_back(
-            std::make_unique<LandMarkFuser>(mpCurrentKeyFrame, maps[curKF_cam], lmfuser_params,  flocalmap )
+            std::make_unique<LandMarkFuser>(mpCurrentKeyFrame, maps[curKF_cam], lmfuser_params, feature_factory,  flocalmap )
     );
 
     if(maps[curKF_cam]->KeyFramesInMap()>2) {

@@ -4,8 +4,8 @@
 #include <PnPsolver.h>
 
 namespace HYSLAM{
-TrackPlaceRecognition::TrackPlaceRecognition(optInfo optimizer_info_,TrackPlaceRecognitionParameters params_)
-: optimizer_info(optimizer_info_), params(params_)
+TrackPlaceRecognition::TrackPlaceRecognition(optInfo optimizer_info_,TrackPlaceRecognitionParameters params_, FeatureFactory* factory)
+: optimizer_info(optimizer_info_), params(params_), feature_factory(factory)
 {}
 int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, Trajectory* trajectory)
 {
@@ -23,7 +23,12 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
 
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
-    FeatureMatcher matcher(params.match_nnratio_1 , true);
+   // FeatureMatcher matcher(params.match_nnratio_1 , true);
+    FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = params.match_nnratio_1;
+    fm_settings.checkOri =true;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
 
     std::vector<PnPsolver*> vpPnPsolvers;
     vpPnPsolvers.resize(nKFs);
@@ -43,7 +48,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
         else
         {
             std::map<size_t, MapPoint*> matches_bow;
-            int nmatches = matcher.SearchByBoW(pKF,current_frame,matches_bow);
+            int nmatches = matcher->SearchByBoW(pKF,current_frame,matches_bow);
           //  std::cout << "relocalize: trying KF: " << pKF->mnId << " nmatches: " << nmatches << std::endl;
 
             std::vector<MapPoint*> vpMapPointMatches = std::vector<MapPoint*>(current_frame.N,static_cast<MapPoint*>(NULL));
@@ -76,7 +81,12 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     // Until we found a camera pose supported by enough inliers
     int nGood = 0;
     bool bMatch = false;
-    FeatureMatcher matcher2(params.match_nnratio_2, true);
+  //  FeatureMatcher matcher2(params.match_nnratio_2, true);
+    fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = params.match_nnratio_2;
+    fm_settings.checkOri =true;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher2 = feature_factory->getFeatureMatcher();
 
     while(nCandidates>0 && !bMatch)
     {
@@ -137,7 +147,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
                 // If few inliers, search by projection in a coarse window and optimize again
                 if(nGood<params.N_min_matches_success)
                 {
-                    int nadditional =matcher2.SearchByProjection(current_frame,vpCandidateKFs[i],sFound,params.match_radius_threshold_1,params.ORBdist_1);
+                    int nadditional =matcher2->SearchByProjection(current_frame,vpCandidateKFs[i],sFound,params.match_radius_threshold_1,params.ORBdist_1);
                     if(nadditional+nGood>=params.N_min_matches_success)
                     {
                       //  std::cout << "candidate KF has pose via PnP, trying second optimization : " << vpCandidateKFs[i]->mnId << std::endl;
@@ -155,7 +165,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
                                 if(!pMP){continue;}
                                 sFound.insert(pMP);
                             }
-                            nadditional =matcher2.SearchByProjection(current_frame,vpCandidateKFs[i],sFound,params.match_radius_threshold_2,params.ORBdist_2);
+                            nadditional =matcher2->SearchByProjection(current_frame,vpCandidateKFs[i],sFound,params.match_radius_threshold_2,params.ORBdist_2);
                             // Final optimization
                             if(nGood+nadditional>=params.N_min_matches_success)
                             {

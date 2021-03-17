@@ -8,13 +8,14 @@ int TrackingStateNormal::n_calls =0;
 std::chrono::duration<int, std::milli> TrackingStateNormal::init_pose_duration;
 std::chrono::duration<int, std::milli> TrackingStateNormal::refine_pose_duration;
 
-TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log, MainThreadsStatus* thread_status_) :
-    params(params_),  TrackingState(log, thread_status_)
+TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalParameters params_, std::ofstream &log,
+                                         MainThreadsStatus* thread_status_, FeatureFactory* factory) :
+    params(params_), feature_factory(factory), TrackingState(log, thread_status_)
 {
 
-    track_motion_model = std::make_unique<TrackMotionModel>(optimizer_info_, params.tmomo_params);
-    track_reference_keyframe = std::make_unique<TrackReferenceKeyFrame>(optimizer_info_, params.trefkf_params);
-    track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params);
+    track_motion_model = std::make_unique<TrackMotionModel>(optimizer_info_, params.tmomo_params, feature_factory);
+    track_reference_keyframe = std::make_unique<TrackReferenceKeyFrame>(optimizer_info_, params.trefkf_params, feature_factory);
+    track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params, feature_factory);
 }
 
 bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){

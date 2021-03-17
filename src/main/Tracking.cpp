@@ -48,9 +48,10 @@ namespace HYSLAM
 {
 
 Tracking::Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-                   std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_):
+                   std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_,
+                   const std::string &strSettingPath, MainThreadsStatus* thread_status_, FeatureFactory* factory):
             mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
-            mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), thread_status(thread_status_)
+            mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), thread_status(thread_status_), feature_factory(factory)
 {
     //
     std::string ftracking_name = "./run_data/tracking_data.txt";
@@ -287,7 +288,7 @@ void Tracking::_Track_()
                 cv::FileNode state_config = config_data["States"];
                 StateInitializeParameters state_initialize_params(state_config[cam_states[cam_cur]["Initialize"].string()], config_data["Strategies"]);
                 pnext_track_state = new TrackingStateInitialize(optParams, cam_data[cam_cur], init_data[cam_cur],
-                                                                state_initialize_params, ftracking, thread_status);
+                                                                state_initialize_params, ftracking, thread_status, feature_factory);
             }
         }
     }
@@ -325,17 +326,19 @@ void Tracking::SetupStates(){
       StateInitializeParameters state_initialize_params(state_config[cam_states[cam_name]["Initialize"].string()],
                                                         strategy_config);
       state[cam_name] = new TrackingStateInitialize(optParams, cam, init_data[cam.camName], state_initialize_params,
-                                                       ftracking, thread_status);
+                                                       ftracking, thread_status, feature_factory);
       mState[cam_name] = eTrackingState::INITIALIZATION;
 
       //Normal
       StateNormalParameters state_normal_params(state_config[cam_states[cam_name]["Normal"].string()], strategy_config);
-      state_options[cam_name]["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params, ftracking, thread_status);
+      state_options[cam_name]["NORMAL"] = new TrackingStateNormal(optParams, state_normal_params,
+                                                                  ftracking, thread_status, feature_factory);
 
       //Relocalize
       StateRelocalizeParameters state_relocalize_params(state_config[cam_states[cam_name]["Relocalize"].string()],
                                                         strategy_config);
-      state_options[cam_name]["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params, ftracking, thread_status);
+      state_options[cam_name]["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params,
+                                                                          ftracking, thread_status, feature_factory);
   }
 }
 

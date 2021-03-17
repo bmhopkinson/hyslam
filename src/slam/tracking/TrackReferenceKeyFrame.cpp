@@ -3,8 +3,8 @@
 #include <Optimizer.h>
 
 namespace HYSLAM{
-    TrackReferenceKeyFrame::TrackReferenceKeyFrame(optInfo optimizer_info_, const TrackReferenceKeyFrameParameters &params_)
-    : optimizer_info(optimizer_info_), params(params_)
+    TrackReferenceKeyFrame::TrackReferenceKeyFrame(optInfo optimizer_info_, const TrackReferenceKeyFrameParameters &params_,  FeatureFactory* factory)
+    : optimizer_info(optimizer_info_), params(params_), feature_factory(factory)
     {}
 
     int TrackReferenceKeyFrame::track(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, Trajectory* trajectory){
@@ -13,9 +13,15 @@ namespace HYSLAM{
         const Frame& last_frame = frames[0];
 
         // first try BoW feature match w/ reference keyframe, if successful optimize pose
-        FeatureMatcher matcher(params.match_nnratio, false);
+        //FeatureMatcher matcher(params.match_nnratio, false);
+        FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+        fm_settings.nnratio = params.match_nnratio;
+        fm_settings.checkOri = false;
+        feature_factory->setFeatureMatcherSettings(fm_settings);
+        std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
+
         std::map<size_t, MapPoint*> matches_bow;
-        int nmatches = matcher.SearchByBoW(pKF,current_frame,matches_bow);
+        int nmatches = matcher->SearchByBoW(pKF,current_frame,matches_bow);
 
         if(nmatches< params.N_min_matches_BoW){
        //     std::cout << "TrackReferenceKeyFrame failed b/c SearchByBoW < 15: only found: " << nmatches <<std::endl;

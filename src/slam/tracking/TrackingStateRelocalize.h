@@ -6,13 +6,15 @@
 #include <InterThread.h>
 #include <TrackPlaceRecognition.h>
 #include <TrackLocalMap.h>
+#include <FeatureFactory.h>
 
 #include <opencv2/core/core.hpp>
 
 namespace HYSLAM{
 class TrackingStateRelocalize : public TrackingState{
 public:
-    TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log,  MainThreadsStatus* thread_status_);
+    TrackingStateRelocalize(optInfo optimizer_info_, StateRelocalizeParameters params_, std::ofstream &log,
+                            MainThreadsStatus* thread_status_, FeatureFactory* factory);
     bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,   std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
     bool refinePoseEstimate( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
 private:
@@ -21,6 +23,7 @@ private:
     std::unique_ptr<TrackLocalMap> track_local_map;
 
     StateRelocalizeParameters params;
+    FeatureFactory* feature_factory;
 
 };
 }

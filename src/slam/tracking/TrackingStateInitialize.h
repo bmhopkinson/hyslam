@@ -6,13 +6,16 @@
 #include <InterThread.h>
 #include <Camera.h>
 #include <Initializer.h>
+#include <FeatureFactory.h>
 #include <vector>
 #include <opencv2/core/core.hpp>
 
 namespace HYSLAM {
     class TrackingStateInitialize : public TrackingState {
     public:
-        TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_, StateInitializeParameters params_,  std::ofstream &log, MainThreadsStatus* thread_status_);
+        TrackingStateInitialize(optInfo optimizer_info_, Camera camera_, InitializerData &init_data_,
+                                StateInitializeParameters params_,  std::ofstream &log, MainThreadsStatus* thread_status_,
+                                FeatureFactory* factory);
         bool initialPoseEstimation( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
         bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
         void clear();
@@ -26,6 +29,7 @@ namespace HYSLAM {
         StateInitializeParameters params;
         Camera camera;
         InitializerData* init_data;
+        FeatureFactory* feature_factory;
         bool success;
         std::vector<KeyFrame*> KFnew;
 

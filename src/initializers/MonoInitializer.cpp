@@ -4,7 +4,7 @@
 #include <FeatureMatcher.h>
 
 namespace HYSLAM{
-MonoInitializer::MonoInitializer(MonoInitializerParameters params_): params(params_)
+MonoInitializer::MonoInitializer(MonoInitializerParameters params_, FeatureFactory* factory): params(params_), feature_factory(factory)
 {
     estimator_params.sigma = params.sigma;
     estimator_params.minTriangulated = params.minTriangulated;
@@ -75,8 +75,13 @@ int MonoInitializer::secondFrame(Frame &frame){//,  MonoInitialMatch &match_data
     }
 
     // Find correspondences
-    FeatureMatcher matcher(params.match_nnratio, true);
-    int nmatches = matcher.SearchForInitialization(first_frame, second_frame, mvbPrevMatched, mvIniMatches, 100);
+   // FeatureMatcher matcher(params.match_nnratio, true);
+    FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = params.match_nnratio;
+    fm_settings.checkOri = true;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
+    int nmatches = matcher->SearchForInitialization(first_frame, second_frame, mvbPrevMatched, mvIniMatches, 100);
     std::cout << "MonoInit: matches found: " << nmatches << std::endl; // << ", new: "<< nmatches_alt <<  std::endl;
     // Check if there are enough correspondences
     if(nmatches<params.N_min_matches)

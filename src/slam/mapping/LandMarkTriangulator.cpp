@@ -5,9 +5,12 @@
 #include <GenUtils.h>
 #include <FeatureMatcher.h>
 
+#include <memory>
+
 namespace HYSLAM {
-LandMarkTriangulator::LandMarkTriangulator(KeyFrame *pKF_, Map *pMap_, std::list<MapPoint *> *new_mpts_,LandMarkTriangulatorParameters params_, std::ofstream &log_ ) :
-    pKF(pKF_), pMap(pMap_), new_mpts(new_mpts_), params(params_) {
+LandMarkTriangulator::LandMarkTriangulator(KeyFrame *pKF_, Map *pMap_, std::list<MapPoint *> *new_mpts_,LandMarkTriangulatorParameters params_,
+                                           FeatureFactory* factory, std::ofstream &log_ ) :
+    pKF(pKF_), pMap(pMap_), new_mpts(new_mpts_), params(params_), feature_factory(factory) {
 log = &log_;
 }
 
@@ -25,7 +28,12 @@ void LandMarkTriangulator::run() {
     ORBExtractorParams orb_params_KFcur = KFcur_views.orbParams();
     const Camera camera_KFcur = pKF->getCamera();
 
-    FeatureMatcher matcher(params.match_nnratio, false);
+  //  FeatureMatcher matcher(params.match_nnratio, false);
+  FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+  fm_settings.nnratio = params.match_nnratio;
+  fm_settings.checkOri = false;
+  feature_factory->setFeatureMatcherSettings(fm_settings);
+  std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
 
     cv::Mat Ow1 = pKF->GetCameraCenter();
 
@@ -71,7 +79,7 @@ void LandMarkTriangulator::run() {
         cv::Mat F12 = GenUtils::ComputeF12(pKF,pKF2);
 
         std::vector<std::pair<size_t,size_t> > vMatchedIndices;
-        int nmatches_search = matcher.SearchForTriangulation(pKF,pKF2,F12,vMatchedIndices,false);
+        int nmatches_search = matcher->SearchForTriangulation(pKF,pKF2,F12,vMatchedIndices,false);
    //     std::cout << "LMTriangulator: pKF1 " << pKF->mnId << " pKF2: " << pKF2->mnId << " ; matches: " << nmatches_search << std::endl;
 
         // Triangulate each match
