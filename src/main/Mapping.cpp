@@ -76,13 +76,18 @@ void Mapping::Run()
             SetupOptionalJobs(optional_jobs);
             RunOptionalJobs(optional_jobs, false);
 
+            if(clear_input_queue){  //trigerred if optional jobs keep getting interrupted
+                ClearInputQueue();
+                clear_input_queue = false;
+            }
+
             if(!CheckNewKeyFrames() && !stopRequested())
             {
 
                  optInfo optpar = mpTracker->optParams;
                //periodically do a Global Bundle Adjustment
                bool time_for_GBA = (nKFs_created - lastGBAKF) > optpar.GBAinterval;
-             //  std::cout << "mapping: nKFs_created: " << nKFs_created << "\t lastGBAKF: " << lastGBAKF << "\t time_for_GBA: " << time_for_GBA <<std::endl;
+               std::cout << "mapping: nKFs_created: " << nKFs_created << "\t lastGBAKF: " << lastGBAKF << "\t GBAinterval: " << optpar.GBAinterval << "\t time_for_GBA: " << time_for_GBA <<std::endl;
                if(!optpar.realtime && time_for_GBA ){
                   bNeedGBA = true;
                   std::cout << "need GBA = true" << std::endl;
@@ -100,7 +105,7 @@ void Mapping::Run()
                       std::cout << "running Global Bundle Adjustement !!!" << std::endl;
                        RunGlobalBA();
                        bNeedGBA = false;
-                       lastGBAKF = mpCurrentKeyFrame->mnId ;
+                       lastGBAKF = nKFs_created;
                   }
                 thread_status->tracking.setRelease(true);
                }
@@ -263,6 +268,11 @@ else {
     }
     thread_status->mapping.setInterrupt(false);
 }
+if(completed_jobs){
+    N_optional_jobs_stopped = 0;
+} else {
+    N_optional_jobs_stopped++;
+}
 
 }
 
@@ -275,6 +285,11 @@ bool Mapping::CheckNewKeyFrames() {
 int  Mapping::NWaitingKeyFrames(){
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
     return input_queue->size();
+}
+
+void Mapping::ClearInputQueue(){
+    input_queue->clear();
+    std::cout << "CLEARING mapping input queue" << std::endl;
 }
 
 bool Mapping::Stop()
@@ -307,6 +322,10 @@ bool Mapping::interruptJobs()
 {
 
     bool interrupt = (NWaitingKeyFrames() > interrupt_threshold || stopRequested() || thread_status->mapping.isInterrupt());
+    if(N_optional_jobs_stopped > max_optional_jobs_stopped){ //suppress interrupt if optional jobs have not been able to complete in succession. likely due to backed up queue - only option is to empty it
+        interrupt = false;
+        clear_input_queue = true;
+    }
     return interrupt;
 }
 

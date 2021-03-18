@@ -8,6 +8,7 @@
 #include <queue>
 #include <mutex>
 #include <iostream>
+#include <algorithm>
 
 namespace HYSLAM {
 
@@ -53,6 +54,12 @@ public:
       //  std::cout << "item pushed to queue" << std::endl;
         std::lock_guard<std::mutex> lock(mutex_);
         queue_.push(item);
+    }
+
+    void clear(){
+        std::lock_guard<std::mutex> lock(mutex_);
+        std::queue<T> empty_queue;
+        std::swap(queue_, empty_queue);
     }
 };
 }//end namespace
