@@ -126,6 +126,21 @@ void ORBstereomatcher::computeStereoMatches()
           // Subpixel match by correlation
           if(bestDist < dist_threshold)
           {
+              float uR0 = mvKeysRight[bestIdxR].pt.x;
+              float disparity = (uL-uR0);
+
+              if(disparity>=minD && disparity<maxD)
+              {
+                  if(disparity<=0)
+                  {
+                      disparity=0.01;
+                      uR0 = uL-0.01;
+                  }
+                  mvDepth[iL]=mbf/disparity;
+                  mvuRight[iL] = uR0;
+                  vDistIdx.push_back(std::pair<int,int>(bestDist,iL));
+              }
+              /*
               // coordinates in image pyramid at keypoint scale
               const float uR0 = mvKeysRight[bestIdxR].pt.x;
               const float scaleFactor = orb_params.mvInvScaleFactors[kpL.octave];
@@ -195,7 +210,9 @@ void ORBstereomatcher::computeStereoMatches()
                   mvuRight[iL] = bestuR;
                   vDistIdx.push_back(std::pair<int,int>(bestDist,iL));
               }
+               */
           }
+
       }
 
       sort(vDistIdx.begin(),vDistIdx.end());
