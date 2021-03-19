@@ -1,11 +1,12 @@
-#include <ORBstereomatcher.h>
+#include <Stereomatcher.h>
 #include <FeatureMatcher.h>
 
 
 namespace HYSLAM{
 
-ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
-                                   DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings){
+Stereomatcher::Stereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
+                             DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings) : camera(cam_data)
+                                   {
   mpORBextractorLeft  = mpORBextractorLeft_;
   mpORBextractorRight = mpORBextractorRight_;
   mvKeys = views.getKeys();
@@ -26,24 +27,24 @@ ORBstereomatcher::ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, Featur
   mb = mbf/fx;
 }
 
-void ORBstereomatcher::getData(std::vector<float> &mvuRight_, std::vector<float> &mvDepth_){
+void Stereomatcher::getData(std::vector<float> &mvuRight_, std::vector<float> &mvDepth_){
   mvuRight_ = mvuRight;
   mvDepth_ = mvDepth;
 }
 
-void ORBstereomatcher::getData(FeatureViews &views){
+void Stereomatcher::getData(FeatureViews &views){
     views.setuRs(mvuRight);
     views.setDepths(mvDepth);
 }
 
-void ORBstereomatcher::computeStereoMatches()
+void Stereomatcher::computeStereoMatches()
 {
     mvuRight = std::vector<float>(N,-1.0f);
     mvDepth = std::vector<float>(N,-1.0f);
 
     const float dist_threshold = (TH_HIGH + TH_LOW) / 2;
 
-    const int nRows = mpORBextractorLeft->mvImagePyramid[0].rows;
+    const int nRows = camera.mnMaxY;
 
     //Assign keypoints to row table
     std::vector<std::vector<size_t> > vRowIndices(nRows,std::vector<size_t>());
@@ -58,6 +59,7 @@ void ORBstereomatcher::computeStereoMatches()
       const cv::KeyPoint &kp = mvKeysRight[iR];
       const float &kpY = kp.pt.y;
       const float r = 2.0f* orb_params.mvScaleFactors[mvKeysRight[iR].octave];
+    //  std::cout << "stereomatcher: r: " << r <<"\t octave: " << mvKeysRight[iR].octave << "\t scale_factor: " <<  orb_params.mvScaleFactors[mvKeysRight[iR].octave] << std::endl;
       const int maxr = ceil(kpY+r);
       const int minr = floor(kpY-r);
 

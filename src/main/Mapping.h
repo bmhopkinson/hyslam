@@ -80,6 +80,7 @@ protected:
     bool Stop();
     bool stopRequested();
     bool interruptJobs();
+    void StopTracking();
     bool clear_input_queue= false;
 
     void SetAcceptKeyFrames(bool flag);
@@ -98,7 +99,7 @@ protected:
     MainThreadsStatus* thread_status;
     ThreadSafeQueue<KeyFrame*>* input_queue;
     ThreadSafeQueue<KeyFrame*>* output_queue;
- //   int max_input_queue_length = 2;
+    int max_input_queue_length = 2;
 
     int interrupt_threshold = 1;
     int N_optional_jobs_stopped = 0;

@@ -61,14 +61,15 @@ void Mapping::Run()
         // Tracking will see that Local Mapping is busy
         SetAcceptKeyFrames(false);
 
+        //WOULD LIKE TO ENABLE true flushing of queue THIS BUT REQUIRES MORE WORK - CURRENTLY ONCE KEYFRAMES are passed ot mapping they must at least initially be incorporated into the map b/c KF,Frame,mpt assocaitons have been made - can later be culled, but must initially be incorporated
+        if(clear_input_queue){  //clears all EXCEPT most recent keyframe - trigerred if optional jobs keep getting interrupted or input queue is too long
+            std::cout << "clearing mapping queue" << std::endl;
+            StopTracking();
+        }
+
         // Check if there are keyframes in the queue
         if(CheckNewKeyFrames())
         {
-            //WOULD LIKE TO ENABLE THIS BUT REQUIRES MORE WORK - CURRENTLY ONCE KEYFRAMES are passed ot mapping they must at least initially be incorporated into the map b/c KF,Frame,mpt assocaitons have been made - can later be culled, but must initially be incorporated
-            //if(clear_input_queue){  //clears all EXCEPT most recent keyframe - trigerred if optional jobs keep getting interrupted or input queue is too long
-            //    ClearInputQueue();
-            //    clear_input_queue = false;
-           // }
 
             std::vector< std::unique_ptr<MapJob> > mandatory_jobs;  //eventually want to turn all of this into a true WorkQueue w/ threadpools, priority queue for optional jobs...
             SetupMandatoryJobs(mandatory_jobs);
@@ -94,18 +95,16 @@ void Mapping::Run()
                }
 
               if(bNeedGBA){
-                  thread_status->tracking.setStopRequested(true);
-                   // Wait until Tracking has effectively stopped
-                  while(!thread_status->tracking.isStopped())
-                  {
-                        usleep(1000);
-                  }
+                  std::cout << "about to stop tracking for GBA" << std::endl;
+                  StopTracking();
 
                   if(!CheckNewKeyFrames() && !stopRequested()){
                       std::cout << "running Global Bundle Adjustement !!!" << std::endl;
                        RunGlobalBA();
                        bNeedGBA = false;
                        lastGBAKF = nKFs_created;
+                  } else {
+                      std::cout << "aborted Global Bundle Adjustment " << std::endl;
                   }
                 thread_status->tracking.setRelease(true);
                }
@@ -142,6 +141,13 @@ void Mapping::Run()
                 break;
             }
         }
+
+        if(clear_input_queue && !CheckNewKeyFrames()) {  //release tracking
+            std::cout << "starting tracking after clearing mapping queue" << std::endl;
+            thread_status->tracking.setRelease(true);
+            clear_input_queue = false;
+        }
+
         ResetIfRequested();
 
         if(CheckFinish()) {
@@ -279,9 +285,9 @@ if(completed_jobs){
 
 bool Mapping::CheckNewKeyFrames() {
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
-  //  if(input_queue->size() > max_input_queue_length){
-  //      clear_input_queue = true;
-  //  }
+    if(input_queue->size() > max_input_queue_length){
+        clear_input_queue = true;
+    }
     return (input_queue->size() > 0);
 }
 
@@ -324,13 +330,23 @@ void Mapping::SetAcceptKeyFrames(bool flag)
 }
 
 
+void Mapping::StopTracking(){
+    thread_status->tracking.setStopRequested(true);
+    // Wait until Tracking has effectively stopped
+    while(!thread_status->tracking.isStopped())
+    {
+        thread_status->tracking.setStopRequested(true); //someone else may have cleared the initial request - so keep putting it in
+        usleep(1000);
+    }
+}
+
 bool Mapping::interruptJobs()
 {
 
     bool interrupt = (NWaitingKeyFrames() > interrupt_threshold || stopRequested() || thread_status->mapping.isInterrupt());
     if(N_optional_jobs_stopped > max_optional_jobs_stopped){ //suppress interrupt if optional jobs have not been able to complete in succession. likely due to backed up queue - only option is to empty it
         interrupt = false;
-      //  clear_input_queue = true;
+        clear_input_queue = true;
     }
     return interrupt;
 }

@@ -12,10 +12,10 @@
 
 namespace HYSLAM{
 
-class ORBstereomatcher{
+class Stereomatcher{
 public:
-  ORBstereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
-                   DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings);
+  Stereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
+                DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings);
   void computeStereoMatches();
   void getData(std::vector<float> &mvuRight_, std::vector<float> &mvDepth_);
   void getData(FeatureViews &views);
@@ -28,6 +28,7 @@ private:
   DescriptorDistance* descriptor_distance;
 
   ORBExtractorParams orb_params;
+  Camera camera;
 
   //thresholds
   int TH_HIGH;

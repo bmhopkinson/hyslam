@@ -23,7 +23,7 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <ORBstereomatcher.h>
+#include <Stereomatcher.h>
 #include "FrameDrawer.h"
 #include <MapPointDB.h>
 #include "Map.h"

@@ -7,7 +7,7 @@
 #include <SURFFinder.h>
 #include <FeatureViews.h>
 #include <ORBUtil.h>
-#include <ORBstereomatcher.h>
+#include <Stereomatcher.h>
 
 
 
@@ -93,7 +93,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
 
     FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
     DescriptorDistance* dist_calc = new ORBDistance();
-    ORBstereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, dist_calc, cam_data[cam_cur], feature_settings);
+    Stereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, dist_calc, cam_data[cam_cur], feature_settings);
     stereomatch.computeStereoMatches();
     stereomatch.getData(LMviews);
 
