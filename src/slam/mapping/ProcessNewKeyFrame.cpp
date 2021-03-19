@@ -34,6 +34,7 @@ void ProcessNewKeyFrame::run(){
     }
 
     pMap->AddKeyFrame(pKF);
+    std::cout << "mapping inserted KF into map: " << pKF->mnId << std::endl;
     has_finished = true;
 }
 

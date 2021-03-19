@@ -64,6 +64,11 @@ void Mapping::Run()
         // Check if there are keyframes in the queue
         if(CheckNewKeyFrames())
         {
+            //WOULD LIKE TO ENABLE THIS BUT REQUIRES MORE WORK - CURRENTLY ONCE KEYFRAMES are passed ot mapping they must at least initially be incorporated into the map b/c KF,Frame,mpt assocaitons have been made - can later be culled, but must initially be incorporated
+            //if(clear_input_queue){  //clears all EXCEPT most recent keyframe - trigerred if optional jobs keep getting interrupted or input queue is too long
+            //    ClearInputQueue();
+            //    clear_input_queue = false;
+           // }
 
             std::vector< std::unique_ptr<MapJob> > mandatory_jobs;  //eventually want to turn all of this into a true WorkQueue w/ threadpools, priority queue for optional jobs...
             SetupMandatoryJobs(mandatory_jobs);
@@ -75,11 +80,6 @@ void Mapping::Run()
             std::vector< std::unique_ptr<MapJob> > optional_jobs;
             SetupOptionalJobs(optional_jobs);
             RunOptionalJobs(optional_jobs, false);
-
-            if(clear_input_queue){  //trigerred if optional jobs keep getting interrupted
-                ClearInputQueue();
-                clear_input_queue = false;
-            }
 
             if(!CheckNewKeyFrames() && !stopRequested())
             {
@@ -279,6 +279,9 @@ if(completed_jobs){
 
 bool Mapping::CheckNewKeyFrames() {
     std::unique_lock<std::mutex> lock(mMutexNewKFs);
+  //  if(input_queue->size() > max_input_queue_length){
+  //      clear_input_queue = true;
+  //  }
     return (input_queue->size() > 0);
 }
 
@@ -288,7 +291,10 @@ int  Mapping::NWaitingKeyFrames(){
 }
 
 void Mapping::ClearInputQueue(){
+    KeyFrame* pKF_recent = input_queue->back();
     input_queue->clear();
+    input_queue->push(pKF_recent);
+    thread_status->mapping.setQueueLength(input_queue->size());
     std::cout << "CLEARING mapping input queue" << std::endl;
 }
 
@@ -324,7 +330,7 @@ bool Mapping::interruptJobs()
     bool interrupt = (NWaitingKeyFrames() > interrupt_threshold || stopRequested() || thread_status->mapping.isInterrupt());
     if(N_optional_jobs_stopped > max_optional_jobs_stopped){ //suppress interrupt if optional jobs have not been able to complete in succession. likely due to backed up queue - only option is to empty it
         interrupt = false;
-        clear_input_queue = true;
+      //  clear_input_queue = true;
     }
     return interrupt;
 }

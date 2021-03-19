@@ -61,6 +61,11 @@ public:
         std::queue<T> empty_queue;
         std::swap(queue_, empty_queue);
     }
+
+    T& back(){
+        std::lock_guard<std::mutex> lock(mutex_);
+        return queue_.back();
+    }
 };
 }//end namespace
 
