@@ -17,6 +17,7 @@ pKF(pKF_), pMap(pMap_), params(params_), feature_factory(factory)
 
 void LandMarkFuser::run(){
 
+    int n_total_fused = 0;
     const Camera camera = pKF->getCamera();
 
     bool is_mono = camera.sensor == 0;
@@ -57,7 +58,7 @@ void LandMarkFuser::run(){
 
         std::map<std::size_t, MapPoint*> fuse_matches;
         matcher->Fuse(pKFi,vpMapPointMatches, fuse_matches); //find fuse matches
-        fuse_mappoints(pKFi,  fuse_matches);
+        n_total_fused = fuse_mappoints(pKFi,  fuse_matches);
     }
 
     // Search matches by projection from target KFs in current KF
@@ -83,12 +84,13 @@ void LandMarkFuser::run(){
     std::vector<MapPoint*> vlandmark_fuse_candidates(landmark_fuse_candidates.begin(), landmark_fuse_candidates.end());
     std::map<std::size_t, MapPoint*> fuse_matches;
     matcher->Fuse(pKF,vlandmark_fuse_candidates, fuse_matches);  //would like to move the actual fusing out of the matchers - have matcher return landmarks for fusing and fuse here
-    fuse_mappoints(pKF,  fuse_matches);
+    n_total_fused += fuse_mappoints(pKF,  fuse_matches);
     // std::cout <<"finished Fuse in SearchInNeighbors for KF:" << mpCurrentKeyFrame->mnId << std::endl;
 
     // Update connections in covisibility graph
     pMap->getKeyFrameDB()->update(pKF);
 
+    *log << "fused_mpts: " << n_total_fused  <<"\t";
     has_finished = true;
 }
 

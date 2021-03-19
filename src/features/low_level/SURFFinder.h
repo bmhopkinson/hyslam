@@ -20,7 +20,7 @@ public:
     int descriptor_mat_type(){return 5; } // CV_32F : 5
     int descriptor_cols(){return 64;}  //SURF 64 element descriptor
 private:
-    double threshold = 20;
+    double threshold = 200;
     int nOctaves = 1;
     int nOctaveLayers = 1;
     cv::Ptr<cv::xfeatures2d::SURF> detector;

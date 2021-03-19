@@ -57,8 +57,8 @@ Tracking::Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, 
     std::string ftracking_name = "./run_data/tracking_data.txt";
     ftracking.open(ftracking_name);
     ftracking <<"Camera\tFrame#" << "\t" << "InitPoseMethod\t" << "InitPoseOk\t" << "mnMatchesInliers\t"<<"frame_matches_total\t"<<"nMPs_total\t" <<"nKFs_total\t"
-                << "KFref_matches\t"  << "nTrackedClose\t" << "nNonTrackedClose\t" <<"insertKF\t"
-                << "c1a\tc1b\tc1c\tc2\t"<< "newKFid\t" << "KF_newMps\t" <<std::endl;
+                << "KFref_matches\t"  << "nTrackedClose\t" << "nNonTrackedClose\t"<< "local_mapping_idle\t" << "max_interval_exceeded\t"<< "lack_close_landmarks\t"<< "tracking_weak\t"<< "tracking_dire\t" <<"insertKF\t"
+               << "newKFid\t" << "KF_newMps\t" <<std::endl;
 
     LoadSettings(strSettingPath);
     SetupStates();

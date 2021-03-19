@@ -139,6 +139,9 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsi
     bool definite_insert = (force || max_interval_exceeded || tracking_dire) ;
     bool optional_insert = min_interval_exceeded && (tracking_weak || lack_close_landmarks);
 
+
+    (*pftracking) << local_mapping_idle << "\t" << max_interval_exceeded << "\t"<< lack_close_landmarks << "\t"<< tracking_weak << "\t"<< tracking_dire <<"\t";
+
     bool insertKF = false;
     if(definite_insert || (optional_insert && local_mapping_idle))
     {

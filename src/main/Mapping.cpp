@@ -87,7 +87,7 @@ void Mapping::Run()
                  optInfo optpar = mpTracker->optParams;
                //periodically do a Global Bundle Adjustment
                bool time_for_GBA = (nKFs_created - lastGBAKF) > optpar.GBAinterval;
-               std::cout << "mapping: nKFs_created: " << nKFs_created << "\t lastGBAKF: " << lastGBAKF << "\t GBAinterval: " << optpar.GBAinterval << "\t time_for_GBA: " << time_for_GBA <<std::endl;
+            //   std::cout << "mapping: nKFs_created: " << nKFs_created << "\t lastGBAKF: " << lastGBAKF << "\t GBAinterval: " << optpar.GBAinterval << "\t time_for_GBA: " << time_for_GBA <<std::endl;
                if(!optpar.realtime && time_for_GBA ){
                   bNeedGBA = true;
                   std::cout << "need GBA = true" << std::endl;

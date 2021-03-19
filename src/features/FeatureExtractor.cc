@@ -455,6 +455,7 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
 
                 if(vKeysCell.empty())
                 {
+                   // std::cout << "no features found reducing threshold" << std::endl;
                     feature_finder->setThreshold(minThFAST);
                     feature_finder->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
                   //  FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
