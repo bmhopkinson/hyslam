@@ -89,6 +89,11 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     orb_thread.join();
     ORBExtractorParams orb_params = setORBExtractorParams(mpORBextractorLeft);
 
+  //  for(auto it = mvKeys.begin(); it != mvKeys.end(); ++it){
+ //       cv::KeyPoint kpt = *it;
+ //       std::cout << kpt.pt << " , octave: "<< kpt.octave <<  ", size: " << kpt.size << " , scale_factor: " << orb_params.mvScaleFactors[kpt.octave] <<std::endl;
+ //   }
+
     std::vector<cv::KeyPoint> surf_keys;
     std::vector<FeatureDescriptor> surf_descriptors;
     (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
@@ -96,10 +101,10 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     cv::drawKeypoints(imCopy, surf_keys, imCopy, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
     cv::imwrite("surf_test.jpg", imCopy);
     std::cout << "N SURF Features: " << surf_keys.size() << std::endl;
-    for(auto it = surf_keys.begin(); it != surf_keys.end(); ++it){
-        cv::KeyPoint kpt = *it;
-        std::cout << kpt.pt << "octave: "<< kpt.octave <<  ", size: " << kpt.size << std::endl;
-    }
+ //   for(auto it = surf_keys.begin(); it != surf_keys.end(); ++it){
+ //       cv::KeyPoint kpt = *it;
+ //      std::cout << kpt.pt << "octave: "<< kpt.octave <<  ", size: " << kpt.size << std::endl;
+ //   }
 
 
     FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);

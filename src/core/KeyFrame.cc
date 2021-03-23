@@ -256,6 +256,30 @@ int KeyFrame::predictScale(const float &currentDist, MapPoint* pMP){
     return nScale_this;
 }
 
+float KeyFrame::featureSize(int idx){ //consider each feature to be a square associated with a mappoint  normal to camera line of sight
+    MapPoint* lm = hasAssociation(idx);
+    if(!lm){
+        return -1.0;
+    }
+
+    cv::Mat Pos = lm->GetWorldPos();
+    cv::Mat Ow = GetCameraCenter();
+    cv::Mat Pos_cam = Pos - Ow;
+    float z  = cv::norm(Pos_cam);
+    if(z < 0.0){ return -1.0;}
+
+    const float u = views.keypt(idx).pt.x;
+    const float v = views.keypt(idx).pt.y;
+    float radius = views.keypt(idx).size/2;
+    cv::Mat left_edge = camera.Unproject(u-radius,v, z);  //could be simplified w/ pinhole camera but wanted to keep more general
+    cv::Mat right_edge = camera.Unproject(u+radius,v, z);
+    cv::Mat length = right_edge - left_edge;
+    float size = cv::norm(length);
+
+    return size;
+
+}
+
 KeyFrame* KeyFrame::GetParent()
 {
     std::unique_lock<std::mutex> lockCon(mMutexConnections);

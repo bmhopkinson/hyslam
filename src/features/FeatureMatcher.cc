@@ -92,6 +92,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         float ur = uv.at<float>(2,0);
         int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
         float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
+        float radius_alt = 1.0;
         std::vector<size_t> cand_lmviews = frame.GetFeaturesInArea(u,v,radius,nPredictedLevel-1,nPredictedLevel+1);
 
 

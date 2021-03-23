@@ -79,6 +79,11 @@ public:
     void SetProtection(int n, unsigned long int KFid);
     void LowerProtection(unsigned long int KFid);
 
+    float getSize() const;
+    void setSize(float size);
+    float getMeanDistance() const;
+    void setMeanDistance(float meanDistance);
+
 public:
     long unsigned int mnId;
     static long unsigned int nNextId;
@@ -117,6 +122,9 @@ protected:
 
      // Keyframes observing the point and associated index in keyframe
      std::map<KeyFrame*,size_t> mObservations;
+
+     float size; //mean size at mean distance
+     float mean_distance;
 
      int nObs;
      // Mean viewing direction

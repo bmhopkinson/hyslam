@@ -166,4 +166,20 @@ void MapPoint::LowerProtection(unsigned long int KFid)
     }
 }
 
+float MapPoint::getSize() const {
+    return size;
+}
+
+void MapPoint::setSize(float size) {
+    MapPoint::size = size;
+}
+
+float MapPoint::getMeanDistance() const {
+    return mean_distance;
+}
+
+void MapPoint::setMeanDistance(float meanDistance) {
+    mean_distance = meanDistance;
+}
+
 } //namespace ORB_SLAM

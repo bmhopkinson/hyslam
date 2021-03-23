@@ -32,13 +32,15 @@ namespace HYSLAM{
         std::map<KeyFrame*, FeatureDescriptor>  getAllDescriptors()  { return descriptors; }
         void computeDistinctiveDescriptor();
 
-        void UpdateNormalAndDepth();
+
         cv::Mat getNormal();
         void setNormal(cv::Mat norm);
         void setMaxDist(float maxd);
         void setMinDist(float mind);
         float getMaxDist() {return max_distance;}
         float getMinDist() {return min_distance;}
+
+        void UpdateNormalAndDepth();
 
         void setRefKF(KeyFrame* pKF);
         KeyFrame* getRefKF() {return pKF_ref;}
@@ -52,10 +54,21 @@ namespace HYSLAM{
         FeatureDescriptor best_descriptor;
         float min_distance = 0;  //scale invariance distances
         float max_distance = 0;
+        float mean_distance = 0;
+        float size = 0; //average size of feature at mean_distance
         int n_obs = 0;
         
         bool desc_needs_update = false;
         bool normdepth_needs_update = false;
+
+        //private functions - don't lock
+        void updateEntry();
+
+        void setMeanDistance(float dist);
+        void updateMeanDistance();
+
+        void setSize(float size_);
+        void updateSize(); // must be called after updateMeanDistance
 
         std::mutex entry_mutex;
     };

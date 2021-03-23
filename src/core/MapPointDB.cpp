@@ -12,6 +12,8 @@ namespace HYSLAM{
         FeatureDescriptor descriptor = pKF_ref_->getViews().descriptor(idx);
         addDescriptor(pKF_ref_, descriptor);
         setBestDescriptor(descriptor); //only descriptor right now
+        updateMeanDistance();
+     //   updateSize(); //must be called after updateMeanDistance()
         UpdateNormalAndDepth();
 
     }
@@ -30,6 +32,7 @@ namespace HYSLAM{
 
         pMP_entry->setObservations(observations);
         pMP_entry->setNObs(n_obs);
+       // updateSize();
 
     }
 
@@ -208,6 +211,25 @@ namespace HYSLAM{
         pMP_entry->setReferenceKeyFrame(pKF);
     }
 
+    void MapPointDBEntry::setMeanDistance(float dist){
+        std::unique_lock<std::mutex> lock(entry_mutex);
+        mean_distance = dist;
+        pMP_entry->setMeanDistance(mean_distance);
+    }
+
+    void MapPointDBEntry::setSize(float size_){
+        std::unique_lock<std::mutex> lock(entry_mutex);
+        size = size_;
+        pMP_entry->setSize(size);
+    }
+
+    void MapPointDBEntry::updateEntry() {
+        UpdateNormalAndDepth();
+        computeDistinctiveDescriptor();
+        updateMeanDistance();
+        updateSize();
+    }
+
     void MapPointDBEntry::UpdateNormalAndDepth(){
         std::map<KeyFrame*,size_t> observations_cur;
         KeyFrame* pRefKF;
@@ -248,6 +270,67 @@ namespace HYSLAM{
         setMinDist(min_distance_);
         setNormal(normal/n);
     }
+
+    void MapPointDBEntry::updateMeanDistance(){
+
+        cv::Mat Pos;
+        Pos = pMP_entry->GetWorldPos();
+
+
+        if(observations.empty())
+            return;
+
+        //cv::Mat mean_dist = cv::Mat::zeros(3,1,CV_32F);
+        float mean_dist = 0.0;
+        int n=0;
+        for(std::map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+        {
+            KeyFrame* pKF = mit->first;
+            cv::Mat Owi = pKF->GetCameraCenter();
+            cv::Mat Pos_cam = Pos - Owi;
+            float this_dist = cv::norm(Pos_cam);
+            mean_dist  += this_dist;
+            std::cout << "lm dist: " << this_dist << "\t";
+            n++;
+        }
+        mean_dist = mean_dist/static_cast<float>(n);
+        setMeanDistance(mean_dist);
+        std::cout << ", mean dist: " << mean_dist << std::endl;
+    }
+
+    void MapPointDBEntry::updateSize(){
+
+        int n=0;
+        float mean_size = 0.0;
+        for(std::map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++) {
+            KeyFrame *pKF = mit->first;
+            size_t idx = mit->second;
+            /*
+            cv::Mat Owi = pKF->GetCameraCenter();
+            cv::Mat Pos_cam = Pos - Owi;
+            float dist  = cv::norm(Pos_cam);
+
+            const FeatureViews& views = pKF->getViews();
+            cv::KeyPoint kpt = views.keypt(idx );
+            float size_obs = kpt.size;
+          //  float size_at_meandist = size_obs * (dist/mean_distance); // HAVE KEY FRAME PREDICT SIZE AT MEAN DIST THEN CAN APPLY ANY CAMERA MODEL //assumes linear camera model and same camera is repeatadly observing mapppoint;
+            */
+
+            float size_this = pKF->featureSize(idx);
+            std::cout << "size update got size" <<std::endl;
+            if (size_this > 0.0) {
+                mean_size += size_this;
+                n++;
+                std::cout << "size: " << size_this << "\t";
+            }
+
+        }
+
+        mean_size = mean_size/static_cast<float>(n);
+        setSize(mean_size);
+        std::cout << ", mean size: " << mean_size << std::endl;
+    }
+
 
     // MAPPOINTDB MEMBER FUNCTIONS ////
 
