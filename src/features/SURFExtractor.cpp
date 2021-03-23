@@ -6,7 +6,7 @@
 
 namespace HYSLAM{
 SURFExtractor::SURFExtractor(std::unique_ptr <FeatureFinder> feature_finder_, std::shared_ptr <DescriptorDistance> dist_func_,
-        ORBextractorSettings settings_): dist_func(dist_func_), settings(settings_)
+                             FeatureExtractorSettings settings_): dist_func(dist_func_), settings(settings_)
 {
     feature_finder = std::move(feature_finder_);
 }

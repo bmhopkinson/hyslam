@@ -53,7 +53,7 @@
 *
 */
 
-#include <FeatureExtractor.h>
+#include <ORBExtractor.h>
 #include <ORBFinder.h>
 
 #include <opencv2/core/core.hpp>
@@ -73,15 +73,15 @@ const int N_CELLS = 30;
 const int PATCH_SIZE = 31;
 const int EDGE_THRESHOLD = 19;
 
-FeatureExtractor::FeatureExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::shared_ptr<DescriptorDistance> dist_func_, ORBextractorSettings settings)
+ORBExtractor::ORBExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::shared_ptr<DescriptorDistance> dist_func_, FeatureExtractorSettings settings)
 {
     feature_finder = std::move(feature_finder_);
     dist_func = dist_func_;
     nfeatures = settings.nFeatures;
     scaleFactor = settings.fScaleFactor;
     nlevels = settings.nLevels;
-    iniThFAST = settings.fIniThFAST;
-    minThFAST = settings.fMinThFAST;
+    iniThFAST = settings.init_threshold;
+    minThFAST = settings.min_threshold;
     mvScaleFactor.resize(nlevels);
     mvLevelSigma2.resize(nlevels);
     mvScaleFactor[0]=1.0f;
@@ -177,7 +177,7 @@ void ExtractorNode::DivideNode(ExtractorNode &n1, ExtractorNode &n2, ExtractorNo
 
 }
 
-vector<cv::KeyPoint> FeatureExtractor::DistributeOctTree(const vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
+vector<cv::KeyPoint> ORBExtractor::DistributeOctTree(const vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                                          const int &maxX, const int &minY, const int &maxY, const int &N, const int &level)
 {
     // Compute how many initial nodes   
@@ -403,7 +403,7 @@ vector<cv::KeyPoint> FeatureExtractor::DistributeOctTree(const vector<cv::KeyPoi
     return vResultKeys;
 }
 
-void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
+void ORBExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
 {
     allKeypoints.resize(nlevels);
     
@@ -499,7 +499,7 @@ void FeatureExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKey
 
 }
 
-void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<KeyPoint>& _keypoints,
+void ORBExtractor::operator()(InputArray _image, InputArray _mask, vector<KeyPoint>& _keypoints,
                                   std::vector<FeatureDescriptor> &descriptors)
 { 
     if(_image.empty())
@@ -570,7 +570,7 @@ void FeatureExtractor::operator()(InputArray _image, InputArray _mask, vector<Ke
     }
 }
 
-void FeatureExtractor::ComputePyramid(cv::Mat image)
+void ORBExtractor::ComputePyramid(cv::Mat image)
 {
     for (int level = 0; level < nlevels; ++level)
     {

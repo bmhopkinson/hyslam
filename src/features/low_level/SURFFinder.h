@@ -19,9 +19,14 @@ public:
     void compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors); //compute descriptors
     int descriptor_mat_type(){return 5; } // CV_32F : 5
     int descriptor_cols(){return 64;}  //SURF 64 element descriptor
+
+    int getNOctaves() const;
+    void setNOctaves(int nOctaves);
+
 private:
-    double threshold = 200;
-    int nOctaves = 1;
+    double threshold = 800;
+    int nOctaves = 4;
+
     int nOctaveLayers = 1;
     cv::Ptr<cv::xfeatures2d::SURF> detector;
 };

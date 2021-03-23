@@ -15,7 +15,7 @@ namespace HYSLAM {
 
 class FeatureFactory {
 public:
-    virtual FeatureExtractor* getExtractor(ORBextractorSettings settings) = 0;  //convert to unique_ptr
+    virtual FeatureExtractor* getExtractor(FeatureExtractorSettings settings) = 0;  //convert to unique_ptr
     virtual FeatureVocabulary* getVocabulary(std::string file_name) =0 ;
     std::unique_ptr<FeatureMatcher> getFeatureMatcher();
     FeatureMatcherSettings getFeatureMatcherSettings() const {return feature_matcher_settings; } ;

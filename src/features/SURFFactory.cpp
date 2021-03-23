@@ -5,14 +5,14 @@
 #include "SURFFactory.h"
 
 #include <SURFVocabulary.h>
-#include <FeatureExtractor.h>
+#include <SURFExtractor.h>
 #include <SURFFinder.h>
 
 namespace HYSLAM {
 
-FeatureExtractor* SURFFactory::getExtractor(ORBextractorSettings settings){
+FeatureExtractor* SURFFactory::getExtractor(FeatureExtractorSettings settings){
     std::shared_ptr<DescriptorDistance> dist_func = std::make_shared<SURFDistance>();
-    return new FeatureExtractor(std::make_unique<SURFFinder>(), dist_func, settings);
+    return new SURFExtractor(std::make_unique<SURFFinder>(), dist_func, settings);
 }
 
 FeatureVocabulary* SURFFactory::getVocabulary(std::string file_name){

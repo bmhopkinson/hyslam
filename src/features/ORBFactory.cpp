@@ -5,13 +5,13 @@
 #include "ORBFactory.h"
 
 #include <ORBVocabulary.h>
-#include <FeatureExtractor.h>
+#include <ORBExtractor.h>
 #include <ORBFinder.h>
 
 namespace HYSLAM {
-FeatureExtractor* ORBFactory::getExtractor(ORBextractorSettings settings){
+FeatureExtractor* ORBFactory::getExtractor(FeatureExtractorSettings settings){
     std::shared_ptr<DescriptorDistance> dist_func = std::make_shared<ORBDistance>();
-    return new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, settings);
+    return new ORBExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, settings);
 }
 
 FeatureVocabulary* ORBFactory::getVocabulary(std::string file_name){

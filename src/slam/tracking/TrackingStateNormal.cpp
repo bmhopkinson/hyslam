@@ -50,10 +50,10 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
    // std::cout << "MoMo Init Pose estimation duration (ms):  " << t_elapsed.count() << std::endl;
 
     init_pose_duration+= t_elapsed;
-    if(n_calls % 50 == 0){
-        std::cout << "frames tracked: " << n_calls << std::endl;
-        std::cout << "avg init_pose_est per frame (ms): " << static_cast<float>(init_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
-    }
+ //   if(n_calls % 50 == 0){
+ //       std::cout << "frames tracked: " << n_calls << std::endl;
+ //       std::cout << "avg init_pose_est per frame (ms): " << static_cast<float>(init_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
+ //   }
 
     return success;
 }
@@ -69,9 +69,9 @@ bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBu
 
     refine_pose_duration+= t_elapsed;
 
-    if(n_calls % 50 == 0){
-        std::cout << "avg refine_pose_est per frame (ms): " << static_cast<float>(refine_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
-    }
+  //  if(n_calls % 50 == 0){
+  //      std::cout << "avg refine_pose_est per frame (ms): " << static_cast<float>(refine_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
+  //  }
 
     (*pftracking) <<  mnMatchesInliers << "\t";
     return mnMatchesInliers > params.thresh_refine;

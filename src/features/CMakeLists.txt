@@ -1,7 +1,7 @@
 add_subdirectory(low_level)
 
 HYSLAM_ADD_SOURCES(
-    FeatureExtractor.h FeatureExtractor.cc
+
     MatchCriteria.h MatchCriteria.cpp
     FeatureMatcher.h FeatureMatcher.cc
     Stereomatcher.h Stereomatcher.cpp
@@ -9,7 +9,9 @@ HYSLAM_ADD_SOURCES(
     FeatureFactory.h    FeatureFactory.cpp
     ORBFactory.h    ORBFactory.cpp
     SURFFactory.h   SURFFactory.cpp
+        FeatureExtractor.h  FeatureExtractor.cpp
     SURFExtractor.h SURFExtractor.cpp
+    ORBExtractor.h ORBExtractor.cpp
 )
 
 set(HYSLAM_PUBLIC_INCLUDE_DIRS ${HYSLAM_PUBLIC_INCLUDE_DIRS} 

@@ -16,6 +16,7 @@
 #include <ORBSLAM_datastructs.h>
 #include <ORBExtractorParams.h>
 #include <Camera.h>
+#include <SURFExtractor.h>
 
 #include <opencv2/core/core.hpp>
 #include <string>
@@ -31,7 +32,7 @@ public:
     void setOutputQueue(ThreadSafeQueue<ImageFeatureData>* output_queue_){output_queue = output_queue_;}
 
 private:
-    void LoadSettings(std::string settings_path, ORBextractorSettings &ORBext_settings, FeatureMatcherSettings &feature_settings);
+    void LoadSettings(std::string settings_path, FeatureExtractorSettings &feature_extractor_settings, FeatureMatcherSettings &feature_settings);
     cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
     ORBExtractorParams setORBExtractorParams(FeatureExtractor* extractor);
     FeatureMatcherSettings feature_settings;
@@ -40,8 +41,9 @@ private:
 
     FeatureExtractor* mpORBextractorLeft, *mpORBextractorRight;
     FeatureExtractor* mpIniORBextractor;
-   // FeatureExtractor* SURFextractor;
+    SURFExtractor* SURFextractor;
     std::shared_ptr<DescriptorDistance> dist_func;
+    std::shared_ptr<DescriptorDistance> dist_func_surf;
 
     std::string cam_cur;  //current camera
     std::map<std::string, Camera> cam_data;

@@ -27,4 +27,12 @@ void SURFFinder::compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv
     detector->compute(image, keypoints, descriptors);
 }
 
+int SURFFinder::getNOctaves() const {
+    return nOctaves;
+}
+
+void SURFFinder::setNOctaves(int nOctaves) {
+    SURFFinder::nOctaves = nOctaves;
+}
+
 }
