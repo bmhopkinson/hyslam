@@ -74,13 +74,10 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         cand_lms = (*criterion)->apply(frame, cand_lms, criteria_data);
     }
 
-
-  //  std::chrono::duration<int, std::micro> t_elapsed;
-   // std::chrono::duration<int, std::micro> t_elapsed2;
     //apply keypoint criteria to all passing landmarks
     int nn = 0;
     for(auto it = cand_lms.begin(); it != cand_lms.end(); ++it ){
-     //   std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
+
         MapPoint* lm = *it;
         if(!lm){
             continue;
@@ -92,29 +89,19 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         float u = uv.at<float>(0,0);
         float v = uv.at<float>(1,0);
         float ur = uv.at<float>(2,0);
-        int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
-        float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
+   //     int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
+    //    float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
         float radius = th * frame.landMarkSizePixels(lm)/orb_params.ref_size;
-        if((abs(radius_old - radius) > 10.0)){
-            std::cout << "large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
-        }
+      //  if((abs(radius_old - radius) > 10.0)){
+      //      std::cout << "large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
+      //  }
        // std::cout << "_SearchByProj, radius: " << radius << ", radius_alt: " << radius_alt << std::endl;
-        std::vector<size_t> cand_lmviews = frame.GetFeaturesInArea(u,v,radius,nPredictedLevel-1,nPredictedLevel+1);
-
-
-       // std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
-      //  t_elapsed += std::chrono::duration_cast<std::chrono::microseconds>(t_stop-t_start);
-
-
-      //  std::chrono::steady_clock::time_point t_start2 = std::chrono::steady_clock::now();
+       // std::vector<size_t> cand_lmviews = frame.GetFeaturesInArea(u,v,radius,nPredictedLevel-1,nPredictedLevel+1);
+        std::vector<size_t> cand_lmviews = frame.GetFeaturesInAreaNEW(u,v,radius);
 
         for(auto criterion  = landmarkview_criteria.begin(); criterion != landmarkview_criteria.end(); ++criterion ){ //winnow down potential views
             cand_lmviews = (*criterion)->apply(frame, lm, cand_lmviews, criteria_data);
         }
-
-      //  std::chrono::steady_clock::time_point t_stop2 = std::chrono::steady_clock::now();
-      //  t_elapsed2 += std::chrono::duration_cast<std::chrono::microseconds>(t_stop2-t_start2);
-
 
         if(!cand_lmviews.empty()){  //at this point should have match or not
             size_t idx = cand_lmviews[0];
@@ -124,10 +111,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
             matches.insert(std::make_pair(lm, match_data) );
         }
     }
-    std::cout << "total cand_views checked: " << nn << std::endl;
-
-   // std::cout << "SearchbyProj keypoint criteria preliminaries duration (us):  " << t_elapsed.count() << std::endl;
-   // std::cout << "SearchbyProj keypoint criteria application duration (us):  " << t_elapsed2.count() << std::endl;
+   // std::cout << "total cand_views checked: " << nn << std::endl;
 
     //APPLY GLOBAL CRITERIA and remove matches that don't pass from "matches"
     for(auto criterion  = global_criteria.begin(); criterion != global_criteria.end(); ++criterion ){
@@ -439,13 +423,14 @@ int FeatureMatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Poi
 
     for(size_t i1=0, iend1=F1views.numViews(); i1<iend1; i1++) {
         cv::KeyPoint kp1 = F1views.keypt(i1);
-        int level1 = kp1.octave;
-        if (level1 > 0) {
-            continue;
-        }
+   //     int level1 = kp1.octave;
+   //     if (level1 > 0) {
+     //       continue;
+     //   }
 
-        vector<size_t> cand_matches = F2.GetFeaturesInArea(vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize, level1,
-                                                           level1);
+        //vector<size_t> cand_matches = F2.GetFeaturesInArea(vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize, level1,
+        //                                                   level1);
+        vector<size_t> cand_matches = F2.GetFeaturesInArea(vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize);
         if( cand_matches.empty() ){
             continue;
         }
@@ -499,7 +484,8 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
     landmark_criteria.push_back( std::make_unique<ViewingAngleCriterion>(1.047) );
 
     std::vector< std::unique_ptr<LandMarkViewCriterion> >     landmarkview_criteria;
-    landmarkview_criteria.push_back( std::make_unique<PyramidLevelCriterion>(1,1) );
+   // landmarkview_criteria.push_back( std::make_unique<PyramidLevelCriterion>(1,1) );
+    landmarkview_criteria.push_back( std::make_unique<FeatureSizeCriterion>(0.5,1.5) );
     landmarkview_criteria.push_back( std::make_unique<ProjectionViewCriterion>(reprojection_err) );
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>(TH_LOW ,1.000) );
 
@@ -533,8 +519,14 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
         float u = uv.at<float>(0,0);
         float v = uv.at<float>(1,0);
         float ur = uv.at<float>(2,0);
-        int nPredictedLevel = determinePredictedLevel(pKF, lm, criteria_data);
-        float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
+       // int nPredictedLevel = determinePredictedLevel(pKF, lm, criteria_data);
+       // float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
+        float radius = th * pKF->landMarkSizePixels(lm)/orb_params.ref_size;
+
+      //  if((abs(radius_old - radius) > 10.0)){
+      //      std::cout << "Fuse, large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
+      //  }
+
         std::vector<size_t> cand_lmviews = pKF->GetFeaturesInArea(u,v,radius);
 
       //  std::cout << "initial n_lmviews " << cand_lmviews.size() << "\t";
@@ -634,10 +626,11 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &v
             continue;
 
         // Compute predicted scale level
-        const int nPredictedLevel = pKF->predictScale(dist3D,pMP);
+    //    const int nPredictedLevel = pKF->predictScale(dist3D,pMP);
 
         // Search in a radius
-        const float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
+      //  const float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
+        float radius = th * pKF->landMarkSizePixels(pMP)/orb_params.ref_size;
 
         const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
 
@@ -653,10 +646,10 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &v
         for(vector<size_t>::const_iterator vit=vIndices.begin(); vit!=vIndices.end(); vit++)
         {
             const size_t idx = *vit;
-            const int &kpLevel = views.keypt(idx).octave;
+          //  const int &kpLevel = views.keypt(idx).octave;
 
-            if(kpLevel<nPredictedLevel-1 || kpLevel>nPredictedLevel)
-                continue;
+          //  if(kpLevel<nPredictedLevel-1 || kpLevel>nPredictedLevel)
+          //      continue;
 
             const FeatureDescriptor &dKF = views.descriptor(idx);
 
@@ -762,11 +755,12 @@ int FeatureMatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<
         if(PO.dot(Pn)<0.5*dist)
             continue;
 
-        int nPredictedLevel = pKF->predictScale(dist,pMP);
+     //   int nPredictedLevel = pKF->predictScale(dist,pMP);
 
         // Search in a radius
         //const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
-        const float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
+       // const float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
+        float radius = th * pKF->landMarkSizePixels(pMP)/orb_params.ref_size;
 
         const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
 
@@ -786,8 +780,8 @@ int FeatureMatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<
             //const int &kpLevel= pKF->mvKeysUn[idx].octave;
             const int &kpLevel= KFviews.keypt(idx).octave;
 
-            if(kpLevel<nPredictedLevel-1 || kpLevel>nPredictedLevel)
-                continue;
+        //    if(kpLevel<nPredictedLevel-1 || kpLevel>nPredictedLevel)
+         //       continue;
 
             //   const cv::Mat &dKF = pKF->mDescriptors.row(idx);
             const FeatureDescriptor &dKF = KFviews.descriptor(idx);
@@ -892,11 +886,12 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
 
         // Compute predicted octave
         //const int nPredictedLevel = pMP->PredictScale(dist3D,pKF2);
-        const int nPredictedLevel = pKF2->predictScale(dist3D,pMP);
+      //  const int nPredictedLevel = pKF2->predictScale(dist3D,pMP);
 
         // Search in a radius
         //const float radius = th*pKF2->mvScaleFactors[nPredictedLevel];
-        const float radius = th*orb_params_KF2.mvScaleFactors[nPredictedLevel];
+       // const float radius_old = th*orb_params_KF2.mvScaleFactors[nPredictedLevel];
+        float radius = th * pKF2->landMarkSizePixels(pMP)/orb_params_KF2.ref_size;
 
         const vector<size_t> vIndices = pKF2->GetFeaturesInArea(u,v,radius);
 
@@ -915,8 +910,8 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
             //const cv::KeyPoint &kp = pKF2->mvKeysUn[idx];
             const cv::KeyPoint &kp = KF2views.keypt(idx);
 
-            if(kp.octave<nPredictedLevel-1 || kp.octave>nPredictedLevel)
-                continue;
+          //  if(kp.octave<nPredictedLevel-1 || kp.octave>nPredictedLevel)
+          //      continue;
 
             //const cv::Mat &dKF = pKF2->mDescriptors.row(idx);
             const FeatureDescriptor &dKF = KF2views.descriptor(idx);
@@ -969,11 +964,12 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
             continue;
 
         // Compute predicted octave
-        const int nPredictedLevel = pKF1->predictScale(dist3D,pMP);
+       // const int nPredictedLevel = pKF1->predictScale(dist3D,pMP);
 
         // Search in a radius of 2.5*sigma(ScaleLevel)
         //const float radius = th*pKF1->mvScaleFactors[nPredictedLevel];
-        const float radius = th*orb_params_KF1.mvScaleFactors[nPredictedLevel];
+       // const float radius_old = th*orb_params_KF1.mvScaleFactors[nPredictedLevel];
+        float radius = th * pKF1->landMarkSizePixels(pMP)/orb_params_KF1.ref_size;
 
         const vector<size_t> vIndices = pKF1->GetFeaturesInArea(u,v,radius);
 
@@ -991,8 +987,8 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
 
             //const cv::KeyPoint &kp = pKF1->mvKeysUn[idx];
             const cv::KeyPoint &kp = KF1views.keypt(idx);
-            if(kp.octave<nPredictedLevel-1 || kp.octave>nPredictedLevel)
-                continue;
+        //    if(kp.octave<nPredictedLevel-1 || kp.octave>nPredictedLevel)
+         //       continue;
 
             const FeatureDescriptor &dKF = KF1views.descriptor(idx);
 
@@ -1084,9 +1080,9 @@ int FeatureMatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint 
 
                 const FeatureDescriptor &d1 = Descriptors1[idx1];
 
-                int bestDist1 = std::numeric_limits<float>::max();
+                float bestDist1 = std::numeric_limits<float>::max();
                 int bestIdx2 =-1 ;
-                int bestDist2 = std::numeric_limits<float>::max();
+                float bestDist2 = std::numeric_limits<float>::max();
 
                 for(size_t i2=0, iend2=f2it->second.size(); i2<iend2; i2++)
                 {

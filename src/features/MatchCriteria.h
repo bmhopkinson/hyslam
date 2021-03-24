@@ -128,6 +128,19 @@ private:
     int n_above = 1;
 
 };
+
+class FeatureSizeCriterion: public LandMarkViewCriterion {
+public:
+    FeatureSizeCriterion(){};
+    FeatureSizeCriterion(float frac_smaller_, float frac_larger_);
+    std::vector<size_t> apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data);
+    std::vector<size_t> apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data);
+private:
+    float frac_smaller = 0.5;
+    float frac_larger = 1.5;
+
+};
+
 //Global Criteria
 
 class RotationConsistencyCriterion : public GlobalCriterion{
@@ -253,6 +266,7 @@ std::vector<MapPoint*>  ViewingAngleCriterionCore(cv::Mat camera_center, std::ve
 std::vector<size_t> PreviouslyMatchedCriterionCore(const LandMarkMatches &lm_matches, std::vector<size_t> & candidate_views);
 SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, std::vector<size_t> &candidate_views);
 std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, int n_above, const FeatureViews &views, MapPoint* lm, std::vector<size_t> &candidate_views );
+std::vector<size_t> FeatureSizeCriterionCore(float projected_size,float frac_smaller_, float frac_larger_, std::vector<size_t> &candidate_views, const FeatureViews &views);
 //MatchesIdx RotationConsistency(MatchesIdx current_matches,Frame &frame_current, Frame &frame_previous);
 MatchesIdx RotationConsistency(MatchesIdx current_matches, const FeatureViews &views_curr,  const FeatureViews &views_prev );
 void ComputeThreeMaxima(std::vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3);

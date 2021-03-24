@@ -381,6 +381,34 @@ std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, 
     return views_passed;
 }
 
+
+FeatureSizeCriterion::FeatureSizeCriterion(float frac_smaller_, float frac_larger_) : frac_smaller(frac_smaller_), frac_larger(frac_larger_)
+{}
+
+std::vector<size_t> FeatureSizeCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
+    float projected_size = frame.landMarkSizePixels(lm);
+    const FeatureViews& views = frame.getViews();
+    return FeatureSizeCriterionCore(projected_size, frac_smaller, frac_larger, candidate_views, views);
+}
+
+std::vector<size_t> FeatureSizeCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
+    float projected_size = pKF->landMarkSizePixels(lm);
+    const FeatureViews& views = pKF->getViews();
+    return FeatureSizeCriterionCore(projected_size, frac_smaller, frac_larger, candidate_views, views);
+}
+
+std::vector<size_t> FeatureSizeCriterionCore(float projected_size,float frac_smaller_, float frac_larger_, std::vector<size_t> &candidate_views, const FeatureViews &views){
+    std::vector<size_t> views_passed;
+    for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
+        size_t idx = *it;
+        const cv::KeyPoint &kp = views.keypt(idx);
+        if(kp.size > frac_smaller_*projected_size && kp.size < frac_larger_*projected_size ){
+            views_passed.push_back(idx);
+        }
+    }
+    return views_passed;
+}
+
 // Global Criteria
 MatchesFound RotationConsistencyCriterion::apply(MatchesFound current_matches, Frame &frame, CriteriaData &data){
     MatchesFound matches_passed = current_matches;
