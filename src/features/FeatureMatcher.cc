@@ -91,7 +91,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         float ur = uv.at<float>(2,0);
    //     int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
     //    float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
-        float radius = th * frame.landMarkSizePixels(lm)/orb_params.ref_size;
+        float radius = th * frame.landMarkSizePixels(lm)/orb_params.size_ref;
       //  if((abs(radius_old - radius) > 10.0)){
       //      std::cout << "large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
       //  }
@@ -107,7 +107,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
             size_t idx = cand_lmviews[0];
             SingleMatchData match_data;
             match_data.idx = idx;
-            match_data.score = criteria_data.getBestScore();
+            match_data.distance = criteria_data.getBestScore();
             matches.insert(std::make_pair(lm, match_data) );
         }
     }
@@ -137,6 +137,7 @@ int FeatureMatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapP
 
     std::vector< std::unique_ptr<LandMarkViewCriterion> > landmarkview_criteria;
     landmarkview_criteria.push_back( std::make_unique<PreviouslyMatchedCriterion>() );
+    landmarkview_criteria.push_back( std::make_unique<FeatureSizeCriterion>(0.5,1.5) );
     landmarkview_criteria.push_back( std::make_unique<StereoConsistencyCriterion>(th) );
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>( TH_HIGH ,mfNNratio) );
 
@@ -170,6 +171,7 @@ int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFra
 
     std::vector< std::unique_ptr<LandMarkViewCriterion> > landmarkview_criteria;
     landmarkview_criteria.push_back( std::make_unique<PreviouslyMatchedCriterion>() );
+    landmarkview_criteria.push_back( std::make_unique<FeatureSizeCriterion>(0.5,1.5) );
     landmarkview_criteria.push_back( std::make_unique<StereoConsistencyCriterion>(th) );
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>( TH_HIGH ,mfNNratio) );
 
@@ -207,6 +209,7 @@ int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame* pKF, const
 
     std::vector< std::unique_ptr<LandMarkViewCriterion> > landmarkview_criteria;
     landmarkview_criteria.push_back( std::make_unique<PreviouslyMatchedCriterion>() );
+    landmarkview_criteria.push_back( std::make_unique<FeatureSizeCriterion>(0.5,1.5) );
     //   landmarkview_criteria.push_back( std::make_unique<StereoConsistencyCriterion>(th) );
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>( ORBdist ,1.00) ); //don't impose constraint that best is substantially better than 2nd best
 
@@ -521,7 +524,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
         float ur = uv.at<float>(2,0);
        // int nPredictedLevel = determinePredictedLevel(pKF, lm, criteria_data);
        // float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
-        float radius = th * pKF->landMarkSizePixels(lm)/orb_params.ref_size;
+        float radius = th * pKF->landMarkSizePixels(lm)/orb_params.size_ref;
 
       //  if((abs(radius_old - radius) > 10.0)){
       //      std::cout << "Fuse, large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
@@ -630,7 +633,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &v
 
         // Search in a radius
       //  const float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
-        float radius = th * pKF->landMarkSizePixels(pMP)/orb_params.ref_size;
+        float radius = th * pKF->landMarkSizePixels(pMP)/orb_params.size_ref;
 
         const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
 
@@ -760,7 +763,7 @@ int FeatureMatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<
         // Search in a radius
         //const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
        // const float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
-        float radius = th * pKF->landMarkSizePixels(pMP)/orb_params.ref_size;
+        float radius = th * pKF->landMarkSizePixels(pMP)/orb_params.size_ref;
 
         const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
 
@@ -778,7 +781,7 @@ int FeatureMatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<
             if(vpMatched[idx])
                 continue;
             //const int &kpLevel= pKF->mvKeysUn[idx].octave;
-            const int &kpLevel= KFviews.keypt(idx).octave;
+            //const int &kpLevel= KFviews.keypt(idx).octave;
 
         //    if(kpLevel<nPredictedLevel-1 || kpLevel>nPredictedLevel)
          //       continue;
@@ -891,7 +894,7 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
         // Search in a radius
         //const float radius = th*pKF2->mvScaleFactors[nPredictedLevel];
        // const float radius_old = th*orb_params_KF2.mvScaleFactors[nPredictedLevel];
-        float radius = th * pKF2->landMarkSizePixels(pMP)/orb_params_KF2.ref_size;
+        float radius = th * pKF2->landMarkSizePixels(pMP)/orb_params_KF2.size_ref;
 
         const vector<size_t> vIndices = pKF2->GetFeaturesInArea(u,v,radius);
 
@@ -969,7 +972,7 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
         // Search in a radius of 2.5*sigma(ScaleLevel)
         //const float radius = th*pKF1->mvScaleFactors[nPredictedLevel];
        // const float radius_old = th*orb_params_KF1.mvScaleFactors[nPredictedLevel];
-        float radius = th * pKF1->landMarkSizePixels(pMP)/orb_params_KF1.ref_size;
+        float radius = th * pKF1->landMarkSizePixels(pMP)/orb_params_KF1.size_ref;
 
         const vector<size_t> vIndices = pKF1->GetFeaturesInArea(u,v,radius);
 

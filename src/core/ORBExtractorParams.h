@@ -16,7 +16,8 @@ struct ORBExtractorParams {
     int mnScaleLevels;
     float mfScaleFactor;
     float mfLogScaleFactor;
-    float ref_size = 31;
+    float size_ref = 31;
+    float sigma_ref = 1.0;
     std::vector<float> mvScaleFactors;
     std::vector<float> mvInvScaleFactors;
     std::vector<float> mvLevelSigma2;

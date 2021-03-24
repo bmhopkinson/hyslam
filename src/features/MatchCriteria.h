@@ -15,10 +15,10 @@ namespace HYSLAM{
 
 struct SingleMatchData{
     size_t idx;
-    float score;
-    int level;
-    float score_2ndbest;
-    int level_2ndbest;
+    float distance;
+   // int level;
+    float distance_2ndbest;
+  //  int level_2ndbest;
 };
 
 using MatchesFound = std::map<MapPoint*, SingleMatchData>;
@@ -116,7 +116,7 @@ private:
     float  error_threshold = 5.99;
 };
 
-
+/*
 class PyramidLevelCriterion: public LandMarkViewCriterion {
 public:
     PyramidLevelCriterion(){};
@@ -128,7 +128,7 @@ private:
     int n_above = 1;
 
 };
-
+*/
 class FeatureSizeCriterion: public LandMarkViewCriterion {
 public:
     FeatureSizeCriterion(){};
@@ -258,9 +258,9 @@ public:
 };
 
 //Free functions
-int descriptorDistance(const cv::Mat &a, const cv::Mat &b);
-int determinePredictedLevel(Frame &frame, MapPoint* lm, CriteriaData &data);
-int determinePredictedLevel(KeyFrame* pKF, MapPoint* lm, CriteriaData &data);
+//int descriptorDistance(const cv::Mat &a, const cv::Mat &b);
+//int determinePredictedLevel(Frame &frame, MapPoint* lm, CriteriaData &data);
+//int determinePredictedLevel(KeyFrame* pKF, MapPoint* lm, CriteriaData &data);
 std::vector<MapPoint*> DistanceCriterionCore(cv::Mat camera_center, std::vector<MapPoint*> &candidate_lms);
 std::vector<MapPoint*>  ViewingAngleCriterionCore(cv::Mat camera_center, std::vector<MapPoint*> &candidate_lms, float max_angle);
 std::vector<size_t> PreviouslyMatchedCriterionCore(const LandMarkMatches &lm_matches, std::vector<size_t> & candidate_views);

@@ -162,9 +162,14 @@ std::vector<size_t> StereoConsistencyCriterion::apply(Frame &frame, MapPoint* lm
     Frame* frame_prev = data.getPreviousFrame();
 
     //determine predicted pyramid level of landmark
-    int nPredictedLevel = determinePredictedLevel(frame, lm, data);
+  //  int nPredictedLevel = determinePredictedLevel(frame, lm, data);
 
-    const float radius = threshold * orb_params.mvScaleFactors[nPredictedLevel];
+   // const float radius_old = threshold * orb_params.mvScaleFactors[nPredictedLevel];
+    const float radius = threshold * frame.landMarkSizePixels(lm)/orb_params.size_ref;
+
+  //  if((abs(radius_old - radius) > 10.0)){
+  //        std::cout << "STereoconsistency large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
+  //  }
 
     cv::Mat uv;
     frame.ProjectLandMark(lm, uv);
@@ -197,9 +202,15 @@ std::vector<size_t> StereoConsistencyCriterion::apply(KeyFrame* pKF, MapPoint* l
     Frame* frame_prev = data.getPreviousFrame();
 
     //determine predicted pyramid level of landmark
-    int nPredictedLevel = determinePredictedLevel(pKF, lm, data);
+   // int nPredictedLevel = determinePredictedLevel(pKF, lm, data);
 
-    const float radius = threshold * orb_params.mvScaleFactors[nPredictedLevel];
+   // const float radius_old = threshold * orb_params.mvScaleFactors[nPredictedLevel];
+
+    const float radius = threshold * pKF->landMarkSizePixels(lm)/orb_params.size_ref;
+
+   // if((abs(radius_old - radius) > 10.0)){
+   //     std::cout << "STereoconsistency pKF, large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
+   // }
 
     cv::Mat uv;
     pKF->ProjectLandMark(lm, uv);
@@ -228,10 +239,11 @@ std::vector<size_t> BestScoreCriterion::apply(Frame &frame, MapPoint* lm,  std::
     const FeatureViews& views = frame.getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
 
-    if(best_view.score <= score_threshold) {
-        if (best_view.level == best_view.level_2ndbest && best_view.score >  second_best_ratio * best_view.score_2ndbest) {
+    if(best_view.distance <= score_threshold) {
+      //  if (best_view.level == best_view.level_2ndbest && best_view.score >  second_best_ratio * best_view.score_2ndbest) {
+        if (best_view.distance > second_best_ratio * best_view.distance_2ndbest) {
         } else {
-            data.setBestScore(best_view.score);
+            data.setBestScore(best_view.distance);
             views_passed.push_back(best_view.idx);
         }
     }
@@ -245,10 +257,11 @@ std::vector<size_t> BestScoreCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std:
     const FeatureViews& views = pKF->getViews();
     SingleMatchData best_view =  BestScoreCriterionCore(views, lm, candidate_views);
 
-    if(best_view.score <= score_threshold) {
-        if (best_view.level == best_view.level_2ndbest && best_view.score >  second_best_ratio * best_view.score_2ndbest) {
+    if(best_view.distance <= score_threshold) {
+       // if (best_view.level == best_view.level_2ndbest && best_view.score >  second_best_ratio * best_view.score_2ndbest) {
+        if (best_view.distance > second_best_ratio * best_view.distance_2ndbest) {
         } else {
-            data.setBestScore(best_view.score);
+            data.setBestScore(best_view.distance);
             views_passed.push_back(best_view.idx);
         }
     }
@@ -261,9 +274,9 @@ SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, s
     const FeatureDescriptor& lm_descriptor = lm->GetDescriptor();
 
     float bestDist = std::numeric_limits<float>::max();
-    int bestLevel = -1;
+ //   int bestLevel = -1;
     float bestDist2 = std::numeric_limits<float>::max();
-    int bestLevel2 = -1;
+ //   int bestLevel2 = -1;
     int bestIdx =-1 ;
 
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it) {
@@ -276,23 +289,23 @@ SingleMatchData BestScoreCriterionCore(const FeatureViews &views,MapPoint* lm, s
         {
             bestDist2=bestDist;
             bestDist=dist_feature;
-            bestLevel2 = bestLevel;
-            bestLevel = views.keypt(idx).octave;
+          //  bestLevel2 = bestLevel;
+         //   bestLevel = views.keypt(idx).octave;
             bestIdx=idx;
         }
         else if(dist_feature<bestDist2)
         {
-            bestLevel2 = views.keypt(idx).octave;
+        //    bestLevel2 = views.keypt(idx).octave;
             bestDist2=dist_feature;
         }
 
     }
 
     best_view.idx = bestIdx;
-    best_view.score = bestDist;
-    best_view.level = bestLevel;
-    best_view.score_2ndbest = bestDist2;
-    best_view.level_2ndbest = bestLevel2;
+    best_view.distance = bestDist;
+   // best_view.level = bestLevel;
+    best_view.distance_2ndbest = bestDist2;
+  //  best_view.level_2ndbest = bestLevel2;
 
     return best_view;
 }
@@ -311,13 +324,18 @@ std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  
         float reproj_err = frame.ReprojectionError(lm_position, idx);
 
         const cv::KeyPoint &kp = views.keypt(idx);
-        const int &kpLevel= kp.octave;
+       // const int &kpLevel= kp.octave;
+      //  float sigma_old = orb_params.mvLevelSigma2[kp.octave];
+        float scale_factor = (kp.size/orb_params.size_ref);
+        float sigma_size_corrected = orb_params.sigma_ref * (scale_factor*scale_factor);
+
+       // std::cout << "ProjViewCriterion: sigma_old: " << sigma_old << ", sigma_new: " << sigma_size_corrected << std::endl;
 
         float stereo_factor = 1.00;
         if(views.uR(idx) > 0 ) { //stereo observation
             stereo_factor = 1.30;
         }
-        if(reproj_err * orb_params.mvInvLevelSigma2[kpLevel] < stereo_factor * error_threshold) {
+        if( (reproj_err/sigma_size_corrected) < stereo_factor * error_threshold) {
             views_passed.push_back(idx);
         }
     }
@@ -335,21 +353,26 @@ std::vector<size_t> ProjectionViewCriterion::apply(KeyFrame* pKF, MapPoint* lm, 
         float reproj_err = pKF->ReprojectionError(lm_position, idx);
 
         const cv::KeyPoint &kp = views.keypt(idx);
-        const int &kpLevel= kp.octave;
+     //    const int &kpLevel= kp.octave;
+    //    float sigma_old = orb_params.mvLevelSigma2[kp.octave];
+        float scale_factor = (kp.size/orb_params.size_ref);
+        float sigma_size_corrected = orb_params.sigma_ref * (scale_factor*scale_factor);
+
+      //  std::cout << "ProjViewCriterion: sigma_old: " << sigma_old << ", sigma_new: " << sigma_size_corrected << std::endl;
 
         float stereo_factor = 1.00;
         if(views.uR(idx) > 0 ) { //stereo observation
             stereo_factor = 1.30;
         }
 
-        if(reproj_err * orb_params.mvInvLevelSigma2[kpLevel] < (stereo_factor * error_threshold) ) {
+        if( (reproj_err/sigma_size_corrected) < stereo_factor * error_threshold){
             views_passed.push_back(idx);
         }
     }
     return views_passed;
 
 }
-
+/*
 PyramidLevelCriterion::PyramidLevelCriterion(int n_below_, int n_above_) : n_below(n_below_), n_above(n_above_)
 {}
 
@@ -381,7 +404,7 @@ std::vector<size_t> PyramidLevelCriterionCore(int predicted_level, int n_below, 
     return views_passed;
 }
 
-
+*/
 FeatureSizeCriterion::FeatureSizeCriterion(float frac_smaller_, float frac_larger_) : frac_smaller(frac_smaller_), frac_larger(frac_larger_)
 {}
 
@@ -466,10 +489,10 @@ MatchesFound GlobalBestScoreCriterion::apply(MatchesFound current_matches, Frame
         auto mit = lm_matches.find(idx);
         if(mit == lm_matches.end()){ //new element
             std::vector<std::pair<MapPoint*, float> > new_element;
-            new_element.push_back(std::make_pair(lm, smdata.score));
+            new_element.push_back(std::make_pair(lm, smdata.distance));
             lm_matches[idx] = new_element;
         } else {
-            lm_matches[idx].push_back(std::make_pair(lm, smdata.score));
+            lm_matches[idx].push_back(std::make_pair(lm, smdata.distance));
         }
     }
 
@@ -699,15 +722,10 @@ std::vector<unsigned int> EpipolarConsistencyBoWCriterion::apply(size_t idx1, st
     for(auto it = cand_idx2.begin(); it != cand_idx2.end(); ++it) {
         size_t idx2 = *it;
         cv::KeyPoint kp2 = views2.keypt(idx2);
-        // if(!bStereo1 && !bStereo2)  //not sure what to do w/ this
-        // {
-        //     const float distex = ex-kp2.pt.x;
-        //     const float distey = ey-kp2.pt.y;
-        //     if(distex*distex+distey*distey<100*orb_params_KF2.mvScaleFactors[kp2.octave])
-        //         continue;
-        // }
-
-        if (CheckDistEpipolarLine(kp1, kp2, Fmatrix, orb_params.mvLevelSigma2[kp2.octave])) {
+        float scale_factor = (kp2.size/orb_params.size_ref);
+        float sigma_size_corrected = orb_params.sigma_ref * (scale_factor*scale_factor);
+       // if (CheckDistEpipolarLine(kp1, kp2, Fmatrix, orb_params.mvLevelSigma2[kp2.octave])) {
+        if (CheckDistEpipolarLine(kp1, kp2, Fmatrix, sigma_size_corrected)) {
             idxs_passed.push_back(idx2);
         }
     }
@@ -739,7 +757,7 @@ MatchesIdx RotationConsistencyBoW::apply(std::map<size_t, size_t> current_matche
 
     return RotationConsistency(current_matches, views1, views2 );
 }
-
+/*
 // Bit set count operation from
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
 int descriptorDistance(const cv::Mat &a, const cv::Mat &b)
@@ -759,7 +777,8 @@ int descriptorDistance(const cv::Mat &a, const cv::Mat &b)
 
     return dist;
 }
-
+ */
+/*
 //determine predicted pyramid level of landmark
 int determinePredictedLevel(Frame &frame, MapPoint* lm, CriteriaData &data) {
     int nPredictedLevel;
@@ -790,7 +809,7 @@ int determinePredictedLevel(KeyFrame* pKF, MapPoint* lm, CriteriaData &data){
     const float dist_mp = cv::norm(PO);
     return pKF->predictScale(dist_mp, lm);
 }
-
+*/
 //MatchesIdx RotationConsistency(MatchesIdx current_matches,Frame &frame_current, Frame &frame_previous){
 MatchesIdx RotationConsistency(MatchesIdx current_matches, const FeatureViews &views_curr,  const FeatureViews &views_prev ){
     int HISTO_LENGTH = 30;
