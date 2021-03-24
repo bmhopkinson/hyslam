@@ -256,7 +256,7 @@ int KeyFrame::predictScale(const float &currentDist, MapPoint* pMP){
     return nScale_this;
 }
 
-float KeyFrame::featureSize(int idx){ //consider each feature to be a square associated with a mappoint  normal to camera line of sight
+float KeyFrame::featureSizeMetric(int idx){ //consider each feature to be a square associated with a mappoint  normal to camera line of sight
     MapPoint* lm = hasAssociation(idx);
     if(!lm){
         return -1.0;
@@ -278,6 +278,28 @@ float KeyFrame::featureSize(int idx){ //consider each feature to be a square ass
 
     return size;
 
+}
+
+float KeyFrame::landMarkSizePixels(MapPoint* lm){
+    int idx = hasAssociation(lm);
+    if(idx >= 0){  //if already associated just use observed keypt size
+        return views.keypt(idx).size;
+    } else { //project it
+        cv::Mat Pw = lm->GetWorldPos();
+        cv::Mat Pw_left_edge = Pw;
+        Pw_left_edge.at<float>(0,0) = Pw_left_edge.at<float>(0,0) - lm->getSize()/2;
+        cv::Mat Pw_right_edge = Pw;
+        Pw_right_edge.at<float>(0,0) = Pw_right_edge.at<float>(0,0) + lm->getSize()/2;
+
+        cv::Mat uv_left;
+        ProjectLandMark(Pw_left_edge,  uv_left);
+        cv::Mat uv_right;
+        ProjectLandMark(Pw_right_edge,  uv_right);
+
+        float size_pixels  = uv_right.at<float>(0,0)- uv_left.at<float>(0,0);
+        return size_pixels;
+
+    }
 }
 
 KeyFrame* KeyFrame::GetParent()

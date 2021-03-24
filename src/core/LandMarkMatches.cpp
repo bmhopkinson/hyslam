@@ -17,7 +17,7 @@ MapPoint*  LandMarkMatches::hasAssociation(int i) const{
 int LandMarkMatches::hasAssociation(MapPoint* pMP) const {
     for(auto it = views_to_landmarks.cbegin(); it != views_to_landmarks.cend(); ++it ){
         if(it->second == pMP){
-          //  std::cout << "found existing assocaition: idx: " << it->first << " , pMP: " << pMP->mnId << " to : " << it->second->mnId << std::endl;
+         //   std::cout << "found existing assocaition: idx: " << it->first << " , pMP: " << pMP->mnId << " to : " << it->second->mnId << std::endl;
             return it->first;
         }
     }

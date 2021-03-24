@@ -83,7 +83,8 @@ public:
     int TrackedMapPoints(const int &minObs);
     bool isMapPointMatched(MapPoint* pMP);
     int predictScale(const float &currentDist, MapPoint* pMP);
-    float featureSize(int idx); //estimate size of feature
+    float featureSizeMetric(int idx); // size of feature
+    float landMarkSizePixels(MapPoint* lm);
 
     int clearAssociations(); //clear all mappoint to keypoint associations
 

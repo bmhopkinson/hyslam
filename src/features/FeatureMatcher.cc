@@ -78,12 +78,14 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
   //  std::chrono::duration<int, std::micro> t_elapsed;
    // std::chrono::duration<int, std::micro> t_elapsed2;
     //apply keypoint criteria to all passing landmarks
+    int nn = 0;
     for(auto it = cand_lms.begin(); it != cand_lms.end(); ++it ){
      //   std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
         MapPoint* lm = *it;
         if(!lm){
             continue;
         }
+        nn++;
 
         cv::Mat uv;
         frame.ProjectLandMark(lm, uv);
@@ -91,8 +93,12 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         float v = uv.at<float>(1,0);
         float ur = uv.at<float>(2,0);
         int nPredictedLevel = determinePredictedLevel(frame, lm, criteria_data);
-        float radius = th*orb_params.mvScaleFactors[nPredictedLevel];
-        float radius_alt = 1.0;
+        float radius_old = th*orb_params.mvScaleFactors[nPredictedLevel];
+        float radius = th * frame.landMarkSizePixels(lm)/orb_params.ref_size;
+        if((abs(radius_old - radius) > 10.0)){
+            std::cout << "large diff in new radius: " << radius << ", and old: " << radius_old << std::endl;
+        }
+       // std::cout << "_SearchByProj, radius: " << radius << ", radius_alt: " << radius_alt << std::endl;
         std::vector<size_t> cand_lmviews = frame.GetFeaturesInArea(u,v,radius,nPredictedLevel-1,nPredictedLevel+1);
 
 
@@ -118,6 +124,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
             matches.insert(std::make_pair(lm, match_data) );
         }
     }
+    std::cout << "total cand_views checked: " << nn << std::endl;
 
    // std::cout << "SearchbyProj keypoint criteria preliminaries duration (us):  " << t_elapsed.count() << std::endl;
    // std::cout << "SearchbyProj keypoint criteria application duration (us):  " << t_elapsed2.count() << std::endl;

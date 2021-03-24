@@ -302,6 +302,60 @@ int Frame::getAssociatedLandMarks(std::vector<cv::KeyPoint> &features, std::vect
     return 0;
 }
 
+float Frame::featureSizeMetric(int idx){ //consider each feature to be a square associated with a mappoint  normal to camera line of sight
+    MapPoint* lm = hasAssociation(idx);
+    if(!lm){
+        return -1.0;
+    }
+
+    cv::Mat Pos = lm->GetWorldPos();
+    cv::Mat Ow = GetCameraCenter();
+    cv::Mat Pos_cam = Pos - Ow;
+    float z  = cv::norm(Pos_cam);
+    if(z < 0.0){ return -1.0;}
+
+    const float u = views.keypt(idx).pt.x;
+    const float v = views.keypt(idx).pt.y;
+    float radius = views.keypt(idx).size/2;
+    cv::Mat left_edge = camera.Unproject(u-radius,v, z);  //could be simplified w/ pinhole camera but wanted to keep more general
+    cv::Mat right_edge = camera.Unproject(u+radius,v, z);
+    cv::Mat length = right_edge - left_edge;
+    float size = cv::norm(length);
+
+    return size;
+
+}
+
+float Frame::landMarkSizePixels(MapPoint* lm){
+    int idx = hasAssociation(lm);
+    if(idx >= 0){  //if already associated just use observed keypt size
+        std::cout <<"idx: " << idx <<  " ,using old size: " << views.keypt(idx).size << std::endl;
+        return views.keypt(idx).size;
+    } else { //project it
+        cv::Mat Pw = lm->GetWorldPos();
+        cv::Mat Pw_left_edge = Pw.clone();
+        Pw_left_edge.at<float>(0,0) = Pw_left_edge.at<float>(0,0) - lm->getSize()/2;
+        cv::Mat Pw_right_edge = Pw.clone();
+        Pw_right_edge.at<float>(0,0) = Pw_right_edge.at<float>(0,0) + lm->getSize()/2;
+      //  std::cout << "lm size: " << lm->getSize() << std::endl;
+       // std::cout << "Pw_left_edge: " << Pw_left_edge << std::endl;
+       // std::cout << "Pw_right_edge: " << Pw_right_edge << std::endl;
+
+        cv::Mat uv_left;
+        ProjectLandMark(Pw_left_edge,  uv_left);
+        cv::Mat uv_right;
+        ProjectLandMark(Pw_right_edge,  uv_right);
+
+      //  std::cout << "uv_left: " << uv_left << std::endl;
+      //  std::cout << "uv_right: " << uv_right << std::endl;
+
+        float size_pixels  = uv_right.at<float>(0,0)- uv_left.at<float>(0,0);
+       // std::cout << "size_pixels: " << size_pixels << std::endl;
+        return size_pixels;
+
+    }
+}
+
 void Frame::propagateTracking(Frame &frame_previous){
     matches.propagateTracking(frame_previous.getLandMarkMatches());
 }

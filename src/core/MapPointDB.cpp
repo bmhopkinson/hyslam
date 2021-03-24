@@ -7,14 +7,14 @@ namespace HYSLAM{
     MapPointDBEntry::MapPointDBEntry(){}
     MapPointDBEntry::MapPointDBEntry(MapPoint* pMP, KeyFrame* pKF_ref_, int idx): pMP_entry(pMP) {
         normal_vector = cv::Mat::zeros(3,1,CV_32F);
-        setRefKF(pKF_ref_);
+        _setRefKF_(pKF_ref_);
         addObservation(pKF_ref_, idx);
         FeatureDescriptor descriptor = pKF_ref_->getViews().descriptor(idx);
         addDescriptor(pKF_ref_, descriptor);
-        setBestDescriptor(descriptor); //only descriptor right now
-        updateMeanDistance();
-     //   updateSize(); //must be called after updateMeanDistance()
-        UpdateNormalAndDepth();
+        _setBestDescriptor_(descriptor); //only descriptor right now
+        _updateMeanDistance_();
+        _updateSize_();
+        _updateNormalAndDepth_();
 
     }
 
@@ -32,42 +32,46 @@ namespace HYSLAM{
 
         pMP_entry->setObservations(observations);
         pMP_entry->setNObs(n_obs);
-       // updateSize();
+       // updateMeanDistance();
+        //updateSize();
+        _updateEntry_();
 
     }
 
     bool MapPointDBEntry::eraseObservation(KeyFrame* pKF){
+        std::unique_lock<std::mutex> lock(entry_mutex);
         bool is_bad=false;
         KeyFrame* pRefKF_new = nullptr ;
+
+        if(observations.count(pKF))
         {
-            std::unique_lock<std::mutex> lock(entry_mutex);
-            if(observations.count(pKF))
-            {
-                int idx = observations[pKF];
-                if(pKF->getViews().uR(idx)>=0)
-                    n_obs-=2;
-                else
-                    n_obs--;
+            int idx = observations[pKF];
+            if(pKF->getViews().uR(idx)>=0)
+                n_obs-=2;
+            else
+                n_obs--;
 
-                observations.erase(pKF);
-                normdepth_needs_update = true;
+            observations.erase(pKF);
+            normdepth_needs_update = true;
 
 
-                if(pKF_ref==pKF)
-                    pRefKF_new=observations.begin()->first;
+            if(pKF_ref==pKF)
+                pRefKF_new=observations.begin()->first;
 
-                // If only 2 observations or less, discard point
-                if((n_obs <= 2) && !pMP_entry->Protected()) {
-                    is_bad = true;
-                }
+            // If only 2 observations or less, discard point
+            if((n_obs <= 2) && !pMP_entry->Protected()) {
+                is_bad = true;
             }
-            pMP_entry->setObservations(observations);
-            pMP_entry->setNObs(n_obs);
+        }
+        pMP_entry->setObservations(observations);
+        pMP_entry->setNObs(n_obs);
 
-        }
+
         if(pRefKF_new){
-            setRefKF(pRefKF_new);  //this acquires lock on entry_mutex so can't do in above block
+            _setRefKF_(pRefKF_new);
         }
+
+        _updateEntry_();
 
         return is_bad;
     }
@@ -89,18 +93,18 @@ namespace HYSLAM{
         return observations.count(pKF);
     }
 
-    void MapPointDBEntry::setBestDescriptor(FeatureDescriptor bd){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setBestDescriptor_(FeatureDescriptor bd){
         best_descriptor = bd;
         pMP_entry->setDescriptor(bd);
     }
 
     FeatureDescriptor MapPointDBEntry::getDescriptor(){
+        std::unique_lock<std::mutex> lock(entry_mutex);
         if(desc_needs_update){
-            computeDistinctiveDescriptor();
+            _computeDistinctiveDescriptor_();
             desc_needs_update = false;
         }
-        std::unique_lock<std::mutex> lock(entry_mutex);
+
         return best_descriptor;
         
     }
@@ -123,17 +127,16 @@ namespace HYSLAM{
         }
     }
 
-    void MapPointDBEntry::computeDistinctiveDescriptor(){
+    void MapPointDBEntry::_computeDistinctiveDescriptor_(){
         // Compute distances between them -
         std::vector<FeatureDescriptor> descriptor_vec;
         {
-            std::unique_lock<std::mutex> lock(entry_mutex);
             for(auto it = descriptors.begin(); it != descriptors.end(); ++it){
                 if(!it->first->isBad()){
                     descriptor_vec.push_back(it->second);
                 }
             }
-        }  //copied relevant data - release lock
+        }  //copied relevant data
 
         if(descriptor_vec.empty()){
             return;
@@ -170,77 +173,72 @@ namespace HYSLAM{
             }
         }
 
-        setBestDescriptor( descriptor_vec[BestIdx] );
+        _setBestDescriptor_( descriptor_vec[BestIdx] );
     }
 
 
-    void MapPointDBEntry::setNObs(int n){
-        pMP_entry->setNObs(n);
-    }
-
-    void MapPointDBEntry::setNormal(cv::Mat norm){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setNormal_(cv::Mat norm){
         normal_vector = norm.clone();
         pMP_entry->setNormal(norm);
 
     }
     
     cv::Mat MapPointDBEntry::getNormal(){
-        if(normdepth_needs_update){
-            UpdateNormalAndDepth();
-        }
         std::unique_lock<std::mutex> lock(entry_mutex);
+        if(normdepth_needs_update){
+            _updateNormalAndDepth_();
+        }
         return normal_vector.clone();
     }
 
-    void MapPointDBEntry::setMaxDist(float maxd){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setMaxDist_(float maxd){
         max_distance = maxd;
         pMP_entry->setMaxDistanceInvariance(maxd);
 
     }
-    void MapPointDBEntry::setMinDist(float mind){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setMinDist_(float mind){
         min_distance = mind;
         pMP_entry->setMinDistanceInvariance(mind);
     }
 
-    void MapPointDBEntry::setRefKF(KeyFrame* pKF){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setRefKF_(KeyFrame* pKF){
         pKF_ref = pKF;
         pMP_entry->setReferenceKeyFrame(pKF);
     }
 
-    void MapPointDBEntry::setMeanDistance(float dist){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setMeanDistance_(float dist){
         mean_distance = dist;
         pMP_entry->setMeanDistance(mean_distance);
     }
 
-    void MapPointDBEntry::setSize(float size_){
-        std::unique_lock<std::mutex> lock(entry_mutex);
+    void MapPointDBEntry::_setSize_(float size_){
         size = size_;
         pMP_entry->setSize(size);
     }
 
     void MapPointDBEntry::updateEntry() {
-        UpdateNormalAndDepth();
-        computeDistinctiveDescriptor();
-        updateMeanDistance();
-        updateSize();
+        std::unique_lock<std::mutex> lock(entry_mutex);
+        _updateEntry_();
+
     }
 
-    void MapPointDBEntry::UpdateNormalAndDepth(){
+    void MapPointDBEntry::_updateEntry_(){
+        _updateNormalAndDepth_();
+        _computeDistinctiveDescriptor_();
+        _updateMeanDistance_();
+        _updateSize_();
+    }
+
+    void MapPointDBEntry::_updateNormalAndDepth_(){
         std::map<KeyFrame*,size_t> observations_cur;
         KeyFrame* pRefKF;
         cv::Mat Pos;
 
         {
-            std::unique_lock<std::mutex> lock1(entry_mutex);
             observations_cur=observations;
             pRefKF=pKF_ref;
             Pos = pMP_entry->GetWorldPos();
-        }//copied relevant data - release lock
+        }//copied relevant data
 
         if(observations_cur.empty())
             return;
@@ -266,12 +264,12 @@ namespace HYSLAM{
 
         float max_distance_ = dist*levelScaleFactor;
         float min_distance_ = max_distance_/pRefKF->getViews().orbParams().mvScaleFactors[nLevels-1];
-        setMaxDist(max_distance_);
-        setMinDist(min_distance_);
-        setNormal(normal/n);
+        _setMaxDist_(max_distance_);
+        _setMinDist_(min_distance_);
+        _setNormal_(normal/n);
     }
 
-    void MapPointDBEntry::updateMeanDistance(){
+    void MapPointDBEntry::_updateMeanDistance_(){
 
         cv::Mat Pos;
         Pos = pMP_entry->GetWorldPos();
@@ -290,45 +288,34 @@ namespace HYSLAM{
             cv::Mat Pos_cam = Pos - Owi;
             float this_dist = cv::norm(Pos_cam);
             mean_dist  += this_dist;
-            std::cout << "lm dist: " << this_dist << "\t";
+      //      std::cout << "lm dist: " << this_dist << "\t";
             n++;
         }
         mean_dist = mean_dist/static_cast<float>(n);
-        setMeanDistance(mean_dist);
-        std::cout << ", mean dist: " << mean_dist << std::endl;
+        _setMeanDistance_(mean_dist);
+     //   std::cout << ", mean dist: " << mean_dist << std::endl;
     }
 
-    void MapPointDBEntry::updateSize(){
+    void MapPointDBEntry::_updateSize_(){
 
         int n=0;
         float mean_size = 0.0;
         for(std::map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++) {
             KeyFrame *pKF = mit->first;
             size_t idx = mit->second;
-            /*
-            cv::Mat Owi = pKF->GetCameraCenter();
-            cv::Mat Pos_cam = Pos - Owi;
-            float dist  = cv::norm(Pos_cam);
-
-            const FeatureViews& views = pKF->getViews();
-            cv::KeyPoint kpt = views.keypt(idx );
-            float size_obs = kpt.size;
-          //  float size_at_meandist = size_obs * (dist/mean_distance); // HAVE KEY FRAME PREDICT SIZE AT MEAN DIST THEN CAN APPLY ANY CAMERA MODEL //assumes linear camera model and same camera is repeatadly observing mapppoint;
-            */
-
-            float size_this = pKF->featureSize(idx);
-            std::cout << "size update got size" <<std::endl;
+            float size_this = pKF->featureSizeMetric(idx);
+        //    std::cout << "size update got size" <<std::endl;
             if (size_this > 0.0) {
                 mean_size += size_this;
                 n++;
-                std::cout << "size: " << size_this << "\t";
+           //     std::cout << "size: " << size_this << "\t";
             }
 
         }
 
         mean_size = mean_size/static_cast<float>(n);
-        setSize(mean_size);
-        std::cout << ", mean size: " << mean_size << std::endl;
+        _setSize_(mean_size);
+       // std::cout << ", mean size: " << mean_size << std::endl;
     }
 
 
@@ -386,8 +373,9 @@ namespace HYSLAM{
             return -1;
         }
         else {
-            mappoint_db[pMP]->computeDistinctiveDescriptor();
-            mappoint_db[pMP]->UpdateNormalAndDepth();
+         //   mappoint_db[pMP]->computeDistinctiveDescriptor();
+         //   mappoint_db[pMP]->UpdateNormalAndDepth();
+            mappoint_db[pMP]->updateEntry();
             return 0;
         }
     }

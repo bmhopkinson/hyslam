@@ -96,11 +96,11 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
 
     std::vector<cv::KeyPoint> surf_keys;
     std::vector<FeatureDescriptor> surf_descriptors;
-    (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
-    cv::Mat imCopy = imGrayRight.clone();
-    cv::drawKeypoints(imCopy, surf_keys, imCopy, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-    cv::imwrite("surf_test.jpg", imCopy);
-    std::cout << "N SURF Features: " << surf_keys.size() << std::endl;
+  //  (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
+   // cv::Mat imCopy = imGrayRight.clone();
+   // cv::drawKeypoints(imCopy, surf_keys, imCopy, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    //cv::imwrite("surf_test.jpg", imCopy);
+   // std::cout << "N SURF Features: " << surf_keys.size() << std::endl;
  //   for(auto it = surf_keys.begin(); it != surf_keys.end(); ++it){
  //       cv::KeyPoint kpt = *it;
  //      std::cout << kpt.pt << "octave: "<< kpt.octave <<  ", size: " << kpt.size << std::endl;

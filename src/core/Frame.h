@@ -93,6 +93,8 @@ public:
     bool ProjectLandMark(MapPoint* pMP, cv::Mat &uv_ur);
     bool ProjectLandMark(cv::Mat P, cv::Mat &uv_ur);
     float ReprojectionError(cv::Mat P, int idx); //reprojection error of 3D point P relative to landmarkview of idx
+    float featureSizeMetric(int idx); // size of feature
+    float landMarkSizePixels(MapPoint* lm);
 
     //determine if landmark i is assocaited with a mappoint, if so return it, otherwise return nullptr
     MapPoint* hasAssociation(int i) const;

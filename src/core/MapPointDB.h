@@ -19,30 +19,21 @@ namespace HYSLAM{
         bool eraseObservation(KeyFrame* pKF);  //returns whether mappoint is bad - can happen if all observations erased
         void eraseAllObservations(); //used when mappoint is set bad so also clears matches in keyframes
         bool isInKeyFrame(KeyFrame* pKF) ;
+        void updateEntry();
         std::map<KeyFrame*,size_t>  getObservations()  { return observations; }
         int getNObs()  {return n_obs;}
-        void setNObs(int n);
 
-
-        void setBestDescriptor( FeatureDescriptor best_desc);
         void addDescriptor(KeyFrame* pKF, FeatureDescriptor desc);
         void eraseDescriptor(KeyFrame* pKF);
 
         FeatureDescriptor getDescriptor();
         std::map<KeyFrame*, FeatureDescriptor>  getAllDescriptors()  { return descriptors; }
-        void computeDistinctiveDescriptor();
-
 
         cv::Mat getNormal();
-        void setNormal(cv::Mat norm);
-        void setMaxDist(float maxd);
-        void setMinDist(float mind);
+
         float getMaxDist() {return max_distance;}
         float getMinDist() {return min_distance;}
 
-        void UpdateNormalAndDepth();
-
-        void setRefKF(KeyFrame* pKF);
         KeyFrame* getRefKF() {return pKF_ref;}
 
     private:
@@ -61,16 +52,27 @@ namespace HYSLAM{
         bool desc_needs_update = false;
         bool normdepth_needs_update = false;
 
-        //private functions - don't lock
-        void updateEntry();
-
-        void setMeanDistance(float dist);
-        void updateMeanDistance();
-
-        void setSize(float size_);
-        void updateSize(); // must be called after updateMeanDistance
-
         std::mutex entry_mutex;
+
+        //private functions - don't lock
+        void _updateEntry_();
+        void _setBestDescriptor_( FeatureDescriptor best_desc);
+        void _computeDistinctiveDescriptor_();
+
+        void _setMeanDistance_(float dist);
+        void _updateMeanDistance_();
+
+        void _setSize_(float size_);
+        void _updateSize_();
+
+        void _setNormal_(cv::Mat norm);
+        void _updateNormalAndDepth_();
+
+        void _setRefKF_(KeyFrame* pKF);
+        void _setMaxDist_(float maxd);
+        void _setMinDist_(float mind);
+
+
     };
 
     class MapPointDB{
