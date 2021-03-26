@@ -32,7 +32,7 @@ MapPoint* MapPointFactory::construct(const cv::Mat &Pos, Frame* frame, int idx){
 
     
     const FeatureViews views = frame->getViews();
-    ORBExtractorParams orb_params = views.getOrbParams();
+    FeatureExtractorSettings orb_params = views.getOrbParams();
 
     float max_dist = 2.0 * dist;
     float min_dist = 0.5 * dist;

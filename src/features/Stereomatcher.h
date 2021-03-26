@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <FeatureExtractor.h>
 #include <FeatureMatcher.h>
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <FeatureViews.h>
 #include <DescriptorDistance.h>
 #include <Camera.h>
@@ -27,12 +27,12 @@ private:
   std::vector<FeatureDescriptor> mDescriptors, mDescriptorsRight;
   DescriptorDistance* descriptor_distance;
 
-  ORBExtractorParams orb_params;
+  FeatureExtractorSettings orb_params;
   Camera camera;
 
   //thresholds
-  int TH_HIGH;
-  int TH_LOW;
+  float TH_HIGH;
+  float TH_LOW;
 
   // Corresponding stereo coordinate and depth for each keypoint.
   // "Monocular" keypoints have a negative value.

@@ -22,7 +22,7 @@
 #include "OptHelpers.h"
 #include "Converter.h"
 #include <FeatureViews.h>
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <Camera.h>
 #include <MapPointDB.h>
 
@@ -69,7 +69,7 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
     // Visual Constraints - Set MapPoint vertices
     const int N = pFrame->N;
     const FeatureViews views = pFrame->getViews();
-    ORBExtractorParams  orb_params = views.orbParams();
+    FeatureExtractorSettings  orb_params = views.orbParams();
 
     std::vector<g2o::EdgeSE3ProjectXYZOnlyPose*> vpEdgesMono;
     std::vector<size_t> vnIndexEdgeMono;

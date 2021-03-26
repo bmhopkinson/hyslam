@@ -12,11 +12,15 @@ namespace HYSLAM {
 
 FeatureExtractor* SURFFactory::getExtractor(FeatureExtractorSettings settings){
     std::shared_ptr<DescriptorDistance> dist_func = std::make_shared<SURFDistance>();
-    return new SURFExtractor(std::make_unique<SURFFinder>(), dist_func, settings);
+    return new SURFExtractor(std::make_unique<SURFFinder>(settings), dist_func, settings);
 }
 
 FeatureVocabulary* SURFFactory::getVocabulary(std::string file_name){
     return new SURFVocabulary(file_name);
+}
+
+std::shared_ptr<DescriptorDistance> SURFFactory::getDistanceFunc(){
+    return std::make_shared<SURFDistance>();
 }
 
 }

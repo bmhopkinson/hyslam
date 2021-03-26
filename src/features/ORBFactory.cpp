@@ -18,4 +18,8 @@ FeatureVocabulary* ORBFactory::getVocabulary(std::string file_name){
  return new ORBVocabulary(file_name);
 }
 
+std::shared_ptr<DescriptorDistance> ORBFactory::getDistanceFunc(){
+    return std::make_shared<ORBDistance>();
+}
+
 }

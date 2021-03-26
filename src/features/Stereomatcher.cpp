@@ -72,7 +72,7 @@ void Stereomatcher::computeStereoMatches()
     const float maxD = mbf/minZ;
 
     // For each left keypoint search a match in the right image
-    std::vector<std::pair<int, int> > vDistIdx;
+    std::vector<std::pair<float, int> > vDistIdx;
     vDistIdx.reserve(N);
 
     for(int iL=0; iL<N; iL++)
@@ -113,7 +113,7 @@ void Stereomatcher::computeStereoMatches()
               {
                   const FeatureDescriptor &dR = mDescriptorsRight[iR];
                   const float dist = dL.distance(dR);
-                //  std::cout << "StereoMatcher, dist:  " << dist << std::endl;
+                 // std::cout << "StereoMatcher, dist:  " << dist << std::endl;
 
                   if(dist<bestDist)
                   {
@@ -122,7 +122,7 @@ void Stereomatcher::computeStereoMatches()
                   }
               }
           }
-         // std::cout << "StereoMatcher, bestDist:  " << bestDist << std::endl;
+        //  std::cout << "StereoMatcher, bestDist:  " << bestDist << " , dist_threshold: "<< dist_threshold << std::endl;
 
           // Subpixel match by correlation
           if(bestDist < dist_threshold)
@@ -138,8 +138,9 @@ void Stereomatcher::computeStereoMatches()
                       uR0 = uL-0.01;
                   }
                   mvDepth[iL]=mbf/disparity;
+            //      std::cout << "disparity: " << disparity << ", depth " << mvDepth[iL] << std::endl;
                   mvuRight[iL] = uR0;
-                  vDistIdx.push_back(std::pair<int,int>(bestDist,iL));
+                  vDistIdx.push_back(std::pair<float,int>(bestDist,iL));
               }
               /*
               // coordinates in image pyramid at keypoint scale
@@ -215,10 +216,11 @@ void Stereomatcher::computeStereoMatches()
           }
 
       }
-
+  //      std::cout << "N stereo matches: " << vDistIdx.size() << std::endl;
       sort(vDistIdx.begin(),vDistIdx.end());
       const float median = vDistIdx[vDistIdx.size()/2].first;
       const float thDist = 1.5f*1.4f*median;
+  //    std::cout << "thDist: "  << thDist << std::endl;
 
       for(int i=vDistIdx.size()-1;i>=0;i--)
       {

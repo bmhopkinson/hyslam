@@ -10,6 +10,12 @@ SURFFinder::SURFFinder(){
     detector = cv::xfeatures2d::SURF::create(threshold, nOctaves, nOctaveLayers);
 }
 
+SURFFinder::SURFFinder(FeatureExtractorSettings settings){
+    threshold = settings.init_threshold;
+    nOctaves = settings.nLevels;
+    detector = cv::xfeatures2d::SURF::create(threshold, nOctaves, nOctaveLayers);
+}
+
 SURFFinder::SURFFinder(double threshold_) : threshold(threshold_)
 {
     detector = cv::xfeatures2d::SURF::create(threshold, nOctaves, nOctaveLayers);

@@ -1,7 +1,7 @@
 #ifndef HYSLAM_FEATUREVIEWS_H_
 #define HYSLAM_FEATUREVIEWS_H_
 
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <opencv2/opencv.hpp>
 #include <FeatureDescriptor.h>
 #include <vector>
@@ -14,11 +14,11 @@ public:
   FeatureViews(){};
  // FeatureViews(const FeatureViews &views);
 //  FeatureViews& operator=(const FeatureViews&);
-  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, ORBExtractorParams orb_params_ );  // mono constructor
+  FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, FeatureExtractorSettings orb_params_ );  // mono constructor
   FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
-               std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - partial data
+               std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, FeatureExtractorSettings orb_params_);  //stereo constructor - partial data
   FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
-               std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_);  //stereo constructor - full data
+               std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, FeatureExtractorSettings orb_params_);  //stereo constructor - full data
 
   //getters
   bool empty() const {return is_empty;}
@@ -30,10 +30,10 @@ public:
 //  const FeatureDescriptor&  descriptorR(int i ) const;
   float uR(int i) const;
   float depth(int i) const;
-  ORBExtractorParams orbParams() const { return orb_params; }
+  FeatureExtractorSettings orbParams() const { return orb_params; }
   
   // more getters
-  ORBExtractorParams getOrbParams()const { return orb_params; }
+  FeatureExtractorSettings getOrbParams()const { return orb_params; }
   std::vector<cv::KeyPoint> getKeys() const {return mvKeys; }
   std::vector<cv::KeyPoint> getKeysR() const {return mvKeysRight; }
   std::vector<float> getuRs() const {return mvuRight; }
@@ -42,7 +42,7 @@ public:
   std::vector<FeatureDescriptor> getDescriptorsR() const { return mDescriptorsRight; }
   
   //setters
-  void setOrbParams(ORBExtractorParams params ) {  orb_params  = params; }
+  void setOrbParams(FeatureExtractorSettings params ) {  orb_params  = params; }
   void setKeys(std::vector<cv::KeyPoint> keypts) { mvKeys = keypts; }
   void setKeysR(std::vector<cv::KeyPoint> keyptsR) { mvKeysRight = keyptsR; }
   void setuRs(std::vector<float> uRs ) { mvuRight = uRs; }
@@ -72,7 +72,7 @@ private:
     std::vector<FeatureDescriptor> mDescriptorsRight;
 
   // Scale pyramid info.
- ORBExtractorParams orb_params;
+ FeatureExtractorSettings orb_params;
 
 };
 }//end namespace

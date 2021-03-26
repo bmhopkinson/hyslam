@@ -26,7 +26,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "KeyFrame.h"
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <DBoW2/Random.h>
 
 namespace HYSLAM
@@ -40,9 +40,9 @@ Sim3Solver::Sim3Solver(KeyFrame *pKF1, KeyFrame *pKF2, const std::vector<MapPoin
     mpKF2 = pKF2;
     
     const FeatureViews KF1views = pKF1->getViews();
-    ORBExtractorParams orb_params_KF1 = KF1views.orbParams();
+    FeatureExtractorSettings orb_params_KF1 = KF1views.orbParams();
     const FeatureViews KF2views = pKF2->getViews();
-    ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
+    FeatureExtractorSettings orb_params_KF2 = KF2views.orbParams();
 
     std::vector<MapPoint*> vpKeyFrameMP1 = pKF1->GetMapPointMatches();
 

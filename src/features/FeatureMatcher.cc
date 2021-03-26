@@ -21,7 +21,7 @@
 #include <FeatureMatcher.h>
 
 #include <FeatureViews.h>
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <GenUtils.h>
 #include <Camera.h>
 #include <Map.h>  //long term - eliminate this dependency
@@ -66,7 +66,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
 
     //const FeatureViews views = frame.getViews(); //this could get large convert to const ref eventually
     const FeatureViews &views = frame.getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
 
     //apply landmark criteria
 
@@ -493,7 +493,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>(TH_LOW ,1.000) );
 
     const FeatureViews views = pKF->getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
     CriteriaData criteria_data;
 
     std::vector<MapPoint*> cand_lms = vpMapPoints;
@@ -551,7 +551,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
 int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
 {
     const FeatureViews views = pKF->getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
     // Get Calibration Parameters for later projection
     /*
     const float &fx = pKF->fx;
@@ -697,7 +697,7 @@ int FeatureMatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<
     const float &cy = camera.cy();
 
     const FeatureViews KFviews = pKF->getViews(); //this could get large convert to const ref eventually
-    ORBExtractorParams orb_params = KFviews.orbParams();
+    FeatureExtractorSettings orb_params = KFviews.orbParams();
 
     // Decompose Scw
     cv::Mat sRcw = Scw.rowRange(0,3).colRange(0,3);
@@ -813,9 +813,9 @@ int FeatureMatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint
                                  const float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th)
 {
     const FeatureViews KF1views = pKF1->getViews();
-    ORBExtractorParams orb_params_KF1 = KF1views.orbParams();
+    FeatureExtractorSettings orb_params_KF1 = KF1views.orbParams();
     const FeatureViews KF2views = pKF2->getViews();
-    ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
+    FeatureExtractorSettings orb_params_KF2 = KF2views.orbParams();
 
     // Camera 1 from world
     cv::Mat R1w = pKF1->GetRotation();
@@ -1037,9 +1037,9 @@ int FeatureMatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint 
 //aim to replace this with SearchByBoW2 - but haven't been able to test in LoopClosing yet so preserving until then
 {
     const FeatureViews KF1views = pKF1->getViews();
-    ORBExtractorParams orb_params_KF1 = KF1views.orbParams();
+    FeatureExtractorSettings orb_params_KF1 = KF1views.orbParams();
     const FeatureViews KF2views = pKF2->getViews();
-    ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
+    FeatureExtractorSettings orb_params_KF2 = KF2views.orbParams();
 
     const vector<cv::KeyPoint> vKeysUn1 = KF1views.getKeys();
     const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;

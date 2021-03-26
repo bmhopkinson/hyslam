@@ -1,7 +1,7 @@
 #include "BundleAdjustment.h"
 #include "OptHelpers.h"
 #include <SensorData.h>
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 
 #include "g2o/core/block_solver.h"
 #include "g2o/core/optimization_algorithm_levenberg.h"
@@ -220,7 +220,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
 
             KeyFrame* pKFi = mit->first;
             const FeatureViews views = pKFi->getViews();
-            ORBExtractorParams orb_params = views.orbParams();
+            FeatureExtractorSettings orb_params = views.orbParams();
             const Camera camera = pKFi->getCamera();
             
             std::string vertex_name_kf = "VertexSE3Expmap" + std::to_string(pKFi->mnId);

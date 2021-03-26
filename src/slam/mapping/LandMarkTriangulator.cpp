@@ -1,7 +1,7 @@
 #include <LandMarkTriangulator.h>
 #include <Camera.h>
 #include <FeatureViews.h>
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <GenUtils.h>
 #include <FeatureMatcher.h>
 
@@ -25,7 +25,7 @@ void LandMarkTriangulator::run() {
     const std::vector<KeyFrame*> vpNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, nn);
 
     const FeatureViews& KFcur_views = pKF->getViews();
-    ORBExtractorParams orb_params_KFcur = KFcur_views.orbParams();
+    FeatureExtractorSettings orb_params_KFcur = KFcur_views.orbParams();
     const Camera camera_KFcur = pKF->getCamera();
 
   //  FeatureMatcher matcher(params.match_nnratio, false);
@@ -53,7 +53,7 @@ void LandMarkTriangulator::run() {
 
         KeyFrame* pKF2 = vpNeighKFs[i];
         const FeatureViews& KF2views = pKF2->getViews();
-        ORBExtractorParams orb_params_KF2 = KF2views.orbParams();
+        FeatureExtractorSettings orb_params_KF2 = KF2views.orbParams();
         const Camera camera_KF2 = pKF2->getCamera();
 
         // Check first that baseline is not too short

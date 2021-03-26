@@ -5,6 +5,7 @@
 #ifndef HYSLAM_FEATUREEXTRACTOR_H
 #define HYSLAM_FEATUREEXTRACTOR_H
 
+#include <FeatureExtractorSettings.h>
 #include <FeatureFinder.h>
 #include <FeatureDescriptor.h>
 #include <DescriptorDistance.h>
@@ -13,17 +14,6 @@
 #include <memory>
 
 namespace  HYSLAM {
-
-class FeatureExtractorSettings{
-public:
-    int nFeatures;
-    float fScaleFactor;
-    int nLevels;
-    int init_threshold;
-    int min_threshold;
-private:
-
-};
 
 class FeatureExtractor {
 public:

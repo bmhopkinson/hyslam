@@ -6,12 +6,14 @@
 #define HYSLAM_SURFFINDER_H
 
 #include <FeatureFinder.h>
+#include <FeatureExtractorSettings.h>
 #include "opencv2/xfeatures2d.hpp"
 
 namespace HYSLAM {
 class SURFFinder : public FeatureFinder {
 public:
     SURFFinder();
+    SURFFinder(FeatureExtractorSettings settings);
     SURFFinder(double threshold_);
     void setThreshold(double threshold_);
     double getThreshold(){return threshold;};
@@ -24,10 +26,10 @@ public:
     void setNOctaves(int nOctaves);
 
 private:
-    double threshold = 800;
+    double threshold = 400;
     int nOctaves = 4;
 
-    int nOctaveLayers = 1;
+    int nOctaveLayers = 2;
     cv::Ptr<cv::xfeatures2d::SURF> detector;
 };
 

@@ -13,6 +13,7 @@ class ORBFactory : public FeatureFactory {
 public:
     FeatureExtractor* getExtractor(FeatureExtractorSettings settings);  //convert to unique_ptr
     FeatureVocabulary* getVocabulary(std::string file_name);
+    std::shared_ptr<DescriptorDistance> getDistanceFunc();
 };
 
 }

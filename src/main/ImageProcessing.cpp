@@ -15,8 +15,10 @@
 #include <thread>
 
 namespace HYSLAM{
-ImageProcessing::ImageProcessing(FeatureFactory* factory, const std::string &strSettingPath, std::map<std::string, Camera> cam_data_)
- : cam_data(cam_data_)
+int ImageProcessing::n_processed = 0;
+
+ImageProcessing::ImageProcessing(FeatureFactory* factory_, const std::string &strSettingPath, std::map<std::string, Camera> cam_data_)
+ : factory(factory_),cam_data(cam_data_)
 {
     // Load camera parameters from settings file
     FeatureExtractorSettings feature_extractor_settings;
@@ -25,18 +27,14 @@ ImageProcessing::ImageProcessing(FeatureFactory* factory, const std::string &str
     LoadSettings(strSettingPath, feature_extractor_settings, feature_settings);
 
     dist_func = std::make_shared<ORBDistance>();
-    
-    //mpORBextractorLeft = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
-    //mpORBextractorRight = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings);
-  //  SURFextractor = new FeatureExtractor(std::make_unique<SURFFinder>(), ORBextractor_settings);
 
-    mpORBextractorLeft = factory->getExtractor(feature_extractor_settings);
-    mpORBextractorRight = factory->getExtractor(feature_extractor_settings);
+    extractor_left = factory->getExtractor(feature_extractor_settings);
+    extractor_right = factory->getExtractor(feature_extractor_settings);
 
     FeatureExtractorSettings feature_extractor_settings_init;
     feature_extractor_settings_init = feature_extractor_settings;
     feature_extractor_settings_init.nFeatures = 3 * feature_extractor_settings.nFeatures;
-    mpIniORBextractor = factory->getExtractor( feature_extractor_settings_init );
+    extractor_init = factory->getExtractor(feature_extractor_settings_init );
    // mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings_init);
 
    dist_func_surf = std::make_shared<SURFDistance>();
@@ -53,13 +51,13 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
     std::vector<FeatureDescriptor> mDescriptors;
     FeatureExtractor* extractor;
     if(tracking_state==eTrackingState::INITIALIZATION || tracking_state==eTrackingState::NO_IMAGES_YET){
-        extractor = mpIniORBextractor;
+        extractor = extractor_init;
     }
     else {
-        extractor = mpORBextractorLeft;
+        extractor = extractor_left;
     }
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
-    ORBExtractorParams orb_params;// = setORBExtractorParams(extractor);
+    FeatureExtractorSettings orb_params;// = setFeatureExtractorSettings(extractor);
     FeatureViews LMviews(mvKeys, mDescriptors,  orb_params);
 
     ImageFeatureData track_data;
@@ -74,6 +72,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
 
 void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const Imgdata img_data,  const  SensorData &sensor_data,  eTrackingState tracking_state){
     std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
+    n_processed++;
     cam_cur = img_data.camera;
     mImGray = imRectLeft;
     cv::Mat imGrayRight = imRectRight;
@@ -84,10 +83,24 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
     std::vector<FeatureDescriptor> mDescriptors;
     std::vector<FeatureDescriptor> mDescriptorsRight;
-    std::thread orb_thread(ORBUtil::extractORB, mpORBextractorLeft, std::ref(mImGray), std::ref(mvKeys),std::ref( mDescriptors) );
-    (*mpORBextractorRight)(imGrayRight, cv::Mat(), mvKeysRight,  mDescriptorsRight );
+    std::thread orb_thread(ORBUtil::extractORB, extractor_left, std::ref(mImGray), std::ref(mvKeys), std::ref(mDescriptors) );
+    (*extractor_right)(imGrayRight, cv::Mat(), mvKeysRight, mDescriptorsRight );
     orb_thread.join();
-    ORBExtractorParams orb_params;// = setORBExtractorParams(mpORBextractorLeft);
+    FeatureExtractorSettings orb_params;// = setFeatureExtractorSettings(mpORBextractorLeft);
+
+    if((n_processed % 20) == 0 ) {
+        cv::Mat imCopy = imGrayRight.clone();
+        cv::drawKeypoints(imCopy, mvKeysRight, imCopy, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        cv::imwrite("features_extracted_right.jpg", imCopy);
+        std::cout << "N Features Extracted: " << mvKeys.size() << std::endl;
+
+
+        cv::Mat imCopyLeft = mImGray.clone();
+        cv::drawKeypoints(imCopyLeft, mvKeys, imCopyLeft, cv::Scalar::all(-1),
+                          cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+        cv::imwrite("features_extracted_left.jpg", imCopyLeft);
+    }
+    //std::cout << "N Features Extracted: " << mvKeys.size() << std::endl;
 
   //  for(auto it = mvKeys.begin(); it != mvKeys.end(); ++it){
  //       cv::KeyPoint kpt = *it;
@@ -108,8 +121,8 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
 
 
     FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
-    DescriptorDistance* dist_calc = new ORBDistance();
-    Stereomatcher stereomatch(mpORBextractorLeft, mpORBextractorRight, LMviews, dist_calc, cam_data[cam_cur], feature_settings);
+    std::shared_ptr<DescriptorDistance> dist_calc = factory->getDistanceFunc();//new ORBDistance();
+    Stereomatcher stereomatch(extractor_left, extractor_right, LMviews, dist_calc.get(), cam_data[cam_cur], feature_settings);
     stereomatch.computeStereoMatches();
     stereomatch.getData(LMviews);
 
@@ -173,9 +186,9 @@ void ImageProcessing::LoadSettings(std::string settings_path, FeatureExtractorSe
     fSettings.release();
 
 }
-
-ORBExtractorParams ImageProcessing::setORBExtractorParams(FeatureExtractor* extractor){
-    ORBExtractorParams params;
+/*
+FeatureExtractorSettings ImageProcessing::setFeatureExtractorSettings(FeatureExtractor* extractor){
+    FeatureExtractorSettings params;
 
     params.mnScaleLevels = extractor->GetLevels();
     params.mfScaleFactor = extractor->GetScaleFactor();
@@ -187,5 +200,5 @@ ORBExtractorParams ImageProcessing::setORBExtractorParams(FeatureExtractor* extr
 
     return params;
 }
-
+*/
 } //end namespace

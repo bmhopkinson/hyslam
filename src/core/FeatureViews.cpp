@@ -38,7 +38,7 @@ FeatureViews& FeatureViews::operator=(const FeatureViews& views){
 }
 */
 // mono constructor
-FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, ORBExtractorParams orb_params_ ){
+FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, FeatureExtractorSettings orb_params_ ){
   is_stereo = false;
   N = mvKeys_.size();
   if(N>0){
@@ -54,7 +54,7 @@ FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<Featur
 
 //stereo constructor- partial data
 FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
-                           std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_){
+                           std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, FeatureExtractorSettings orb_params_){
   is_stereo = true;
   N = mvKeys_.size();
   if(N>0){
@@ -70,7 +70,7 @@ FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::Ke
 
 //stereo constructor- full data
 FeatureViews::FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,  std::vector<float> mvuRight_,  std::vector<float> mvDepth_,
-                           std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, ORBExtractorParams orb_params_)
+                           std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, FeatureExtractorSettings orb_params_)
 {
   is_stereo = true;
   N = mvKeys_.size();

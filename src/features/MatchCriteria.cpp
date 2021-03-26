@@ -1,7 +1,7 @@
 #include <MatchCriteria.h>
 #include <LandMarkMatches.h>
 #include <FeatureViews.h>
-#include <ORBExtractorParams.h>
+#include <FeatureExtractorSettings.h>
 #include <Camera.h>
 #include <math.h>
 #include <assert.h>
@@ -158,7 +158,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(Frame &frame, MapPoint* lm
     }
 
     const FeatureViews& views = frame.getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
     Frame* frame_prev = data.getPreviousFrame();
 
     //determine predicted pyramid level of landmark
@@ -198,7 +198,7 @@ std::vector<size_t> StereoConsistencyCriterion::apply(KeyFrame* pKF, MapPoint* l
     }
 
     const FeatureViews& views = pKF->getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
     Frame* frame_prev = data.getPreviousFrame();
 
     //determine predicted pyramid level of landmark
@@ -316,7 +316,7 @@ ProjectionViewCriterion::ProjectionViewCriterion(float  error_threshold_):  erro
 std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
     const FeatureViews& views = frame.getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
 
     cv::Mat lm_position = lm->GetWorldPos();
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it){
@@ -344,7 +344,7 @@ std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  
 std::vector<size_t> ProjectionViewCriterion::apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data){
     std::vector<size_t> views_passed;
     const FeatureViews& views = pKF->getViews();
-    ORBExtractorParams orb_params = views.orbParams();
+    FeatureExtractorSettings orb_params = views.orbParams();
 
     cv::Mat lm_position = lm->GetWorldPos();
     for(auto it = candidate_views.begin(); it != candidate_views.end(); ++it){
@@ -715,7 +715,7 @@ std::vector<unsigned int> EpipolarConsistencyBoWCriterion::apply(size_t idx1, st
     std::vector<unsigned int> idxs_passed;
 
     const cv::KeyPoint &kp1 = views1.keypt(idx1);
-    ORBExtractorParams orb_params = views2.orbParams();
+    FeatureExtractorSettings orb_params = views2.orbParams();
 
     for(auto it = cand_idx2.begin(); it != cand_idx2.end(); ++it) {
         size_t idx2 = *it;

@@ -10,6 +10,7 @@
 #include <FeatureMatcher.h>
 
 #include <string>
+#include <memory>
 
 namespace HYSLAM {
 
@@ -17,6 +18,7 @@ class FeatureFactory {
 public:
     virtual FeatureExtractor* getExtractor(FeatureExtractorSettings settings) = 0;  //convert to unique_ptr
     virtual FeatureVocabulary* getVocabulary(std::string file_name) =0 ;
+    virtual std::shared_ptr<DescriptorDistance> getDistanceFunc() = 0;
     std::unique_ptr<FeatureMatcher> getFeatureMatcher();
     FeatureMatcherSettings getFeatureMatcherSettings() const {return feature_matcher_settings; } ;
     void setFeatureMatcherSettings(FeatureMatcherSettings fm_settings){feature_matcher_settings = fm_settings;};
