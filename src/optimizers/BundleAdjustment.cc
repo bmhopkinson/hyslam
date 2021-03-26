@@ -242,7 +242,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
                 e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex( vertex_map[vertex_name_kf]) ) );
 
                 e->setMeasurement(obs);
-                const float invSigma2 = orb_params.mvInvLevelSigma2[kpUn.octave];
+                const float invSigma2 = 1/orb_params.determineSigma2(kpUn.size); //mvInvLevelSigma2[kpUn.octave];
                 
                 e->setInformation(Eigen::Matrix2d::Identity()*invSigma2);
 
@@ -280,7 +280,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
 
                 e->setMeasurement(obs);
 
-                const float invSigma2 = orb_params.mvInvLevelSigma2[kpUn.octave];
+                const float invSigma2 = 1/orb_params.determineSigma2(kpUn.size); //mvInvLevelSigma2[kpUn.octave];
 
                 Eigen::Matrix3d Info = Eigen::Matrix3d::Identity()*invSigma2;
                 e->setInformation(Info);

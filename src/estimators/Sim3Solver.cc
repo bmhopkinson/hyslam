@@ -85,8 +85,8 @@ Sim3Solver::Sim3Solver(KeyFrame *pKF1, KeyFrame *pKF2, const std::vector<MapPoin
             const cv::KeyPoint &kp1 = KF1views.keypt(indexKF1);
             const cv::KeyPoint &kp2 = KF2views.keypt(indexKF2);
 
-            const float sigmaSquare1 = orb_params_KF1.mvLevelSigma2[kp1.octave];
-            const float sigmaSquare2 = orb_params_KF2.mvLevelSigma2[kp2.octave];
+            const float sigmaSquare1 = orb_params_KF1.determineSigma2(kp1.size);//   mvLevelSigma2[kp1.octave];
+            const float sigmaSquare2 = orb_params_KF2.determineSigma2(kp2.size);//  mvLevelSigma2[kp2.octave];
 
             mvnMaxError1.push_back(9.210*sigmaSquare1);
             mvnMaxError2.push_back(9.210*sigmaSquare2);

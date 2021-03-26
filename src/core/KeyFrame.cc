@@ -242,7 +242,7 @@ bool KeyFrame::isMapPointMatched(MapPoint* pMP){
       return true;
   }
 }
-
+/*
 int KeyFrame::predictScale(const float &currentDist, MapPoint* pMP){
 
     float ratio = pMP->GetMaxDistanceInvariance()/(1.2*currentDist);  //(1.2 factor is oddity from GetMaxDistanceInvariance())
@@ -255,7 +255,7 @@ int KeyFrame::predictScale(const float &currentDist, MapPoint* pMP){
 
     return nScale_this;
 }
-
+*/
 float KeyFrame::featureSizeMetric(int idx){ //consider each feature to be a square associated with a mappoint  normal to camera line of sight
     MapPoint* lm = hasAssociation(idx);
     if(!lm){

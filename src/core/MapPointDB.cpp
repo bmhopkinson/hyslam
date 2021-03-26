@@ -257,13 +257,9 @@ namespace HYSLAM{
         cv::Mat PC = Pos - pRefKF->GetCameraCenter();
         const float dist = cv::norm(PC);
 
-        const int level = pRefKF->getViews().keypt(observations[pRefKF]).octave;
-        const float levelScaleFactor =  pRefKF->getViews().orbParams().mvScaleFactors[level];
-        const int nLevels = pRefKF->getViews().orbParams().mnScaleLevels;
+        float max_distance_ = max_dist_invariance_factor * dist;
+        float min_distance_ = min_dist_invariance_factor * dist;
 
-
-        float max_distance_ = dist*levelScaleFactor;
-        float min_distance_ = max_distance_/pRefKF->getViews().orbParams().mvScaleFactors[nLevels-1];
         _setMaxDist_(max_distance_);
         _setMinDist_(min_distance_);
         _setNormal_(normal/n);

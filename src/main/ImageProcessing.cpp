@@ -59,7 +59,7 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
         extractor = mpORBextractorLeft;
     }
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
-    ORBExtractorParams orb_params = setORBExtractorParams(extractor);
+    ORBExtractorParams orb_params;// = setORBExtractorParams(extractor);
     FeatureViews LMviews(mvKeys, mDescriptors,  orb_params);
 
     ImageFeatureData track_data;
@@ -87,7 +87,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     std::thread orb_thread(ORBUtil::extractORB, mpORBextractorLeft, std::ref(mImGray), std::ref(mvKeys),std::ref( mDescriptors) );
     (*mpORBextractorRight)(imGrayRight, cv::Mat(), mvKeysRight,  mDescriptorsRight );
     orb_thread.join();
-    ORBExtractorParams orb_params = setORBExtractorParams(mpORBextractorLeft);
+    ORBExtractorParams orb_params;// = setORBExtractorParams(mpORBextractorLeft);
 
   //  for(auto it = mvKeys.begin(); it != mvKeys.end(); ++it){
  //       cv::KeyPoint kpt = *it;

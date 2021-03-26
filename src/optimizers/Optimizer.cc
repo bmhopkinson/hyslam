@@ -121,7 +121,7 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
 
                 e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
                 e->setMeasurement(obs);
-                const float invSigma2 = orb_params.mvInvLevelSigma2[kpUn.octave];
+                const float invSigma2 = 1/orb_params.determineSigma2(kpUn.size);// orb_params.mvInvLevelSigma2[kpUn.octave];
       //          e->setInformation(Eigen::Matrix2d::Identity()*invSigma2/nMonoVert);
                 e->setInformation(Eigen::Matrix2d::Identity()*invSigma2);
 
@@ -160,7 +160,7 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
 
                 e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
                 e->setMeasurement(obs);
-                const float invSigma2 = orb_params.mvInvLevelSigma2[kpUn.octave];
+                const float invSigma2 = 1/orb_params.determineSigma2(kpUn.size); //mvInvLevelSigma2[kpUn.octave];
                // Eigen::Matrix3d Info = Eigen::Matrix3d::Identity()*invSigma2/nStereoVert;
                 Eigen::Matrix3d Info = Eigen::Matrix3d::Identity()*invSigma2;
                 e->setInformation(Info);
@@ -674,7 +674,8 @@ TEST(Slam3D, OptimizationEdgeSE3Translation)
         e12->setMeasurement(obs1);
         
         //const float &invSigmaSquare1 = pKF1->mvInvLevelSigma2[kpUn1.octave];
-        const float &invSigmaSquare1 = pKF1->getViews().orbParams().mvInvLevelSigma2[kpUn1.octave];
+
+        const float &invSigmaSquare1 = 1/pKF1->getViews().orbParams().determineSigma2(kpUn1.size);//pKF1->getViews().orbParams().mvInvLevelSigma2[kpUn1.octave];
         e12->setInformation(Eigen::Matrix2d::Identity()*invSigmaSquare1);
 
         g2o::RobustKernelHuber* rk1 = new g2o::RobustKernelHuber;
@@ -694,7 +695,7 @@ TEST(Slam3D, OptimizationEdgeSE3Translation)
         e21->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(0)));
         e21->setMeasurement(obs2);
 
-        float invSigmaSquare2 = pKF2->getViews().orbParams().mvInvLevelSigma2[kpUn2.octave];
+        float invSigmaSquare2 =1/pKF2->getViews().orbParams().determineSigma2(kpUn2.size);// pKF2->getViews().orbParams().mvInvLevelSigma2[kpUn2.octave];
         e21->setInformation(Eigen::Matrix2d::Identity()*invSigmaSquare2);
 
         g2o::RobustKernelHuber* rk2 = new g2o::RobustKernelHuber;

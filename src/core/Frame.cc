@@ -535,7 +535,7 @@ cv::Mat Frame::UnprojectStereo(const int &i) //move into camera class
         return cv::Mat();
 }
 
-
+/*
 int Frame::predictScale(const float &currentDist, MapPoint* pMP){
 
     float ratio = pMP->GetMaxDistanceInvariance()/(1.2*currentDist);  //(1.2 factor is oddity from GetMaxDistanceInvariance())
@@ -548,7 +548,7 @@ int Frame::predictScale(const float &currentDist, MapPoint* pMP){
 
     return nScale_this;
 }
-
+*/
 void Frame::validateMatches(){
     std::map<MapPoint*, int> counts;
     for(auto it = matches.begin(); it != matches.end(); ++it){

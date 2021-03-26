@@ -52,6 +52,9 @@ namespace HYSLAM{
         bool desc_needs_update = false;
         bool normdepth_needs_update = false;
 
+        float max_dist_invariance_factor = 2.0;
+        float min_dist_invariance_factor = 0.5;
+
         std::mutex entry_mutex;
 
         //private functions - don't lock

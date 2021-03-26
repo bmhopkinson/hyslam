@@ -37,7 +37,8 @@ void LandMarkTriangulator::run() {
 
     cv::Mat Ow1 = pKF->GetCameraCenter();
 
-    const float ratioFactor = params.ratio_factor *orb_params_KFcur.mfScaleFactor;
+    const float ratioFactor = params.ratio_factor;// *orb_params_KFcur.mfScaleFactor;
+   // std::cout << "ratioFactor: " << ratioFactor << std::endl;
 
     int nnew=0;
 
@@ -153,8 +154,8 @@ void LandMarkTriangulator::run() {
             }
 
             //Check reprojection error
-            const float &sigmaSquare1 = orb_params_KFcur.mvLevelSigma2[kp1.octave];
-            const float sigmaSquare2 = orb_params_KF2.mvLevelSigma2[kp2.octave];
+            const float sigmaSquare1 = orb_params_KFcur.determineSigma2(kp1.size);
+            const float sigmaSquare2 = orb_params_KF2.determineSigma2(kp2.size);
             float err_thresh1 = params.error_factor_mono * sigmaSquare1;
             if(bStereo1){
                 err_thresh1 = params.error_factor_stereo * sigmaSquare1;
@@ -173,20 +174,22 @@ void LandMarkTriangulator::run() {
                 continue;
             }
 
-            //Check scale consistency
+            //Check scale consistency - assumes projective camera model
             cv::Mat normal1 = x3D-Ow1;
             float dist1 = cv::norm(normal1);
 
             cv::Mat normal2 = x3D-Ow2;
             float dist2 = cv::norm(normal2);
 
-            if(dist1==0 || dist2==0)
+            if(dist1==0 || dist2==0) {
                 continue;
+            }
 
             const float ratioDist = dist2/dist1;
-            const float ratioOctave = orb_params_KFcur.mvScaleFactors[kp1.octave]/orb_params_KF2.mvScaleFactors[kp2.octave];
-            if(ratioDist*ratioFactor<ratioOctave || ratioDist>ratioOctave*ratioFactor)
+            float ratioFeatureSize = kp1.size/kp2.size;
+            if(ratioDist*ratioFactor<ratioFeatureSize || ratioDist>ratioFeatureSize*ratioFactor) {
                 continue;
+            }
 
             // triangulation of new point succeeded  - add to map and associate
             MapPoint* pMP = pMap->newMapPoint(x3D, pKF, idx1);

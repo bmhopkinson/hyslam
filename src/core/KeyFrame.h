@@ -82,7 +82,7 @@ public:
     std::set<MapPoint*> GetMapPoints();
     int TrackedMapPoints(const int &minObs);
     bool isMapPointMatched(MapPoint* pMP);
-    int predictScale(const float &currentDist, MapPoint* pMP);
+  //  int predictScale(const float &currentDist, MapPoint* pMP);
     float featureSizeMetric(int idx); // size of feature
     float landMarkSizePixels(MapPoint* lm);
 

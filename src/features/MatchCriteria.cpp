@@ -326,8 +326,7 @@ std::vector<size_t> ProjectionViewCriterion::apply(Frame &frame, MapPoint* lm,  
         const cv::KeyPoint &kp = views.keypt(idx);
        // const int &kpLevel= kp.octave;
       //  float sigma_old = orb_params.mvLevelSigma2[kp.octave];
-        float scale_factor = (kp.size/orb_params.size_ref);
-        float sigma_size_corrected = orb_params.sigma_ref * (scale_factor*scale_factor);
+        float sigma_size_corrected = orb_params.determineSigma2(kp.size);
 
        // std::cout << "ProjViewCriterion: sigma_old: " << sigma_old << ", sigma_new: " << sigma_size_corrected << std::endl;
 
@@ -355,8 +354,7 @@ std::vector<size_t> ProjectionViewCriterion::apply(KeyFrame* pKF, MapPoint* lm, 
         const cv::KeyPoint &kp = views.keypt(idx);
      //    const int &kpLevel= kp.octave;
     //    float sigma_old = orb_params.mvLevelSigma2[kp.octave];
-        float scale_factor = (kp.size/orb_params.size_ref);
-        float sigma_size_corrected = orb_params.sigma_ref * (scale_factor*scale_factor);
+        float sigma_size_corrected =  orb_params.determineSigma2(kp.size);
 
       //  std::cout << "ProjViewCriterion: sigma_old: " << sigma_old << ", sigma_new: " << sigma_size_corrected << std::endl;
 
@@ -722,9 +720,7 @@ std::vector<unsigned int> EpipolarConsistencyBoWCriterion::apply(size_t idx1, st
     for(auto it = cand_idx2.begin(); it != cand_idx2.end(); ++it) {
         size_t idx2 = *it;
         cv::KeyPoint kp2 = views2.keypt(idx2);
-        float scale_factor = (kp2.size/orb_params.size_ref);
-        float sigma_size_corrected = orb_params.sigma_ref * (scale_factor*scale_factor);
-       // if (CheckDistEpipolarLine(kp1, kp2, Fmatrix, orb_params.mvLevelSigma2[kp2.octave])) {
+        float sigma_size_corrected = orb_params.determineSigma2(kp2.size);
         if (CheckDistEpipolarLine(kp1, kp2, Fmatrix, sigma_size_corrected)) {
             idxs_passed.push_back(idx2);
         }

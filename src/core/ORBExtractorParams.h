@@ -22,6 +22,8 @@ struct ORBExtractorParams {
     std::vector<float> mvInvScaleFactors;
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
+
+    float determineSigma2(float feature_size);
 };
 }
 

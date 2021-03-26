@@ -33,13 +33,10 @@ MapPoint* MapPointFactory::construct(const cv::Mat &Pos, Frame* frame, int idx){
     
     const FeatureViews views = frame->getViews();
     ORBExtractorParams orb_params = views.getOrbParams();
-    const int level = views.keypt(idx).octave;
-    const float levelScaleFactor =  orb_params.mvScaleFactors[level];
-    const int nLevels = orb_params.mnScaleLevels;
 
-    float max_dist = dist*levelScaleFactor;
-    float min_dist = max_dist/orb_params.mvScaleFactors[nLevels-1];
-    std::cout << " MPFac: min_dist, max_dist " << min_dist << "\t" << max_dist <<std::endl;
+    float max_dist = 2.0 * dist;
+    float min_dist = 0.5 * dist;
+   // std::cout << " MPFac: min_dist, max_dist " << min_dist << "\t" << max_dist <<std::endl;
     pMP->setMinDistanceInvariance(min_dist);
     pMP->setMaxDistanceInvariance(max_dist);
 

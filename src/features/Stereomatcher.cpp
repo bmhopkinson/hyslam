@@ -58,8 +58,7 @@ void Stereomatcher::computeStereoMatches()
     {
       const cv::KeyPoint &kp = mvKeysRight[iR];
       const float &kpY = kp.pt.y;
-      const float r = 2.0f* orb_params.mvScaleFactors[mvKeysRight[iR].octave];
-    //  std::cout << "stereomatcher: r: " << r <<"\t octave: " << mvKeysRight[iR].octave << "\t scale_factor: " <<  orb_params.mvScaleFactors[mvKeysRight[iR].octave] << std::endl;
+      const float r = 2.0f*  kp.size/orb_params.size_ref;
       const int maxr = ceil(kpY+r);
       const int minr = floor(kpY-r);
 
