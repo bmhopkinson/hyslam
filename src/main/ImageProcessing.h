@@ -32,9 +32,7 @@ public:
     void setOutputQueue(ThreadSafeQueue<ImageFeatureData>* output_queue_){output_queue = output_queue_;}
 
 private:
-    void LoadSettings(std::string settings_path, FeatureExtractorSettings &feature_extractor_settings, FeatureMatcherSettings &feature_settings);
     cv::Mat PreProcessImg(cv::Mat &img, bool mbRGB, float fscale);
-  //  FeatureExtractorSettings setFeatureExtractorSettings(FeatureExtractor* extractor);
     FeatureMatcherSettings feature_settings;
     FeatureFactory* factory;
 
@@ -42,9 +40,6 @@ private:
 
     FeatureExtractor* extractor_left, *extractor_right;
     FeatureExtractor* extractor_init;
-    SURFExtractor* SURFextractor;
-    std::shared_ptr<DescriptorDistance> dist_func;
-    std::shared_ptr<DescriptorDistance> dist_func_surf;
 
     std::string cam_cur;  //current camera
     std::map<std::string, Camera> cam_data;

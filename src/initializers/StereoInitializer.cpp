@@ -32,7 +32,6 @@ int StereoInitializer::createMap( KeyFrame* &pKF1, KeyFrame* &pKF2, std::vector<
     for(int i=0; i<frame_init.N;i++)
     {
         float z = views.depth(i);
-        std::cout << "stereo initializer: z: " << z << std::endl;
         if(z>0)
         {
             cv::Mat world_pos = frame_init.UnprojectStereo(i);

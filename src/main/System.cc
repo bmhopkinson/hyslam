@@ -68,10 +68,14 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     }
 
     LoadSettings(strSettingsFile);
-    feature_factory = std::make_unique<ORBFactory>();
-    //feature_factory = std::make_unique<SURFFactory>();
-    mpVocabulary = feature_factory->getVocabulary(strVocFile);
-   // LoadVocabulary( strVocFile, mpVocabulary);
+    std::string feature_settings_file = fsSettings["Feature_Config"].string();
+    std::cout <<"feature_settings_file: " << feature_settings_file << std::endl;
+
+    feature_factory = std::make_unique<ORBFactory>(feature_settings_file);
+    //feature_factory = std::make_unique<SURFFactory>(feature_settings_file);
+    mpVocabulary = feature_factory->getVocabulary();
+
+    //mpVocabulary = feature_factory->getVocabulary(strVocFile);
 
     //Load Camera data and create per camera data structures
     cv::FileNode cameras = fsSettings["Cameras"];
@@ -107,9 +111,6 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     mapping_queue  = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
     loopclosing_queue = std::make_unique< ThreadSafeQueue<KeyFrame*> >();
 
-
-    std::string feature_settings_file = fsSettings["Feature_Config"].string();
-    std::cout <<"feature_settings_file: " << feature_settings_file << std::endl;
     mpImageProcessor = new ImageProcessing(feature_factory.get() , feature_settings_file,cam_data);
     mpImageProcessor->setOutputQueue(tracking_queue.get());
 

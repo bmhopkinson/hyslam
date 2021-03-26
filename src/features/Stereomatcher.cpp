@@ -4,16 +4,12 @@
 
 namespace HYSLAM{
 
-Stereomatcher::Stereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
-                             DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings) : camera(cam_data)
+Stereomatcher::Stereomatcher( FeatureViews views, Camera cam_data, FeatureMatcherSettings settings) : camera(cam_data)
                                    {
-  mpORBextractorLeft  = mpORBextractorLeft_;
-  mpORBextractorRight = mpORBextractorRight_;
   mvKeys = views.getKeys();
   mvKeysRight = views.getKeysR();
   mDescriptors = views.getDescriptors();
   mDescriptorsRight = views.getDescriptorsR();
-  descriptor_distance = descriptor_distance_;
 
   TH_HIGH = settings.TH_HIGH;
   TH_LOW = settings.TH_LOW;
@@ -142,77 +138,6 @@ void Stereomatcher::computeStereoMatches()
                   mvuRight[iL] = uR0;
                   vDistIdx.push_back(std::pair<float,int>(bestDist,iL));
               }
-              /*
-              // coordinates in image pyramid at keypoint scale
-              const float uR0 = mvKeysRight[bestIdxR].pt.x;
-              const float scaleFactor = orb_params.mvInvScaleFactors[kpL.octave];
-              const float scaleduL = round(kpL.pt.x*scaleFactor);
-              const float scaledvL = round(kpL.pt.y*scaleFactor);
-              const float scaleduR0 = round(uR0*scaleFactor);
-
-              // sliding window search
-              const int w = 5;
-              cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduL-w,scaleduL+w+1);
-              IL.convertTo(IL,CV_32F);
-              IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
-
-              float bestDist = std::numeric_limits<float>::max();
-              int bestincR = 0;
-              const int L = 5;
-              std::vector<float> vDists;
-              vDists.resize(2*L+1);
-
-              const float iniu = scaleduR0+L-w;
-              const float endu = scaleduR0+L+w+1;
-              if(iniu<0 || endu >= mpORBextractorRight->mvImagePyramid[kpL.octave].cols)
-                  continue;
-
-              for(int incR=-L; incR<=+L; incR++)
-              {
-                  cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL-w,scaledvL+w+1).colRange(scaleduR0+incR-w,scaleduR0+incR+w+1);
-                  IR.convertTo(IR,CV_32F);
-                  IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
-
-                  float dist = cv::norm(IL,IR,cv::NORM_L1);
-                  if(dist<bestDist)
-                  {
-                      bestDist =  dist;
-                      bestincR = incR;
-                  }
-
-                  vDists[L+incR] = dist;
-              }
-
-              if(bestincR==-L || bestincR==L)
-                  continue;
-
-              // Sub-pixel match (Parabola fitting)
-              const float dist1 = vDists[L+bestincR-1];
-              const float dist2 = vDists[L+bestincR];
-              const float dist3 = vDists[L+bestincR+1];
-
-              const float deltaR = (dist1-dist3)/(2.0f*(dist1+dist3-2.0f*dist2));
-
-              if(deltaR<-1 || deltaR>1)
-                  continue;
-
-              // Re-scaled coordinate
-              float bestuR = orb_params.mvScaleFactors[kpL.octave]*((float)scaleduR0+(float)bestincR+deltaR);
-
-              float disparity = (uL-bestuR);
-
-              if(disparity>=minD && disparity<maxD)
-              {
-                  if(disparity<=0)
-                  {
-                      disparity=0.01;
-                      bestuR = uL-0.01;
-                  }
-                  mvDepth[iL]=mbf/disparity;
-                  mvuRight[iL] = bestuR;
-                  vDistIdx.push_back(std::pair<int,int>(bestDist,iL));
-              }
-               */
           }
 
       }

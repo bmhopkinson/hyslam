@@ -21,24 +21,17 @@ ImageProcessing::ImageProcessing(FeatureFactory* factory_, const std::string &st
  : factory(factory_),cam_data(cam_data_)
 {
     // Load camera parameters from settings file
-    FeatureExtractorSettings feature_extractor_settings;
+   // FeatureExtractorSettings feature_extractor_settings;
+   // LoadSettings(strSettingPath, feature_extractor_settings, feature_settings);
 
-    std::string tracking_config_file;
-    LoadSettings(strSettingPath, feature_extractor_settings, feature_settings);
 
-    dist_func = std::make_shared<ORBDistance>();
+    extractor_left = factory->getExtractor();
+    extractor_right = factory->getExtractor();
 
-    extractor_left = factory->getExtractor(feature_extractor_settings);
-    extractor_right = factory->getExtractor(feature_extractor_settings);
-
-    FeatureExtractorSettings feature_extractor_settings_init;
-    feature_extractor_settings_init = feature_extractor_settings;
-    feature_extractor_settings_init.nFeatures = 3 * feature_extractor_settings.nFeatures;
+    FeatureExtractorSettings feature_extractor_settings_init = factory->getFeatureExtractorSettings();
+    feature_extractor_settings_init.nFeatures = 3 * feature_extractor_settings_init.nFeatures;
     extractor_init = factory->getExtractor(feature_extractor_settings_init );
-   // mpIniORBextractor = new FeatureExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, ORBextractor_settings_init);
 
-   dist_func_surf = std::make_shared<SURFDistance>();
-   SURFextractor = new SURFExtractor(std::make_unique<SURFFinder>(), dist_func_surf, feature_extractor_settings);
 }
 
 
@@ -100,29 +93,9 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
                           cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         cv::imwrite("features_extracted_left.jpg", imCopyLeft);
     }
-    //std::cout << "N Features Extracted: " << mvKeys.size() << std::endl;
-
-  //  for(auto it = mvKeys.begin(); it != mvKeys.end(); ++it){
- //       cv::KeyPoint kpt = *it;
- //       std::cout << kpt.pt << " , octave: "<< kpt.octave <<  ", size: " << kpt.size << " , scale_factor: " << orb_params.mvScaleFactors[kpt.octave] <<std::endl;
- //   }
-
-    std::vector<cv::KeyPoint> surf_keys;
-    std::vector<FeatureDescriptor> surf_descriptors;
-  //  (*SURFextractor)(imGrayRight, cv::Mat(), surf_keys,  surf_descriptors );
-   // cv::Mat imCopy = imGrayRight.clone();
-   // cv::drawKeypoints(imCopy, surf_keys, imCopy, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-    //cv::imwrite("surf_test.jpg", imCopy);
-   // std::cout << "N SURF Features: " << surf_keys.size() << std::endl;
- //   for(auto it = surf_keys.begin(); it != surf_keys.end(); ++it){
- //       cv::KeyPoint kpt = *it;
- //      std::cout << kpt.pt << "octave: "<< kpt.octave <<  ", size: " << kpt.size << std::endl;
- //   }
-
 
     FeatureViews LMviews(mvKeys, mvKeysRight, mDescriptors, mDescriptorsRight, orb_params);
-    std::shared_ptr<DescriptorDistance> dist_calc = factory->getDistanceFunc();//new ORBDistance();
-    Stereomatcher stereomatch(extractor_left, extractor_right, LMviews, dist_calc.get(), cam_data[cam_cur], feature_settings);
+    Stereomatcher stereomatch( LMviews, cam_data[cam_cur], feature_settings);
     stereomatch.computeStereoMatches();
     stereomatch.getData(LMviews);
 
@@ -161,44 +134,4 @@ cv::Mat ImageProcessing::PreProcessImg(cv::Mat &img, bool mbRGB, float fscale){
     return img;
 }
 
-void ImageProcessing::LoadSettings(std::string settings_path, FeatureExtractorSettings &feature_extractor_settings, FeatureMatcherSettings &feature_settings){
-
-    cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
-
-    feature_extractor_settings.nFeatures = fSettings["ORBextractor.nFeatures"];
-    feature_extractor_settings.fScaleFactor = fSettings["ORBextractor.scaleFactor"];
-    feature_extractor_settings.nLevels = fSettings["ORBextractor.nLevels"];
-    feature_extractor_settings.init_threshold = fSettings["ORBextractor.iniThFAST"];
-    feature_extractor_settings.min_threshold = fSettings["ORBextractor.minThFAST"];
-
-    feature_settings.TH_HIGH = fSettings["ORBextractor.match_thresh_high"];
-    feature_settings.TH_LOW  = fSettings["ORBextractor.match_thresh_low"];
-
-    std::cout << std::endl  << "ORB Extractor Parameters: " << std::endl;
-    std::cout << "- Number of Features: " << feature_extractor_settings.nFeatures << std::endl;
-    std::cout << "- Scale Levels: " << feature_extractor_settings.nLevels << std::endl;
-    std::cout << "- Scale Factor: " << feature_extractor_settings.fScaleFactor << std::endl;
-    std::cout << "- Initial Extractor Threshold: " << feature_extractor_settings.init_threshold << std::endl;
-    std::cout << "- Minimum Extractor Threshold: " << feature_extractor_settings.min_threshold << std::endl;
-
-    std::cout << "matching threshold HIGH: " << feature_settings.TH_HIGH << std::endl;
-    std::cout << "matching threshold LOW: " << feature_settings.TH_LOW<< std::endl;
-    fSettings.release();
-
-}
-/*
-FeatureExtractorSettings ImageProcessing::setFeatureExtractorSettings(FeatureExtractor* extractor){
-    FeatureExtractorSettings params;
-
-    params.mnScaleLevels = extractor->GetLevels();
-    params.mfScaleFactor = extractor->GetScaleFactor();
-    params.mfLogScaleFactor = log(params.mfScaleFactor);
-    params.mvScaleFactors = extractor->GetScaleFactors();
-    params.mvInvScaleFactors = extractor->GetInverseScaleFactors();
-    params.mvLevelSigma2 = extractor->GetScaleSigmaSquares();
-    params.mvInvLevelSigma2 = extractor->GetInverseScaleSigmaSquares();
-
-    return params;
-}
-*/
 } //end namespace

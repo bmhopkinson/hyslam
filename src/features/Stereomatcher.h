@@ -14,18 +14,14 @@ namespace HYSLAM{
 
 class Stereomatcher{
 public:
-  Stereomatcher(FeatureExtractor* mpORBextractorLeft_, FeatureExtractor* mpORBextractorRight_, FeatureViews views,
-                DescriptorDistance* descriptor_distance_, Camera cam_data, FeatureMatcherSettings settings);
+  Stereomatcher(FeatureViews views, Camera cam_data, FeatureMatcherSettings settings);
   void computeStereoMatches();
   void getData(std::vector<float> &mvuRight_, std::vector<float> &mvDepth_);
   void getData(FeatureViews &views);
 
 private:
-  FeatureExtractor* mpORBextractorLeft;
-  FeatureExtractor* mpORBextractorRight;
   std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
   std::vector<FeatureDescriptor> mDescriptors, mDescriptorsRight;
-  DescriptorDistance* descriptor_distance;
 
   FeatureExtractorSettings orb_params;
   Camera camera;
