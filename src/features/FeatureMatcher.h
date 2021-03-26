@@ -51,9 +51,6 @@ public:
     FeatureMatcher(float nnratio=0.6, bool checkOri=true);
     FeatureMatcher(FeatureMatcherSettings settings);
 
-    // Computes the Hamming distance between two ORB descriptors
-    static int DescriptorDistance(const cv::Mat &a, const cv::Mat &b);
-
     // Search matches between Frame keypoints and projected MapPoints. Returns number of matches
     // Used to track the local map (Tracking)
     int SearchByProjection(Frame &F, const std::vector<MapPoint*> &vpMapPoints, const float th = 3);
@@ -102,11 +99,6 @@ public:
 
 
 protected:
-
- //   bool CheckDistEpipolarLine(const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &F12, const KeyFrame *pKF);
-    bool CheckDistEpipolarLine(const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &F12, float sigma2);
-    float RadiusByViewingCos(const float &viewCos);
-
     void ComputeThreeMaxima(std::vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3);
 
     float mfNNratio;
