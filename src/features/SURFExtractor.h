@@ -37,15 +37,9 @@ private:
     std::shared_ptr<DescriptorDistance> dist_func;
     FeatureExtractorSettings settings;
 
-
-
-    double scaleFactor;
     int nlevels;
 
     std::vector<float> mvScaleFactor;
-    std::vector<float> mvInvScaleFactor;
-    std::vector<float> mvLevelSigma2;
-    std::vector<float> mvInvLevelSigma2;
 
 
 };

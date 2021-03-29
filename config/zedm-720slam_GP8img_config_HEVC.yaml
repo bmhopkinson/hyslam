@@ -1,0 +1,98 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# Position and orientation of camera relative to platform center, in meters and degrees
+#	- ORB-SLAM camera axes are Right/Back/Down relative to left camera
+# 	- Used to calculate camera-relative coordinates from platform-relative coordinates
+# 	  and platform-origin-relative world coordinates from ORB-SLAM world coordinates
+Tracking_Config : /home/cv-bhlab/Documents/map_building/config/slam_tracking_config.yaml
+Mapping_Config : /home/cv-bhlab/Documents/map_building/config/slam_mapping_config.yaml
+Feature_Config : /home/cv-bhlab/Documents/map_building/config/slam_feature_config.yaml
+
+Cameras:
+    SLAM:
+        sensor: 1 #1 = stereo
+        transformation:  #currently SLAM cam defines the reference frame for the imaging rig (there's a separate world frame)
+            x: 0.0
+            y: 0.0 
+            z: 0.0
+            roll: 0.0
+            pitch: 0.0
+            yaw: 0.0
+        calibration:   # Camera calibration and distortion parameters (OpenCV)  - for ZED-mini SN 10028306 in HD720
+            fx: 699.5
+            fy: 699.5
+            cx: 645.0
+            cy: 355.2
+            k1: 0.0
+            k2: 0.0
+            k3: 0.0
+            p1: 0.0
+            p2: 0.0
+        dimensions:
+            width: 1280
+            height: 720
+            scale: 1.000
+        fps: 60.0
+        stereo_bf: 44.0  # stereo baseline times fx (meters; 6.3 cm * 699.5)
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+        RGB: 1
+        ThDepth: 40 
+    Imaging:
+        sensor: 0 # 0 = monocular
+        transformation:
+            x: 0.0
+            y:   0.20    #maging camera is approx 20 cm below zed (down is +y direction)
+            z: -0.25     #imaging camera is approx 25 cm behind zed
+            roll: 0.0    #about z-axis of SLAM camera, applied first
+            pitch: -90.0  #about x-axis of SLAM camera, applied second
+            yaw: 0.0     #about y-axis of SLAM camera, applied last
+        calibration:   # Camera calibration and distortion parameters (OpenCV)  - for GoPro 8 in 2.7K 4:3 mode
+            fx: 1829
+            fy: 1829
+            cx: 1341
+            cy: 1031
+            k1: 0.0049
+            k2: 0.0096
+            k3: 0.0
+            p1: 0.0
+            p2: 0.0
+        dimensions:
+            width: 2704
+            height: 2028
+            scale: 0.50
+        fps: 30.0
+        stereo_bf: -999  # stereo baseline times fx (-999 = mono)
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+        RGB: 1
+        ThDepth: 40 
+
+Features: ORB
+
+StereoInitFeatures: 225
+
+#--------------------------------------------------------------------------------------------
+# Optimizer parameters
+#--------------------------------------------------------------------------------------------
+Opt.Info_IMU: 1
+Opt.Info_Depth: 0.0001
+Opt.Info_GPS: 1 
+Opt.realtime: 0 #0 = not realtime; 1 = realtime
+Opt.GBAinterval: 40 #interval between Global BA - only conducted if not realtime
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.1
+Viewer.KeyFrameLineWidth: 2
+Viewer.GraphLineWidth: 1
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.15
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: 0
+Viewer.ViewpointZ: -10
+Viewer.ViewpointF: 2000

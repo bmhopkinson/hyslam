@@ -71,8 +71,15 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     std::string feature_settings_file = fsSettings["Feature_Config"].string();
     std::cout <<"feature_settings_file: " << feature_settings_file << std::endl;
 
-    feature_factory = std::make_unique<ORBFactory>(feature_settings_file);
-    //feature_factory = std::make_unique<SURFFactory>(feature_settings_file);
+    std::string feature_type = fsSettings["Features"].string();
+    if(feature_type == "ORB") {
+        feature_factory = std::make_unique<ORBFactory>(feature_settings_file);
+    } else if (feature_type == "SURF") {
+        feature_factory = std::make_unique<SURFFactory>(feature_settings_file);
+    } else {
+        std::cout << "FEATURE TYPE NOT RECOGNIZED"  << std::endl;
+        exit(-1);
+    }
     mpVocabulary = feature_factory->getVocabulary();
 
     //mpVocabulary = feature_factory->getVocabulary(strVocFile);

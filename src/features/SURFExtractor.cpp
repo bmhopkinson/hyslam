@@ -3,6 +3,7 @@
 //
 
 #include "SURFExtractor.h"
+#include <algorithm>
 
 namespace HYSLAM{
 SURFExtractor::SURFExtractor(std::unique_ptr <FeatureFinder> feature_finder_, std::shared_ptr <DescriptorDistance> dist_func_,
@@ -20,8 +21,14 @@ void SURFExtractor::operator()( cv::InputArray _image, cv::InputArray mask,
     cv::Mat image = _image.getMat();
     assert(image.type() == CV_8UC1 );
 
-    cv::Mat descriptors_raw;
     feature_finder->detect(image, keypoints); //detect features
+    std::sort(keypoints.begin(), keypoints.end(), [](cv::KeyPoint &a, cv::KeyPoint &b){return a.response > b.response; });  //sorts in descending order
+
+    if(keypoints.size() > settings.nFeatures) {
+        keypoints.resize(settings.nFeatures); //keep only the nFeatures best features
+    }
+
+    cv::Mat descriptors_raw;
     feature_finder->compute(image, keypoints, descriptors_raw); //compute descriptors
 
 

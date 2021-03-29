@@ -29,7 +29,7 @@ private:
     double threshold = 400;
     int nOctaves = 4;
 
-    int nOctaveLayers = 2;
+    int nOctaveLayers = 3;
     cv::Ptr<cv::xfeatures2d::SURF> detector;
 };
 
