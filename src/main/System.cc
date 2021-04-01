@@ -160,6 +160,9 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 {
     std::string cam_cur = img_info.camera;
     cv::Mat Tcw;
+    if(mbReset){
+        Reset();
+    }
 
    // cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight, img_info, sensor_data);
     mpImageProcessor->ProcessStereoImage(imLeft,imRight,img_info, sensor_data, current_tracking_state[cam_cur]);
@@ -178,6 +181,10 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 {
     std::string cam_cur = img_info.camera;
     cv::Mat Tcw;
+
+    if(mbReset){
+        Reset();
+    }
 
     //cv::Mat Tcw = mpTracker->GrabImageMonocular(im,img_info, sensor_data);
     mpImageProcessor->ProcessMonoImage(im, img_info, sensor_data, current_tracking_state[cam_cur]);
@@ -216,24 +223,31 @@ void System::RunImagingBundleAdjustment(){
     thread_status->mapping.setRelease(true);
 }
 
+void System::RequestReset() {
+    std::lock_guard<std::mutex> lock(mMutexReset);
+    mbReset = true;
+}
+
 void System::Reset()
 {
     /// THIS HASN'T BEEN TESTED SO PROBABLY DOESN:T WORK
-    std::unique_lock<std::mutex> lock(mMutexReset);
+
+    //// NEED TO STOP EVERYTHING BEFORE DOING RESET - OTHER
 
     std::cout << "System Reseting" << std::endl;
     if(mpViewer)
-    {
+   {
         mpViewer->RequestStop();
         while(!mpViewer->isStopped())
             usleep(3000);
     }
+   // std::cout << " viewer stop requested" <<std::endl;
 
     mpTracker->Reset();
 
     // Reset Local Mapping
     std::cout << "Reseting Local Mapper...";
-    mpLocalMapper->RequestReset();
+    mpLocalMapper->Reset();
     std::cout << " done" << std::endl;
 
     // Reset Loop Closing
@@ -247,6 +261,8 @@ void System::Reset()
 
     if(mpViewer)
         mpViewer->Release();
+
+    mbReset = false;
 
 }
 

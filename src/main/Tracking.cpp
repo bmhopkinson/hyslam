@@ -129,6 +129,20 @@ void Tracking::Run(){
             break;
         }
 
+        if(Stop())
+        {
+            std::cout << "stopping tracking" << std::endl;
+            // Safe area to stop
+            while(!thread_status->tracking.isRelease())
+            {
+                usleep(3000);
+            }
+            //clear stop related flags and resume operation
+            thread_status->tracking.clearPostStop();
+            std::cout << "restarting tracking" << std::endl;
+        }
+
+
         std::this_thread::sleep_for(std::chrono::microseconds(1000) );
     }
     thread_status->tracking.setIsFinished(true);
@@ -166,19 +180,6 @@ cv::Mat Tracking::track(ImageFeatureData &track_data){
 void Tracking::_Track_()
 {
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
-    //stop if needed - non-realtime only
-    if(Stop())
-    {
-        std::cout << "stopping tracking" << std::endl;
-    // Safe area to stop
-       while(!thread_status->tracking.isRelease())
-       {
-           usleep(3000);
-       }
-       //clear stop related flags and resume operation
-        thread_status->tracking.clearPostStop();
-        std::cout << "restarting tracking" << std::endl;
-   }
 
     // ADDITION: Tracking state monitoring
     nPoints = 0;
@@ -189,7 +190,9 @@ void Tracking::_Track_()
     unique_lock<mutex> lock(maps[cam_cur]->mMutexMapUpdate);
 
     bool bOK = false;
-    UpdateLastFrame();
+    if(slam_ever_initialized) {
+        UpdateLastFrame();
+    }
 
     FrameBuffer frame_buf;
     frame_buf.push_back(mLastFrame[cam_cur]); //should probably pass pointers here
@@ -256,7 +259,9 @@ void Tracking::_Track_()
         mCurrentFrame.mpReferenceKF = mpReferenceKF[cam_cur];
 
     //append current frame's data to trajectory
-    trajectories[cam_cur]->push_back(mCurrentFrame);
+    if(slam_ever_initialized) {
+        trajectories[cam_cur]->push_back(mCurrentFrame);
+    }
 
     //set next state
     eTrackingState next_state;
@@ -344,6 +349,7 @@ void Tracking::SetupStates(){
 
 int Tracking::HandlePostInit(KeyFrame* pKFcurrent,Map* pMap,std::string cam_name ){
     if(cam_name == "SLAM"){
+        slam_ever_initialized = true;
         mvpLocalMapPoints=pMap->GetAllMapPoints();
         std::cout << "initialized with " << mvpLocalMapPoints.size() << " new mpts" << std::endl;
         pMap->SetReferenceMapPoints(mvpLocalMapPoints);
@@ -441,13 +447,30 @@ bool Tracking::Stop()
 void Tracking::Reset()
 {
 
+    thread_status->tracking.setStopRequested(true);
+    // Wait until Tracking has effectively stopped
+    while(!thread_status->tracking.isStopped())
+    {
+        thread_status->tracking.setStopRequested(true); //someone else may have cleared the initial request - so keep putting it in
+        usleep(1000);
+    }
+
+    while(input_queue->size() > 0 ){
+        input_queue->pop();
+    }
+    thread_status->tracking.setQueueLength(input_queue->size());
+
     for(std::vector<std::string>::iterator vit = cam_types.begin(); vit != cam_types.end(); vit++){
         std::string this_cam = *vit;
-        maps[this_cam]->clear(); // Clear Map (this erase MapPoints and KeyFrames)
-
-        mState[this_cam] = eTrackingState::NO_IMAGES_YET; //need to clear from all cams
         trajectories[this_cam]->clear();
+        slam_ever_initialized = false;
+        mCurrentFrame = Frame();
+        mLastFrame[this_cam]  = Frame();
+        mpFrameDrawers[this_cam]->clear();
+
     }
+    SetupStates();
+    thread_status->tracking.setRelease(true);
 
 }
 

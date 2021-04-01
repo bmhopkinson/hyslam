@@ -54,19 +54,20 @@ TrajectoryElement& TrajectoryElement::operator=(const TrajectoryElement &te){
 void TrajectoryElement::update(){
     cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
     KeyFrame* pKF = pRefKF;
-    while(pKF->isBad())
-    {
-        Trw = Trw*pKF->mTcp;
-        pKF = pKF->GetParent();
-    }
+    if(pKF) {
+        while (pKF->isBad()) {
+            Trw = Trw * pKF->mTcp;
+            pKF = pKF->GetParent();
+        }
 
-    Trw = Trw*pKF->GetPose();
+        Trw = Trw * pKF->GetPose();
 
-    //update pose and possiblity pRefKF and transform
-    Tcw = Tcr*Trw;
-    if(pKF != pRefKF){
-        pRefKF = pKF;
-        Tcr = Tcw*pKF->GetPoseInverse();
+        //update pose and possiblity pRefKF and transform
+        Tcw = Tcr * Trw;
+        if (pKF != pRefKF) {
+            pRefKF = pKF;
+            Tcr = Tcw * pKF->GetPoseInverse();
+        }
     }
 
 }

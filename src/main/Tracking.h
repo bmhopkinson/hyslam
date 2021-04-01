@@ -145,6 +145,7 @@ protected:
 
     // Initalization
     int stereoInitFeatures;
+    bool slam_ever_initialized = false;
 
     //Local Map
     std::map<std::string, KeyFrame*> mpReferenceKF;

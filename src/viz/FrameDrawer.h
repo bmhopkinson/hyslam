@@ -52,6 +52,8 @@ public:
     // Draw last processed frame.
     cv::Mat DrawFrame();
 
+    void clear();
+
 protected:
 
     void DrawTextInfo(cv::Mat &im, eTrackingState nState, cv::Mat &imText);

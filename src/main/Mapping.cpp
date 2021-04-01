@@ -148,7 +148,7 @@ void Mapping::Run()
             clear_input_queue = false;
         }
 
-        ResetIfRequested();
+     //   ResetIfRequested();
 
         if(CheckFinish()) {
             std::cout << "Mapping - Finish requested" << std::endl;
@@ -373,6 +373,32 @@ void Mapping::RunGlobalBA(){
 
     std::cout << "finished global BA" << std::endl;
 
+}
+
+void Mapping::Reset(){
+
+    std::cout << "Reseting Mapping due to Request" << std::endl;
+    thread_status->mapping.setStopRequested(true);
+    // Wait until Tracking has effectively stopped
+    while(!thread_status->mapping.isStopped())
+    {
+        thread_status->mapping.setStopRequested(true); //someone else may have cleared the initial request - so keep putting it in
+        usleep(1000);
+    }
+
+    while(input_queue->size() > 0 ){
+        input_queue->pop();
+    }
+    thread_status->mapping.setQueueLength(input_queue->size());
+    for(auto it = maps.begin(); it != maps.end(); ++it){
+        Map* pMap  = it->second;
+        pMap->clear();
+    }
+
+    mlpRecentAddedMapPoints.clear();
+    mbResetRequested=false;
+
+    thread_status->mapping.setRelease(true);
 }
 
 void Mapping::RequestReset()

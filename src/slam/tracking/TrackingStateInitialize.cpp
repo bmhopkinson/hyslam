@@ -105,7 +105,9 @@ int TrackingStateInitialize::HandlePostMonoInitSLAM(KeyFrame* pKFini, KeyFrame* 
     int nIter = 20;
     bool  bRobust = false;
     bool mbStopGBA = false;
-    g2o::Trajectory traj_g2o = trajectory->convertToG2O(); //trajectory will be empty. this should be ok b/c there won't be any imaging camera data yet either
+    std::cout << "MonoInitSLAM trajectory empty?" << trajectory->empty() << std::endl;
+    Trajectory dummy_traj;
+    g2o::Trajectory traj_g2o = dummy_traj.convertToG2O();// = trajectory->convertToG2O(); //trajectory will be empty. this should be ok b/c there won't be any imaging camera data yet either
     GlobalBundleAdjustment globalBA(vpKFfixed,  0, nIter ,  bRobust, &mbStopGBA, pMap, traj_g2o, optimizer_info);
     globalBA.Run();
 

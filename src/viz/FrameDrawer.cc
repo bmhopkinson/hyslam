@@ -196,4 +196,12 @@ void FrameDrawer::Update(Tracking *pTracker)
     mState=pTracker->mLastProcessedState;
 }
 
+void FrameDrawer::clear(){
+    mvCurrentKeys = std::vector<cv::KeyPoint>();
+    mvIniKeys= std::vector<cv::KeyPoint>();
+    mvIniMatches = std::vector<int>();
+     views= FeatureViews();
+     lm_matches = LandMarkMatches();
+}
+
 } //namespace ORB_SLAM

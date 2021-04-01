@@ -56,6 +56,7 @@ public:
     void Run();
 
     void RequestReset();
+    void Reset();
     bool isFinished();
 
 protected:
