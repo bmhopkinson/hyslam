@@ -50,7 +50,7 @@ void MapDrawer::DrawMapPoints()
     const std::vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
     const std::vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints();
 
-      std::set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
+    std::set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
 
     if(vpMPs.empty())
         continue;

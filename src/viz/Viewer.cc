@@ -55,7 +55,7 @@ void Viewer::Run()
 {
     mbFinished = false;
 
-    pangolin::CreateWindowAndBind("ORB-SLAM2: Map Viewer",1024,768);
+    pangolin::CreateWindowAndBind("Map Viewer",1024,768);
 
     // 3D Mouse handler requires depth testing to be enabled
     glEnable(GL_DEPTH_TEST);
@@ -95,11 +95,9 @@ void Viewer::Run()
 
     while(1)
     {
-        std::cout << "top of viewer while loop " << std::endl;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-     //   mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc);
-        std::cout << "got openGLcamera matrix " << std::endl;
+        mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc);
         if(menuFollowCamera && bFollow)
         {
             s_cam.Follow(Twc);
@@ -114,27 +112,26 @@ void Viewer::Run()
         {
             bFollow = false;
         }
-        std::cout << "about to d_cam.Activate " << std::endl;
         d_cam.Activate(s_cam);
         glClearColor(1.0f,1.0f,1.0f,1.0f);
-     //   mpMapDrawer->DrawCurrentCamera(Twc);
+        mpMapDrawer->DrawCurrentCamera(Twc);
         if(menuShowKeyFrames || menuShowConnGraph || menuShowSpanTree ) {
             KeyFrameDrawData draw_data;
             draw_data.KFs = menuShowKeyFrames;
             draw_data.connectivity_graph = menuShowConnGraph;
             draw_data.spanning_tree = menuShowSpanTree;
-         //   mpMapDrawer->DrawKeyFrames(draw_data);
+            mpMapDrawer->DrawKeyFrames(draw_data);
         }
-        std::cout << "about to draw mappoints nad trajectory " << std::endl;
-        if(menuShowPoints)
-        //    mpMapDrawer->DrawMapPoints();
-        if(menuShowTrajectory)
-       //     mpMapDrawer->DrawTrajectory(mpTracker->trajectories.at("SLAM").get());
+        if(menuShowPoints) {
+            mpMapDrawer->DrawMapPoints();
+        }
+        if(menuShowTrajectory) {
+            mpMapDrawer->DrawTrajectory(mpTracker->trajectories.at("SLAM").get());
+        }
 
         pangolin::FinishFrame();
         
         for(std::map<std::string, FrameDrawer*>::iterator it = mpFrameDrawers.begin(); it != mpFrameDrawers.end(); it++){
-            std::cout << "drawing frame for " << it->first <<std::endl;
             FrameDrawer* drawer = it->second;
             cv::Mat im = drawer->DrawFrame();
             cv::imshow(it->first, im);
@@ -156,16 +153,17 @@ void Viewer::Run()
 
         if(Stop())
         {
-            std::cout << "Viewer stopping " << std::endl;
+          //  std::cout << "Viewer stopping " << std::endl;
             while(isStopped())
             {
                 usleep(3000);
             }
-            std::cout << "Viewer restarting " << std::endl;
+         //   std::cout << "Viewer restarting " << std::endl;
         }
 
-        if(CheckFinish())
+        if(CheckFinish()) {
             break;
+        }
     }
 
     SetFinish();
