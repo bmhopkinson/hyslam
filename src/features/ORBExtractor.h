@@ -107,6 +107,7 @@ protected:
     int nlevels;
     int iniThFAST;
     int minThFAST;
+    int N_CELLS = 30;
 
     std::vector<int> mnFeaturesPerLevel;
 

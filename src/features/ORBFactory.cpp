@@ -47,6 +47,7 @@ void ORBFactory::LoadSettings(std::string settings_path, FeatureExtractorSetting
     extractor_settings_.nFeatures = extract["N_Features"];
     extractor_settings_.fScaleFactor = extract["scale_factor"];
     extractor_settings_.nLevels = extract["N_Levels"];
+    extractor_settings_.N_CELLS = extract["N_Cells"];
     extractor_settings_.init_threshold = extract["threshold_init"];
     extractor_settings_.min_threshold = extract["threshold_min"];
 
@@ -58,6 +59,7 @@ void ORBFactory::LoadSettings(std::string settings_path, FeatureExtractorSetting
 
     std::cout << std::endl  << "ORB Extractor Parameters: " << std::endl;
     std::cout << "- Number of Features: " << extractor_settings_.nFeatures << std::endl;
+    std::cout << "- Number of Cells: " << extractor_settings_.N_CELLS << std::endl;
     std::cout << "- Scale Levels: " << extractor_settings_.nLevels << std::endl;
     std::cout << "- Scale Factor: " << extractor_settings_.fScaleFactor << std::endl;
     std::cout << "- Initial Extractor Threshold: " << extractor_settings_.init_threshold << std::endl;

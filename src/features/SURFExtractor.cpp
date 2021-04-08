@@ -21,53 +21,69 @@ void SURFExtractor::operator()( cv::InputArray _image, cv::InputArray mask,
 
     cv::Mat image = _image.getMat();
     assert(image.type() == CV_8UC1 );
-    std::vector<cv::KeyPoint> keypoints_raw;
-    feature_finder->detect(image, keypoints_raw); //detect features
 
-    //filter keypoints by level and response
+    int N_ROWS = settings.N_CELLS;
+    int N_COLS = settings.N_CELLS;
+    int col_interval = floor(static_cast<double>(image.cols)/static_cast<double>(N_COLS));  //taking floor will lead to minor truncation of image
+    int row_interval = floor(static_cast<double>(image.rows)/static_cast<double>(N_ROWS));
+    int target_keypoints_per_section = ceil(static_cast<double>(settings.nFeatures)/static_cast<double>(N_COLS*N_ROWS));
 
-    std::vector< std::vector<cv::KeyPoint> > keypoints_bylevel;
-    for(int i = 0 ; i < settings.nLevels; i++){
-        keypoints_bylevel.push_back(std::vector<cv::KeyPoint>());
-    }
-
-    //sort by level
-    for(auto it = keypoints_raw.cbegin(); it != keypoints_raw.cend(); ++it){
-        cv::KeyPoint kpt = *it;
-        int level = kpt.octave;
-        keypoints_bylevel[level].push_back(kpt);
-    }
-
-    //sort by response - and truncate
-    int target_kpts_per_level = settings.nFeatures/settings.nLevels;
-    int n_deferred = 0;
-    for(auto it = keypoints_bylevel.rbegin(); it != keypoints_bylevel.rend(); ++it){ //reverse iterate b/c higher octaves tend to have fewer features
-        std::sort(it->begin(), it->end(), [](cv::KeyPoint &a, cv::KeyPoint &b){return a.response > b.response; });  //sorts in descending order
-        int n_target = target_kpts_per_level + n_deferred;
-        if(it->size() > n_target){
-            it->resize(n_target);
-            n_deferred = 0;
-        } else {
-            n_deferred  = n_target - it->size();
-        }
-    }
-
-/*
-    for(auto it = keypoints_bylevel.begin(); it != keypoints_bylevel.end(); ++it) {
-        std::vector<cv::KeyPoint> kpts_sorted = *it;
-       std::cout << "size: " << it->size() << std::endl;
-        for(auto it2 = kpts_sorted.begin(); it2 != kpts_sorted.end(); ++it2){
-            std::cout << "level: " << it2->octave << ", response: " << it2->response << std::endl;
-        }
-    }
-*/
-
- //   if(keypoints.size() > settings.nFeatures) {
-  //      keypoints.resize(settings.nFeatures); //keep only the nFeatures best features
-  //  }
+   // std::vector<cv::KeyPoint> keypoints_raw;
     keypoints.reserve(settings.nFeatures);
-    for(auto it = keypoints_bylevel.begin(); it != keypoints_bylevel.end(); ++it) {
-        keypoints.insert(keypoints.end(), it->begin(), it->end());
+    for(int i  = 0; i < N_ROWS; i++){
+        for(int j = 0; j < N_COLS; j++){
+            int x_min = col_interval*j;
+            int x_max = col_interval*(j+1);
+            int y_min = row_interval*i;
+            int y_max = row_interval*(i+1);
+
+            std::vector<cv::KeyPoint> keypoints_patch;
+            feature_finder->detect(image.rowRange(y_min, y_max).colRange(x_min, x_max), keypoints_patch); //detect features
+
+            for(auto it = keypoints_patch.begin(); it != keypoints_patch.end(); ++it){
+                cv::Point2f xy_global = it->pt;
+                xy_global.x = xy_global.x + x_min;
+                xy_global.y = xy_global.y + y_min;
+                it->pt = xy_global;
+            }
+
+            //filter keypoints by level and response
+
+            std::vector< std::vector<cv::KeyPoint> > keypoints_bylevel;
+            for(int i = 0 ; i < settings.nLevels; i++){
+                keypoints_bylevel.push_back(std::vector<cv::KeyPoint>());
+            }
+
+            //sort by level
+            for(auto it = keypoints_patch.cbegin(); it != keypoints_patch.cend(); ++it){
+                cv::KeyPoint kpt = *it;
+                int level = kpt.octave;
+                keypoints_bylevel[level].push_back(kpt);
+            }
+
+            //sort by response - and truncate
+            int target_kpts_per_level = ceil(static_cast<double>(target_keypoints_per_section)/static_cast<double>(settings.nLevels));
+            int n_deferred = 0;
+            for(auto it = keypoints_bylevel.rbegin(); it != keypoints_bylevel.rend(); ++it){ //reverse iterate b/c higher octaves tend to have fewer features
+                std::sort(it->begin(), it->end(), [](cv::KeyPoint &a, cv::KeyPoint &b){return a.response > b.response; });  //sorts in descending order
+                int n_target = target_kpts_per_level + n_deferred;
+                if(it->size() > n_target){
+                    it->resize(n_target);
+                    n_deferred = 0;
+                } else {
+                    n_deferred  = n_target - it->size();
+                }
+            }
+
+
+            for(auto it = keypoints_bylevel.begin(); it != keypoints_bylevel.end(); ++it) {
+                keypoints.insert(keypoints.end(), it->begin(), it->end());
+            }
+
+
+
+           // keypoints_raw.insert(keypoints_raw.end(), keypoints_patch.begin(), keypoints_patch.end());
+        }
     }
 
     cv::Mat descriptors_raw;

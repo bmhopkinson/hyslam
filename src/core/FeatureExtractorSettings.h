@@ -13,6 +13,7 @@ public:
     int min_threshold;
     float size_ref = 31;
     float sigma_ref = 1.0;
+    int N_CELLS;
 
     float determineSigma2(float feature_size);
 private:

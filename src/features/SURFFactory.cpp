@@ -47,6 +47,7 @@ void SURFFactory::LoadSettings(std::string settings_path, FeatureExtractorSettin
     extractor_settings_.nLevels = extract["N_Levels"];
     extractor_settings_.init_threshold = extract["threshold_init"];
     extractor_settings_.min_threshold = extract["threshold_min"];
+    extractor_settings_.N_CELLS = extract["N_Cells"];
 
     cv::FileNode match = fSettings["SURF"]["Matcher"];
     matcher_settings_.TH_HIGH = match["threshold_high"];

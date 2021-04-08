@@ -69,7 +69,7 @@ using namespace std;
 
 namespace HYSLAM
 {
-const int N_CELLS = 30;
+//const int N_CELLS = 30;
 const int PATCH_SIZE = 31;
 const int EDGE_THRESHOLD = 19;
 
@@ -80,6 +80,7 @@ ORBExtractor::ORBExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::
     nfeatures = settings.nFeatures;
     scaleFactor = settings.fScaleFactor;
     nlevels = settings.nLevels;
+    N_CELLS = settings.N_CELLS;
     iniThFAST = settings.init_threshold;
     minThFAST = settings.min_threshold;
     mvScaleFactor.resize(nlevels);
