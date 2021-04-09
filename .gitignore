@@ -3,7 +3,6 @@
 **/bin/*
 **/lib/*
 **/.idea
-data/
 .DS_Store
 *.o
 *.log

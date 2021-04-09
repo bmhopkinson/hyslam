@@ -1,26 +1,35 @@
 %YAML:1.0
 #--------------------------------------------------------------------------------------------
-# ORB Parameters
+# Feature Parameters
 #--------------------------------------------------------------------------------------------
 
-# ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1000
+ORB:
+    Extractor:
+        N_Features: 1000
+        scale_factor: 1.2
+        N_Levels: 8
+        N_Cells: 30
+        threshold_init: 20
+        threshold_min : 4
+    
+    Matcher:
+        threshold_high: 100.0
+        threshold_low: 50.0
+        
+    Vocabulary: ../config/Vocabulary/ORBvoc.bin
+        
+SURF:
+    Extractor:
+        N_Features: 1000
+        N_Levels: 5
+        N_Cells: 2
+        threshold_init: 600
+        threshold_min : 400
+    
+    Matcher:
+        threshold_high: 1.5
+        threshold_low: 0.75
+        
+    Vocabulary: ../config/Vocabulary/small_surf_voc.yml.gz
+    
 
-# ORB Extractor: Scale factor between levels in the scale pyramid 	
-ORBextractor.scaleFactor: 1.2
-
-# ORB Extractor: Number of levels in the scale pyramid	
-ORBextractor.nLevels: 8
-
-# ORB Extractor: Fast threshold
-# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
-# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
-# You can lower these values if your images have low contrast			
-#ORBextractor.iniThFAST: 20
-#ORBextractor.minThFAST: 4
-
-ORBextractor.iniThFAST: 20
-ORBextractor.minThFAST: 4
-
-ORBextractor.match_thresh_high : 100.0
-ORBextractor.match_thresh_low : 50.0
