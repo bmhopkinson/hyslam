@@ -82,6 +82,7 @@ void Map::SetBadKeyFrame(KeyFrame* pKF){
         return;
     }
 
+    std::cout << "erasing mapts for KF: " << pKF->mnId << std::endl;
     std::set<MapPoint*> spMP = pKF->GetMapPoints();
     for(auto it = spMP.begin(); it != spMP.end(); ++it) {
         //mappoint_db.eraseObservation(*it, pKF);

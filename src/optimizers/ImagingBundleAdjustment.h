@@ -46,6 +46,7 @@ private:
 
 
   void FindTrackedSegments();
+  void AssignStrandedKeyFrames();
   void DetermineSimilarityTransforms();
   void ApplySimilarityTransforms();
   void RotatePosestoAlign();

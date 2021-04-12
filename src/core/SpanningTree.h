@@ -5,6 +5,9 @@
 #include <set>
 #include <mutex>
 
+
+//NEED TO RETHINK SPANNING TREE - not really clear what it means when a single map can have disjointed segments (e.g. monocular for imaging) - perhaps they shouldn't and should always initilalize a new map
+// lack of parent leads to some segfaults when parent is null - have put checks in some locations to avoid this, but really it doesn't make sense to have a spanning tree in which multiple members don't have a parent
 namespace HYSLAM{
     class SpanningTreeNode{
     public:

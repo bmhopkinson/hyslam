@@ -58,11 +58,16 @@ void KeyFrameDB::erase(KeyFrame* pKF, std::string option)
         //set bad and set mTcp which is an incremental motion between parent and KF
         pKF->mbBad = true;
         KeyFrame* mpParent = spanning_tree.getParent(pKF);
-        pKF->mTcp = pKF->GetPose()*mpParent->GetPoseInverse();  //would be good to eliminate the need to do this
+        if(mpParent){
+            pKF->mTcp = pKF->GetPose() * mpParent->GetPoseInverse();  //would be good to eliminate the need to do this
+        }
 
+ //       std::cout << "updateSpanningTreeforKeyFrameRemoval" << std::endl;
         updateSpanningTreeforKeyFrameRemoval(pKF);
         spanning_tree.eraseNode(pKF);
         KF_set.erase(pKF);
+
+ //       std::cout << "covis_graph.eraseNode" << std::endl;
         covis_graph.eraseNode(pKF);
         //  place_recog.erase(pKF);  //for consistency w/ ORB_SLAM implementation - on the other hand i dont' see any point in keeping bad keyframes in the place recognition candiate list
 
@@ -85,10 +90,12 @@ void KeyFrameDB::update(KeyFrame* pKF){
 bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
     // Update Spanning Tree - requires cooperation of spanning tree and covis graph so can't be done at a lower level (e.g. within spanning_tree);
     KeyFrame* mpParent = spanning_tree.getParent(pKF);
-//    std::cout << "KF: " << pKF << " id: " << pKF->mnId <<   "parent: " << mpParent <<std::endl;
+  //  std::cout << "KF: " << pKF << " id: " << pKF->mnId <<   "parent: " << mpParent <<std::endl;
 //    std::cout <<" parent Id: "  << mpParent->mnId << std::endl;
     std::set<KeyFrame*> sParentCandidates;
-    sParentCandidates.insert(mpParent);
+    if(mpParent) {
+        sParentCandidates.insert(mpParent);
+    }
 
     std::set<KeyFrame*> children = spanning_tree.getChildren(pKF);
     while(!children.empty() ) { //reassign children to new parents
@@ -138,7 +145,9 @@ bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
     // If a child has no covisibility links with any parent candidate, assign to the original parent of this KF
     if(children.empty()) {
         for (std::set<KeyFrame *>::iterator sit =children.begin(); sit != children.end(); sit++) {
-            spanning_tree.changeParent(*sit, mpParent);
+           // if(mpParent) {
+                spanning_tree.changeParent(*sit, mpParent);
+         //   }
         }
     }
 
