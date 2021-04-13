@@ -489,11 +489,13 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
                                     });
     cand_lms.erase(new_first, cand_lms.end());
 
+   // std::cout << "Fuser: candidates passing pre_screen: " << cand_lms.size() << std::endl;
+
     //apply landmark criteria
     for(auto criterion = landmark_criteria.begin(); criterion != landmark_criteria.end(); ++criterion){//winnow down potential landmark matches
         cand_lms = (*criterion)->apply(pKF, cand_lms, criteria_data);
     }
-   //std::cout << "post landmark_criteria: " << cand_lms.size() << std::endl;
+  // std::cout << "post landmark_criteria: " << cand_lms.size() << std::endl;
     //apply keypoint criteria to all passing landmarks
     for(auto it = cand_lms.begin(); it != cand_lms.end(); ++it ) {
         MapPoint* lm = *it;
@@ -514,7 +516,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
             cand_lmviews = (*criterion)->apply(pKF, lm, cand_lmviews, criteria_data);
         }
 
-      //  std::cout << "n_lmviews post criteria: " << cand_lmviews.size() << std::endl;
+       // std::cout << "n_lmviews post criteria: " << cand_lmviews.size() << std::endl;
         if(!cand_lmviews.empty()){  //at this point should have match or not
             size_t idx = cand_lmviews[0];
             fuse_matches.insert(std::make_pair(idx, lm) );

@@ -44,8 +44,8 @@ Segment& Segment::operator=(const Segment &seg){
 
 }
 
-ImagingBundleAdjustment::ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_trajectory_, g2o::Trajectory &slam_trajectory_, optInfo optParams_)
-    : img_trajectory(img_trajectory_),  BundleAdjustment( pMap_, slam_trajectory_, optParams_){
+ImagingBundleAdjustment::ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_trajectory_, g2o::Trajectory &slam_trajectory_, FeatureFactory* factory, optInfo optParams_)
+    : img_trajectory(img_trajectory_), feature_factory(factory),  BundleAdjustment( pMap_, slam_trajectory_, optParams_){
 
   typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic> >  MyBlockSolver;
   typedef g2o::LinearSolverEigen<MyBlockSolver::PoseMatrixType> MyLinearSolver;
@@ -72,7 +72,7 @@ void ImagingBundleAdjustment::Run(){
   RotatePosestoAlign();
   std::cout << "rotated poses" << std::endl;
   std::this_thread::sleep_for( std::chrono::seconds(5) );
- // FindAdditionalMapPointMatches(); // THIS ISN'T WORKING RIGHT NOW !!!!!!!!!!!!!!!!!!!!!!!
+  FindAdditionalMapPointMatches(); // THIS ISN'T WORKING RIGHT NOW !!!!!!!!!!!!!!!!!!!!!!!
 
   //eventually: handle untracked frames
 
@@ -483,7 +483,7 @@ void ImagingBundleAdjustment::RotatePosestoAlign(){
 
 void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 //attempt to fuse any visible untracked mappoints into keyframes - especially hoping to get inter-segment viewing of mappoints
-  std::cout << "FindAdditionalMapPointMatches" << std::endl;
+  //std::cout << "FindAdditionalMapPointMatches" << std::endl;
   for(TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit){
 
     Segment* seg = &(*vit);
@@ -500,13 +500,13 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
         }
       }
 
-      std::cout << "found visible mappts for KF: " << pKFi->mnId << std::endl;
+    //  std::cout << "found fuse candidate mappts for KF: " << pKFi->mnId << ", N candidates: " << fuse_candidates.size() <<std::endl;
       //determine fuse candidates by excluding any mappoints already tracked in keyframe
-      FeatureMatcher matcher;
+      std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
       float search_radius_thresh = 5.0; //larger than default of 3.00
       float reprojection_err_thresh = 10.0; //allow a bit more than default of 5.99
       std::map<std::size_t, MapPoint*> fuse_matches;
-      matcher.Fuse(pKFi,fuse_candidates, fuse_matches, search_radius_thresh, reprojection_err_thresh);
+      matcher->Fuse(pKFi,fuse_candidates, fuse_matches, search_radius_thresh, reprojection_err_thresh);
 
       //merge fuse matches
       for(auto it = fuse_matches.begin(); it != fuse_matches.end(); ++it){
@@ -517,7 +517,7 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
         {
             if(!lm_current->isBad())
             {
-                std::cout << "Fusing mappoint" << std::endl;
+                //std::cout << "Fusing mappoint" << std::endl;
                 if(lm_current->Observations() > lm_fuse->Observations()){
 
                     pMap->replaceMapPoint(lm_fuse, lm_current);
@@ -534,7 +534,7 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
       }
 
 
-	 std::cout << "fused visible mappts for KF: " << pKFi->mnId << std::endl;
+	// std::cout << "fused visible mappts for KF: " << pKFi->mnId << " , N_mpts fused: " << fuse_matches.size() <<  std::endl;
       // Update points - this is done in LocalMapping after fusing - seems like it should be embeded in the fuse routine
       std::vector<MapPoint*> vpMapPointMatches = pKFi->GetMapPointMatches();
       for(size_t i=0, iend=vpMapPointMatches.size(); i<iend; i++)
@@ -551,8 +551,8 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
       }
 
       // Update connections in covisibility graph- this is done in LocalMapping after fusing - seems like it should be embeded in the fuse routine
-      std::cout << "about to update connections for KF: " << pKFi->mnId <<std::endl;
-     // pKFi->UpdateConnections();
+     // std::cout << "about to update connections for KF: " << pKFi->mnId <<std::endl;
+      pMap->getKeyFrameDB()->update(pKFi);
 
 
     }

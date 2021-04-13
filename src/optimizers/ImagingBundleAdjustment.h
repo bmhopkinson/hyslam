@@ -5,6 +5,7 @@
 #include "Trajectory.h"
 #include "KeyFrame.h"
 #include "MapPoint.h"
+#include <FeatureFactory.h>
 
 #include <set>
 #include <list>
@@ -32,7 +33,7 @@ typedef std::vector< Segment > TrackedSegments;
 class ImagingBundleAdjustment : public BundleAdjustment{
 
 public:
-  ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_trajectory_, g2o::Trajectory &slam_trajectory_, optInfo optParams_);
+  ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_trajectory_, g2o::Trajectory &slam_trajectory_, FeatureFactory* factory, optInfo optParams_);
   void Run();
 
 private:
@@ -40,6 +41,7 @@ private:
   TrackedSegments segments;
   const double chi2_thresh_mono = 5.991;   //outlier thresholds
   const double chi2_thresh_stereo = 7.815;
+  FeatureFactory* feature_factory;
 
   std::list<KeyFrame*> KFs_to_optimize;
   std::list<MapPoint*> mpts_to_optimize;

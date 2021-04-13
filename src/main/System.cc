@@ -217,7 +217,7 @@ void System::RunImagingBundleAdjustment(){
     }
 
     g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
-    ImagingBundleAdjustment imgBA(maps["Imaging"], mpTracker->trajectories["Imaging"].get(), traj_g2o, optParams );
+    ImagingBundleAdjustment imgBA(maps["Imaging"], mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams );
     imgBA.Run();
 
     thread_status->mapping.setRelease(true);
