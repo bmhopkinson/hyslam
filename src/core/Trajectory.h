@@ -1,5 +1,33 @@
 #ifndef TRAJECTORY_H_
 #define TRAJECTORY_H_
+/*
+ * represents path (per frame) of a camera as it travels in time through the world
+ * key concept is that the underlying reference positions (KeyFrame poses) may change through optimization so must be sure to update trajectory regularly
+ *
+ * TrajectoryElement:
+ *  data:
+ *     Tcr - incremental transformation from ref keyframe to this frame; in world to camera format
+ *     pRefKF - refrence keyframe. world position of camera can be found from Tcr and pRefKF->GetPose();
+ *     Tcw - pose in world to camera convention
+ *     Vcw - NOT SET PROPERLY RIGHT NOW - DO NOT USE - "Velocity" incremental transformation from previous frame's pose to this frame's pose (Twc); in world to camera format
+ *     time data: time_stamp, dt - interval between previous frame and this frame
+ *     tracking_good - boolean indicating if tracking was good when this frame was acquired
+ *
+ *  functionality: mostly straightforward except:
+ *      update() - calculates current pose from Tcr and pRefKF->GetPose(), if current pRefKF is bad works back to find good KF and substitutes this as RefKF and changes Tcr to reflect new RefKF
+ *
+ * Trajectory:
+ *   holds ordered vector of TrajectoryElements corresponding to each frame of a given camera, provide iterator functionality
+ *   key functionality:
+ *     int push_back(Frame &current_frame) - primary way new elements are added to trajectory - extracts info from frame and previous trajectory element (e.g. to compute dt)
+ *     convertToG2O() - returns a g2o trajectory using eigen isometries for use in optimization
+ *     integrateVelocity(const double t_start, const double t_stop, cv::Mat &Vint) - Vint is motion between t_start and t_stop in world to camera convention, uses _timeRange_() to get relevant subtrajectory.
+ *              basic logic is scale velocities at beginning and end of time frame (t_start to t_stop) and simply compute one transform over interval that spans integer number of frames from first frame to last frame
+ *              handles several edge cases (1: time frame is entirely between two frames; 2: time frame falls in interval that includes one frame but doesn't include entire frame interval)
+ *     _timeRange_(const double t_start, const double t_stop, std::vector<TrajectoryElement> &subtraj)- subtraj includes all trajectory elements within the time range as well as one prior and one past, if available
+ *
+ */
+
 
 #include <Frame.h>
 #include <KeyFrame.h>

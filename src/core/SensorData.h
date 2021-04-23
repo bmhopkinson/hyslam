@@ -1,6 +1,15 @@
 #ifndef HYSLAM_SENSORDATA_H_
 #define HYSLAM_SENSORDATA_H_
 
+/*
+ * data structure to hold accessory sensor data for use in SLAM
+ * currently has substructures for:
+ *  GPS data
+ *  IMU Data
+ *  Depth (pressure) data
+ *
+ */
+
 #include <string>
 #include <vector>
 
