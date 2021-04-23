@@ -21,6 +21,36 @@
 #ifndef MAP_H
 #define MAP_H
 
+/*
+ * the map is composed of KeyFrame and LandMarks (mappoints). LandMarks are viewed in KeyFrames.
+ * information about KeyFrames is stored in a KeyFrameDB
+ * information about LandMarks is store in a MapPointDB
+ * most functions calls are simply propagated to KeyFrameDB or MapPointDB
+ *
+ * KeyFrames are never really deleted from memory they're just removed from the KeyFrameDB - this should be fixed
+ *  have an idea of making this a recursive data structure so we can have submaps of finite size related to each other by rigid transforms
+ *   would enable easier reinitialization when tracking is lost (simply create new submap), breaking up enormously large maps that take forever for global bundle adjustment, etc
+ *
+ *   key functionality:
+ *   AddKeyFrame(KeyFrame* pKF) - adds KeyFrame to KeyFrameDB and sets this map as the KeyFrame's Map
+ *   EraseKeyFrame(KeyFrame* pKF) - erases KeyFrame from KeyFrameDB, doesn't delete it
+ *   SetBadKeyFrame(KeyFrame* pKF) - first removes all associations between pKF and viewed LandMarks then calls EraseKeyFrame(pKF)
+ *   getKeyFrameDB() - returns underlying KeyFrameDB - should eliminate this so implementation isn't exposed - it isn't used much
+ *   getMapPointDB()- returns underlying MapPointDB - should eliminate this so implementation isn't exposed - it isn't used much
+ *   AddMapPoint(MapPoint* pMP, KeyFrame* pKF_ref, int idx) - mappoint must be associated with at least one keyframe (refrence keyframe)
+ *          so here new Mappoint is associated with keyframe and added to MappointDB
+ *    MapPoint* newMapPoint( const cv::Mat &Pos, KeyFrame* pKF, int idx) - construct new mappoint (and return pointer to it), then call AddMapPoint(MapPoint* pMP, KeyFrame* pKF_ref, int idx)
+ *    visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts) - all mappoints visible to pKFi - done by brute force projection all of mappoint in map into pKFi
+ *          really should accelrate with a Bounding Volume Hierarchy or something similar
+ *    int addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace); - associates Feature idx in pKF with LandMark pMP.
+ *          this is done directly on pKF - really should add functionality so that it can go through KeyFrameDB
+ *          with LandMark is done (appropriately) through MapPointDB
+ *    int eraseAssociation(KeyFrame* pKF,  MapPoint* pMP) removes association between pKF and LandMark pMP.
+ *          this is done directly on pKF - really should add functionality so that it can go through KeyFrameDB
+ *          with LandMark is done (appropriately) through MapPointDB
+ *
+ */
+
 #include <MapPoint.h>
 #include <KeyFrame.h>
 #include <FeatureVocabulary.h>

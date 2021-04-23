@@ -21,6 +21,25 @@
 #ifndef KEYFRAMEDB_H
 #define KEYFRAMEDB_H
 
+/*
+ * holds all the information about relationships between keyframes:
+ *   CovisibilityGraph
+ *   SpanningTree
+ *   PlaceRecognizer
+ *
+ *   mostly just passes function calls on to these underlying objects.
+ *   the only real work it does is reconfiguring the spanning tree when a keyframe is erased b/c doing so requires cooperation between CovisibilityGraph and SpanningTree
+ *   working functions:
+ *
+ *   erase(KeyFrame*) - awkward inferace where a string is passed depending on what you want to erase:
+ *      - "All": sets KF bad, updates spanning tree (calling updateSpanningTreeforKeyFrameRemoval() ), then erases KF in CovisibilityGraph, SpanningTree and KeyFrameDB
+ *      - "Covis": only erases KF from CovisibililityGraph - doesn't do anything to spanning tree or keyframeDB
+ *
+ *   updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF ) - assigns new parents to children of pKF, starts with parent of pKF tries to assign children to this if covisible - add more candidates (children) if needed
+ *
+ *
+ */
+
 //SHOULD TAKE OVER REsponsiblity of adding assocations to keyframe, track these, and periodically update covis,etc based on assocaition changes (e.g. after 10 changes do update).
 
 #include <KeyFrame.h>
