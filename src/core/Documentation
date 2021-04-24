@@ -1,0 +1,24 @@
+Core classes are low-level core functionality representing 3D world and 2D projections and can be used by any other package
+Package at same level is features->low_level (esp FeatureDescriptor)
+
+Levels (lowest to highest):
+1.  Camera
+    FeatureExtractorSettings
+    FeatureViews
+    MapPoint (landmark)
+    SensorData
+
+2.  LandMarkMatches
+    Frame
+    KeyFrame
+
+3.  CovisibilityGraph
+    MapPointDB
+    MapPointFactory
+    PlaceRecognizer
+    SpanningTree
+    Trajectory
+
+4.  KeyFrameDB
+
+5.  Map

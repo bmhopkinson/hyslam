@@ -7,6 +7,7 @@
 namespace HYSLAM{
 
 float ORBDistance::distance(const cv::Mat &D1, const cv::Mat &D2) {
+    // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
     const int *pa = D1.ptr<int32_t>();
     const int *pb = D2.ptr<int32_t>();
 

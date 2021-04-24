@@ -5,6 +5,11 @@
 #ifndef HYSLAM_ORBVOCABULARY_H
 #define HYSLAM_ORBVOCABULARY_H
 
+/*
+ * implements FeatureVocabulary for ORB Features
+ * a wrapper class for DBoW2 ORBVocabulary
+ */
+
 #include <FeatureVocabulary.h>
 
 #include "DBoW2/FORB.h"

@@ -5,6 +5,11 @@
 #ifndef HYSLAM_SURFVOCABULARY_H
 #define HYSLAM_SURFVOCABULARY_H
 
+/*
+ * implements FeatureVocabulary for SURF Features
+ * a wrapper class for DBoW2 SURFVocabulary
+ */
+
 #include <FeatureVocabulary.h>
 
 #include "DBoW2/FSurf64.h"

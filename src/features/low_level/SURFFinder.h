@@ -5,6 +5,12 @@
 #ifndef HYSLAM_SURFFINDER_H
 #define HYSLAM_SURFFINDER_H
 
+/*
+ *  implements FeatureFinder for SURF (speeded up robust features) features
+ *  see FeatureFinder for functionality
+ *  the class is just a wrapper to cv::xfeatures2d::SURF
+ */
+
 #include <FeatureFinder.h>
 #include <FeatureExtractorSettings.h>
 #include "opencv2/xfeatures2d.hpp"

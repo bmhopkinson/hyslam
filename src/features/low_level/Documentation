@@ -1,0 +1,8 @@
+feauture -> low_level are low level feature classes used in Core and elsewhere, as such they are some of the most fundamental classes
+all have an abstract base class so features can be used interchangably and then corresponding derived classes must be implemented for each Feature type
+
+Levels
+1. DescriptorDistance
+2. FeatureDescriptor
+   FeatureFinder (ORB, SURF)
+3. FeatureVocabulary (ORB, SURF)

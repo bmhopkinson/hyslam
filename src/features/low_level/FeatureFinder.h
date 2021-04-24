@@ -5,6 +5,15 @@
 #ifndef HYSLAM_FEATUREFINDER_H
 #define HYSLAM_FEATUREFINDER_H
 
+/*
+ * Abstract base class for low-level feature extractor - not called "Extractor" b/c that's reserved for higher level
+ * class that often breaks image up into subsections, modulates feature detection threshold, ensures sufficient number are extracted, etc
+ * Functionality:
+ *     detect(cv::Mat image, std::vector<cv::KeyPoint> &keypoints) - detect all features in image that exceed threshold - 2D locations, orientation etc are returned in keypoints
+ *     compute(cv::Mat image, std::vector<cv::KeyPoint> &keypoints, cv::Mat& descriptors) - compute feature descriptors for keypoints in image
+ *          this is more time consuming than detection the two stages have been seperated
+ */
+
 #include <opencv2/core/core.hpp>
 #include <vector>
 
