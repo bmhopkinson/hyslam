@@ -426,7 +426,7 @@ int FeatureMatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Poi
 
         criteria_data.setIndex(i1);
         criteria_data.setDescriptor(F1views.descriptor(i1));
-        //working below here
+
         for(auto criterion  = landmarkview_criteria.begin(); criterion != landmarkview_criteria.end(); ++criterion ){ //winnow down potential views
             cand_matches = (*criterion)->apply( cand_matches, F2views, criteria_data);
         }

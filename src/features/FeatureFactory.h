@@ -5,6 +5,10 @@
 #ifndef HYSLAM_FEATUREFACTORY_H
 #define HYSLAM_FEATUREFACTORY_H
 
+/*
+ * abstract base class for factory class that creates and returns classes of a given feature type (ORB, SURF, etc)
+ */
+
 #include <FeatureExtractor.h>
 #include <FeatureVocabulary.h>
 #include <FeatureMatcher.h>

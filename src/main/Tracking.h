@@ -32,7 +32,7 @@
 #include <ORBSLAM_datastructs.h>
 #include <InterThread.h>
 #include "Frame.h"
-#include "ORBVocab.h"
+//#include "ORBVocab.h"
 #include "FeatureExtractor.h"
 #include <FeatureFactory.h>
 #include <MonoInitializer.h>

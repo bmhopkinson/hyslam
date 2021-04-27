@@ -37,8 +37,8 @@ Frame::Frame() : is_empty(true)
 
 Frame::Frame(const double &timeStamp, FeatureViews views_, FeatureVocabulary* voc,
              const Camera &camdata, const std::string img_name, const  SensorData sensor_d, bool stereo)
-    :mTimeStamp(timeStamp),mpORBvocabulary(voc), camera(camdata), fimgName(img_name), sensor_data(sensor_d),
-     mpReferenceKF(static_cast<KeyFrame*>(NULL)), views(views_), is_stereo(stereo), is_empty(false), is_tracked(false)
+    : mTimeStamp(timeStamp), feature_vocabulary(voc), camera(camdata), fimgName(img_name), sensor_data(sensor_d),
+      mpReferenceKF(static_cast<KeyFrame*>(NULL)), views(views_), is_stereo(stereo), is_empty(false), is_tracked(false)
 {
     // Frame ID
     mnId=nNextId++;
@@ -66,12 +66,12 @@ Frame::Frame(const double &timeStamp, FeatureViews views_, FeatureVocabulary* vo
 
 //Copy Constructor
 Frame::Frame(const Frame &frame)
-    :mpORBvocabulary(frame.mpORBvocabulary),camera(frame.camera),fimgName(frame.fimgName),
-     mThDepth(frame.mThDepth),mTimeStamp(frame.mTimeStamp),  mBowVec(frame.mBowVec), mFeatVec(frame.mFeatVec),
-     N(frame.N), mfGridElementWidthInv(frame.mfGridElementWidthInv), mfGridElementHeightInv(frame.mfGridElementHeightInv),
-     mnId(frame.mnId), mpReferenceKF(frame.mpReferenceKF), mnMinX(frame.mnMinX), mnMaxX(frame.mnMaxX), mnMinY(frame.mnMinY), mnMaxY(frame.mnMaxY),
-     is_stereo(frame.is_stereo),views(frame.views),matches(frame.matches), sensor_data(frame.sensor_data), is_empty(frame.is_empty),
-    is_tracked(frame.is_tracked)
+    : feature_vocabulary(frame.feature_vocabulary), camera(frame.camera), fimgName(frame.fimgName),
+      mThDepth(frame.mThDepth), mTimeStamp(frame.mTimeStamp), mBowVec(frame.mBowVec), mFeatVec(frame.mFeatVec),
+      N(frame.N), mfGridElementWidthInv(frame.mfGridElementWidthInv), mfGridElementHeightInv(frame.mfGridElementHeightInv),
+      mnId(frame.mnId), mpReferenceKF(frame.mpReferenceKF), mnMinX(frame.mnMinX), mnMaxX(frame.mnMaxX), mnMinY(frame.mnMinY), mnMaxY(frame.mnMaxY),
+      is_stereo(frame.is_stereo), views(frame.views), matches(frame.matches), sensor_data(frame.sensor_data), is_empty(frame.is_empty),
+      is_tracked(frame.is_tracked)
 {
 //    std::cout << "in frame copy const" <<std::endl;
     for(int i=0;i<FRAME_GRID_COLS;i++){
@@ -89,7 +89,7 @@ Frame& Frame::operator=(const Frame& frame){
         return *this;
 
     is_empty = frame.is_empty;
-    mpORBvocabulary = frame.mpORBvocabulary;
+    feature_vocabulary = frame.feature_vocabulary;
     camera = frame.camera;
     fimgName = frame.fimgName;
     mThDepth = frame.mThDepth;
@@ -516,7 +516,7 @@ void Frame::ComputeBoW()
     {
      //   std::vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(views.getDescriptors());
         std::vector<FeatureDescriptor> descriptors =  views.getDescriptors();
-        mpORBvocabulary->transform(descriptors,mBowVec,mFeatVec,4);
+        feature_vocabulary->transform(descriptors, mBowVec, mFeatVec, 4);
     }
 }
 

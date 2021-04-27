@@ -1,6 +1,96 @@
 #ifndef MATCHCRITERIA_H_
 #define MATCHCRITERIA_H_
 
+/*
+ * collection of match criterion classes used for feature matching
+ * criterion is applied to a set of input candidates, those passing the criterion are returned
+ *
+ * GENERAL PURPOSE:
+ * 1. LandMarkCriterion - abstract base class for criterion that are are applied to landmarks
+ *   interface:
+ *   std::vector<MapPoint*> apply(Frame &frame, std::vector<MapPoint*> &candidate_lms, CriteriaData &data)
+ *   std::vector<MapPoint*> apply(KeyFrame* pKF, std::vector<MapPoint*> &candidate_lms, CriteriaData &data)
+ *   - takes a set of landmarks (candidate_lms) which may match to Frame (or KeyFrame) and applies a criterion to winnow match
+ *     returns a vector with candidate_lms that pass the criterion. optionally may use CriteriaData
+ *
+ *   concrete classes:
+ *   ProjectionCriterion - landmark must project into the image
+ *   DistanceCriterion - landmark distance to camera must be within in min and max valid viewing distance
+ *   ViewingAngleCriterion - angle between landmark's normal and viewing vector in Frame must not exceed a threshold (max_angle passed in constructor)
+ *
+ * 2. LandMarkViewCriterion -  abstract base class for criteria that are are applied to landmarksviews (i.e. features)
+ *   interface:
+ *   std::vector<size_t> apply(Frame &frame, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data)
+ *   std::vector<size_t> apply(KeyFrame* pKF, MapPoint* lm,  std::vector<size_t> &candidate_views, CriteriaData &data)
+ *   - considers potential feature matches (candidate_views) in Frame or KeyFrame to landmark lm. applies criterion to winnow match
+ *   and returns vector of feature indices passing criterion
+ *
+ *   concrete classes:
+ *   PreviouslyMatchedCriterion - feature must not have an existing match to a landmark
+ *   StereoConsistencyCriterion - if stereo (camera and feature), feature's u-coordinate in right image must be consistent with projection of landmark lm
+ *   BestScoreCriterion - feature's descriptor must have the "best score" (lowest distance) to landmark's descriptor among candidates.
+ *              further more, that best distance must not be greater than score_threshold (passed in constructor),
+ *              and optionally must be less than nnRatio*2ndBestScore to ensure the best match is substantially better than alternative possibilities
+ *   ProjectionViewCriterion - squared distance between projection of landmark lm into image and candidate feature is less than error_threshold (passed in constructor)
+ *   FeatureSizeCriterion - feature size must be similar to that of projected landmark lm (within frac_smaller and frac_larger passed in constructor)
+ *
+ * 3. GlobalCriterion - abstract pass class for criteria that are applied to sets of candidate landmark->feature matches, winnowing these
+ *   interface:
+ *    MatchesFound apply(MatchesFound current_matches, Frame &frame, CriteriaData &data)
+ *    - takes a set of candidate matches between keypoints and landmarks (current_matches, have already passed LandMark and LandMarkView criteria) in Frame
+ *    and applies a criterion to winnow these matches based on global property of the matches
+ *
+ *    concrete classes:
+ *    RotationConsistencyCriterion - considers landmarks that were matched in both current Frame (F) and previous frame (in CriteriaData).
+ *      the rotation of keypoint angles between successive frames should be roughly the same among all valid matches.
+ *      enforces this by binning rotation angles and only allows matches in 3 maximum bins in histogram to pass
+ *    GlobalBestScoreCriterion - a single feature in frame F may be matched to multiple landmarks - keep only the one with the best descriptor match to the landmark
+ *    formulated this so it could work with distance measures (lowest distance = best match) or similarity measures (highest similarity = best match)
+ *    can set this with keep_highest (set false for distance measure, true for similarity measure)
+ *
+ * MONOCULAR INITALIZATION
+ * 4. MonoInitViewCriterion - abstract pass class for Monocular Initialization criteria
+ *    interface:
+ *    std::vector<size_t> apply(  std::vector<size_t> &candidate_matches, const FeatureViews &views,  MonoCriteriaData &data)
+ *      filters candidate_matches with a criterion making use of a set of views (typically from previous frame) and potentially additional data (MonoCriteriaData)
+ *      returns vector of feature indices for features that passed the criterion.
+ *
+ *    concrete classes:
+ *    MonoInitBestScore - feature's descriptor must have the "best score" (lowest distance) to landmark's descriptor among candidates.
+ *              further more, that best distance must not be greater than score_threshold (passed in constructor),
+ *              and optionally must be less than nnRatio*2ndBestScore to ensure the best match is substantially better than alternative possibilities
+ *              basically the same as BestScoreCriterion but interface is different.
+ *    MonoInitScoreExceedsPrevious - if the feature has already been matched to another feature, ensure the feature descriptors similarity to new potential
+ *              match is better than to previous match
+ *
+ * BAG OF WORDS MATCHING
+ * 5. BoWIndexCriterion{
+ *    virtual std::vector<unsigned int> apply(KeyFrame* pKF, std::vector<unsigned int> cand_idxs)
+ *    takes a candidate set of feature matches (cand_idx) in pKF and applies criterion return feature indices that pass
+ *
+ *    concrete
+ *    PreviouslyMatchedIndexCriterion - constructor takes boolean that controls whether the criteria passes only features in pKF that have previously been matched to a landmark (keep_previously_matched = true)
+ *    or the opposite -> keeps only features that haven't been matched to a landmark  (keep_previously_matched = true)
+ *    StereoIndexCriterion - passes only features that have a Stereomatched feature in the right frame
+ *
+ * 6. BoWMatchCriterion{
+ *   virtual std::vector<unsigned int> apply(size_t idx1, std::vector<unsigned int> cand_idx2, const FeatureViews &views1, const FeatureViews &views2 )
+ *   considers potential matches cand_idx2 (from views2) to feature idx1 in views1 and filters the potential candidates returning feature indices that pass criterion
+ *
+ *   concrete classes:
+ *   BestMatchBoWCriterion - feature's descriptor must have the "best score" (lowest distance) to idx1's descriptor among candidates.
+ *              further more, that best distance must not be greater than score_threshold (passed in constructor),
+ *              and optionally must be less than nnRatio*2ndBestScore to ensure the best match is substantially better than alternative possibilities
+ *              basically the same as BestScoreCriterion but interface is different.
+ *   EpipolarConsistencyBoWCriterion - using fundamental matrix for Frames 1 and 2 (or KeyFrames) passed in constructor only passes candidate features in
+ *      cand_idx2 if the Epipolar line distance in frame 1 is below a threshold - ensures geometric consistency of match
+ *
+ * RotationConsistencyBoW - standalone, considers landmarks that were matched in both current Frame (F) and previous frame (in CriteriaData).
+ *      the rotation of keypoint angles between successive frames should be roughly the same among all valid matches.
+ *      enforces this by binning rotation angles and only allows matches in 3 maximum bins in histogram to pass
+ *
+ */
+
 #include <MapPoint.h>
 #include <Frame.h>
 #include <KeyFrame.h>

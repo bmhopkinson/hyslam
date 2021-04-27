@@ -5,7 +5,7 @@ HYSLAM_ADD_SOURCES(
     MatchCriteria.h MatchCriteria.cpp
     FeatureMatcher.h FeatureMatcher.cc
     Stereomatcher.h Stereomatcher.cpp
-    ORBUtil.h  ORBUtil.cpp
+        FeatureUtil.h FeatureUtil.cpp
     FeatureFactory.h    FeatureFactory.cpp
     ORBFactory.h    ORBFactory.cpp
     SURFFactory.h   SURFFactory.cpp

@@ -5,6 +5,10 @@
 #ifndef HYSLAM_SURFFACTORY_H
 #define HYSLAM_SURFFACTORY_H
 
+/*
+ * factory class that creates and returns classes to extract and match SURF Features
+ */
+
 #include <FeatureFactory.h>
 
 namespace HYSLAM {

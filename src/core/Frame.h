@@ -165,7 +165,7 @@ public:
 
 public:
     // Vocabulary used for relocalization.
-    FeatureVocabulary* mpORBvocabulary;
+    FeatureVocabulary* feature_vocabulary;
 
     //Camera data
     Camera camera; //mCamdata
