@@ -1,6 +1,45 @@
 #ifndef HYSLAM_MAPPOINTDB_H_
 #define HYSLAM_MAPPOINTDB_H_
 
+/*
+ * class that holds information about LandMarks (mappoints) and their associations with KeyFrame features
+ * pushes down data (observations, normal, size, etc) to individual MapPoints so that data is available when needed
+ * MapPointDB contains MapPointDBEntry for each LandMark
+ *
+ * MapPointDBEntry:
+ *    core data are:
+ *      Pointer to LandMark itself
+ *      Pointer to refernce keyframe (this is only used in LoopClosing and is suspect b/c i don't think it's ever updated if a KeyFrame is set bad)
+ *      Observations - Keyframes and associated Feature index where landmark has been observed
+ *      Descriptors - Feature descriptors from all KeyFrames in which LandMark has been observed
+ *      Best Feature Descriptor - representative feature descriptor for the LandMark
+ *      size - radius of the LandMark (in world dimensions e.g. meters) - from mean of all observations
+ *      normal - avg viewing direction between LandMark and KeyFrame centers
+ *      max and min distance invariance  - range within which the landmark is considered valid for observing in an image
+ *
+ *    Key Functionality:
+ *      public: these public functions lock the entry's mutex and so should not be call internally (though right now some are called in the constructor, which doesn't lock the mutex)
+ *      MapPointDBEntry(MapPoint* pMP, KeyFrame* pKF_ref_, int idx);  //mimics mappoint constructor - requires the landmark itself, the first keyframe it's viewed in (which become the reference keyframe) and the feature index corresponding to the LandMark
+ *      addObservation(KeyFrame* pKF, size_t idx); - appends new observation of LandMark in pKF at feature idx to existing observations and updates entry (_UpdateEntry_() ), which pushes new data down to LandMark
+ *      addDescriptor(KeyFrame* pKF, FeatureDescriptor desc); appends new desciptor - needs to be called with addObservation - these should be combined into a single function (addObservation and addDescriptor)
+ *      bool eraseObservation(KeyFrame* pKF);  // removes LandMark observation in pKF (if such an observation exists) returns whether mappoint is bad - can happen if all observations erased,
+ *              and updates entry (_UpdateEntry_() ), which pushes new data down to LandMark
+ *
+ *      private: these functions don't lock the entry's mutex and can only be called internally
+ *          _updateEntry_() - updates "everything" by calling         _updateNormalAndDepth_(), _computeDistinctiveDescriptor_(), _updateMeanDistance_(), _updateSize_();
+ *          _computeDistinctiveDescriptor_() determines the "Best" (most representative) feature descriptor for the LandMark as the descriptor with the smallest median distance to all other descriptors
+ *          _updateNormalAndDepth_() determines the normal as the average viewing direction between LandMark and associated KeyFrame centers, sets depth invariance based on average viewing distance between KeyFrame center and LandMark
+ *          _updateSize_() - determines average size of the LandMark through cooperation with KeyFrames in which landmark is viewed
+ *          _updateMeanDistance_(); determines mean distance between LandMark and associated KeyFrame centers - much of the code is duplicated in _updateNormalAndDepth_() and this functionality should probably be merged into that function
+ *
+ * MapPointDB - holds MapPointDB entries (which do the bulk of the work).
+ *  most function calls are simply passed on to the respective MapPointDBEntry.
+ *  the primary exception is:
+ *      int replace(MapPoint* pMP_old, MapPoint* pMP_new) - sets pMP_old as bad and erases from MapPointDB, but first transfers all observations (and associated data) from pMP_old to pMP_new. pMP_new is updated
+ *
+ *
+ */
+
 #include <MapPoint.h>
 #include <Frame.h>
 #include <KeyFrame.h>

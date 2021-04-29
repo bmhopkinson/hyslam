@@ -110,7 +110,7 @@ namespace HYSLAM{
             }
         }
         //   std::cout << "finished adding connections" << std::endl;
-        if(vPairs.empty())
+        if(vPairs.empty())  //none passed threshold but need some connection so choose KF with maximum shared landmarks
         {
             vPairs.push_back(std::make_pair(nmax,pKFmax));
             //pKFmax->AddConnection(pKF_node ,nmax);

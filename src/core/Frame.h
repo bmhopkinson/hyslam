@@ -21,6 +21,25 @@
 #ifndef FRAME_H
 #define FRAME_H
 
+/*
+ * represents a single image (mono or stereo), its pose in the world, its features, and landmark matches - used in TRACKING
+ * functionality - handles projecting points into frame (and unprojecting), handles associating/disassociating landmarks to feature views
+ *              also divides image into a grid and assigns keypoint to grid elements for rapid retrival of keypoint in a region for feature matching to landmarks
+ *              landmark matches are local to this Frame, if the frame is converted to a KeyFrame such associations become part of covisiblity graph, etc
+ * NEEDS some work: would like to derive Frame and KeyFrame from a common base "Frame" class. should not refer to KeyFrame in Frame, and overall its a bit of a mess
+ *
+ * key functions:
+ * ComputeBoW - compute bag of word vector for this frame - time consuming so it's only done when needed
+ *    bool ProjectLandMark(MapPoint* pMP, cv::Mat &uv_ur) - determines uv (and ur for stereo) pixel coordinates of 3D position of landmark pMP- returns true if projects to point visible in frame
+ *    bool ProjectLandMark(cv::Mat P, cv::Mat &uv_ur) - determines uv (and ur for stereo) pixel coordinates of 3D position P - returns true if projects to point visible in frame
+ *    float ReprojectionError(cv::Mat P, int idx); //reprojection error of 3D point P relative to landmarkview of idx
+ *    int associateLandMark(int i, MapPoint* pMP, bool replace); associates keypoint i with landmark pMP, if "replace" is true will overwrite association to i if one already exists
+ *    propagateTracking(Frame &frame_previous) keeps track of number of consecutive keyframes in which each tracked landmark has been tracked.
+ *    GetFeaturesInArea(const float &x, const float  &y, const float  &r) - returns indices of feature views within radius r (manhattan radius), centered on pixel location x, y
+ *
+ */
+
+
 #include<vector>
 #include<string>
 
@@ -50,11 +69,7 @@ namespace HYSLAM
 #define FRAME_GRID_ROWS 48
 #define FRAME_GRID_COLS 64
 
-//class MapPoint;
 class KeyFrame;
-//class LandMarkMatches;
-
-//NEED TO BE ABLE TO QUERY FRAME w/ a mappoint and find out if it's matched to this frame and if so obtain the associated keypoint data
 
 class Frame
 {
@@ -150,7 +165,7 @@ public:
 
 public:
     // Vocabulary used for relocalization.
-    FeatureVocabulary* mpORBvocabulary;
+    FeatureVocabulary* feature_vocabulary;
 
     //Camera data
     Camera camera; //mCamdata

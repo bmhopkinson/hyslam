@@ -21,6 +21,16 @@
 #ifndef ORBEXTRACTOR_H
 #define ORBEXTRACTOR_H
 
+/*
+ * implements FeatureExtractor for ORB Features using ORBSLAM2's implementation
+ * ORBExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::shared_ptr<DescriptorDistance> dist_func_, FeatureExtractorSettings settings)
+ *      constructor is used to obtain the lower-level feature_finder object (must be ORBFinder currently), appropriate feature descriptor distance function and settings
+ * the extraction function ()overload finds number of keypoints requested in settings distributed over an image pyramid and spatially dispersed using a quadtree
+ * the input image is broken into N_CELLS subsections to aid dispersion of features across image. N_CELLS is suprisingly high (~30) but this seems to work well.
+ *
+ *
+ */
+
 #include <FeatureExtractor.h>
 #include <FeatureFinder.h>
 #include <FeatureDescriptor.h>

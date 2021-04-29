@@ -1,13 +1,25 @@
 #ifndef LANDMARKMATCHES_H_
 #define LANDMARKMATCHES_H_
 
+/*
+ * data structure holding associations between LandMarks in map and Features in images that represent views of those LandMarks
+ * also keeps track of outliers based on lack of geometric agreement
+ * stores associations in a map between index of Feature in image (key) to LandMark pointer (value) so searches in this direction are easy, reverse more involved.
+ * key functions:
+ * MapPoint* hasAssociation(int i) - if Feature of index i is associated with a LandMark return it, otherwise return nullptr
+ * int hasAssociation(MapPoint* pMP)- if LandMark is associated with a Feature return its index, otherwise return -1
+ * int associateLandMark(int i, MapPoint* pMP, bool replace) associate Feature i with Landmark pMP; if "replace" allows replacement of previously matched  Landmark, return 0 if successful
+ * int removeLandMarkAssociation(int i); remove mappoint association with KeyPoint/Feature i or
+ * int removeLandMarkAssociation(MapPoint* pMP);  remove mappoint association with Landmark pMP. must search through all matched LandMarks
+ * propagateTracking(const LandMarkMatches &matches_previous) - keeps track of number of consecutive frames in which LandMarks are tracked
+ *
+ */
+
 #include <map>
 #include <vector>
 #include <MapPoint.h>
 
 namespace HYSLAM{
-
-//class MapPoint;  //not sure why i need to do this but i do - even though i'm including MapPoint.h
 
 struct LandMarkMatches{
     using LandMarkMatches_t = std::map<int, MapPoint*>;
@@ -26,7 +38,7 @@ struct LandMarkMatches{
     MapPoint* hasAssociation(int i) const;
     int hasAssociation(MapPoint* pMP) const;
 
-    //associate Landmark i with mappoint pMP; if "replace" allows replacement of previously matched maptpoint, return 0 if succesful
+    //associate Feature i with Landmark pMP; if "replace" allows replacement of previously matched  Landmark, return 0 if successful
     int associateLandMark(int i, MapPoint* pMP, bool replace);
 
     // remove mappoint association with KeyPoint i or MapPoint pMP

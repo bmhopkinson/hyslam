@@ -21,6 +21,27 @@
 #ifndef KEYFRAME_H
 #define KEYFRAME_H
 
+/*
+ * represents an "important" single image (mono or stereo), its pose in the world, its features, and landmark matches - used primarily in MAPPING
+ * KeyFrames are persistent and stored in maps, they are constructed from a Frame from which they inherit much of their initial data
+ * functionality - handles projecting points into frame (and unprojecting), handles associating/disassociating landmarks to feature views- this should NOT be done directly, associations should generally be made through a Map
+ *              also divides image into a grid and assigns keypoint to grid elements for rapid retrival of keypoint in a region for feature matching to landmarks
+ *              landmark matches are local to this Frame, if the frame is converted to a KeyFrame such associations become part of covisiblity graph, etc
+ * NEEDS some work: would like to derive Frame and KeyFrame from a common base "Frame" class. should not refer to  Frame, and overall its a bit of a mess - lots of legacy garbage that should be cleaned up
+ *
+ * key functions:
+ * ComputeBoW - compute bag of word vector for this frame - time consuming so it's only done when needed
+ *    bool ProjectLandMark(MapPoint* pMP, cv::Mat &uv_ur) - determines uv (and ur for stereo) pixel coordinates of 3D position of landmark pMP- returns true if projects to point visible in frame
+ *    bool ProjectLandMark(cv::Mat P, cv::Mat &uv_ur) - determines uv (and ur for stereo) pixel coordinates of 3D position P - returns true if projects to point visible in frame
+ *    float ReprojectionError(cv::Mat P, int idx); //reprojection error of 3D point P relative to landmarkview of idx
+ *    int associateLandMark(int i, MapPoint* pMP, bool replace); associates keypoint i with landmark pMP, if "replace" is true will overwrite association to i if one already exists - should be called through a Map
+ *    std::set<KeyFrame *> GetConnectedKeyFrames(); returns all connected keyframes - data for this is pushed down from Map/Covis Graph
+ *    std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(const int &N); returns N best covisible keyframes based on number of shared landmarks - data for this is pushed down from Map/Covis Graph
+ *    spanning tree info pushed down from Map/Spanning tree:     KeyFrame* GetParent(); void setParent(KeyFrame* pKF);
+ *
+ *
+ */
+
 #include <MapPoint.h>
 #include <FeatureViews.h>
 #include <Frame.h>

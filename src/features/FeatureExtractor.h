@@ -5,6 +5,13 @@
 #ifndef HYSLAM_FEATUREEXTRACTOR_H
 #define HYSLAM_FEATUREEXTRACTOR_H
 
+/*
+ * abstract base class for high-level feature extractor
+ * input is an image (mask is ignored currently) and outputs keypoints and their associated descriptors
+ * only real functionality is that described above which is obtained through the overloaded () operator
+ * rest of the th functions are legacy for working with ORB extractor and should be removed eventually.
+ */
+
 #include <FeatureExtractorSettings.h>
 #include <FeatureFinder.h>
 #include <FeatureDescriptor.h>

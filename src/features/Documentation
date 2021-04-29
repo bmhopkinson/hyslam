@@ -1,0 +1,17 @@
+higher level classes for working with image features especially feature extraction and matching
+depends on "core" and "features->low_level" packages
+
+Levels:
+1.  FeatureExtractor
+    MatchCriteria
+
+2.  FeatureMatcher
+    FeatureUtil
+    ORBExtractor
+    SURFExtractor
+
+3.  FeatureFactory
+    StereoMatcher
+
+4.  ORBFactory
+    SURFFactory

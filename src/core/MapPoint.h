@@ -21,6 +21,24 @@
 #ifndef MAPPOINT_H
 #define MAPPOINT_H
 
+/*
+ *  class representing a LandMark (should probably change its name from mappoint to landmark)
+ *  core data are:
+ *      3D position
+ *      Observations - Keyframes and associated Feature index where landmark has been observed
+ *      Descriptor - representative feature descriptor used for matching with features in images
+ *      size - radius of the LandMark (in world dimensions e.g. meters) - from mean of all observations
+ *      normal - avg viewing direction between LandMark and KeyFrame centers
+ *      max and min distance invariance  - range within which the landmark is considered valid for observing in an image
+ *
+ *  most the data is pushed down from MapPointDB - normal, observations, representative feature descriptor, size
+ *  the only functionality is:
+ *  applyTransform(cv::Mat T) which applies the transform T (similarity or SE3) to position and normal
+ *
+ *  mappoints can be protected from culling by SetProtection()
+ *
+ */
+
 #include <FeatureDescriptor.h>
 
 #include <opencv2/core/core.hpp>
@@ -39,13 +57,7 @@ public:
  //   MapPoint(const cv::Mat &Pos, KeyFrame* pRefKF);
     MapPoint(const cv::Mat &Pos);
 
-    void setBad(){ mbBad = true; };
-    bool isBad();
 
-   // void Replace(MapPoint* pMP);
-    void setReplaced(MapPoint* pMP_new){mpReplaced = pMP_new;}
-    MapPoint* GetReplaced();
-    
     void SetWorldPos(const cv::Mat &Pos);
     cv::Mat GetWorldPos();
     void storeWorldPos();
@@ -84,6 +96,13 @@ public:
     float getMeanDistance() const;
     void setMeanDistance(float meanDistance);
 
+    // void Replace(MapPoint* pMP);
+    void setReplaced(MapPoint* pMP_new){mpReplaced = pMP_new;}
+    MapPoint* GetReplaced();
+
+    void setBad(){ mbBad = true; };
+    bool isBad();
+
 public:
     long unsigned int mnId;
     static long unsigned int nNextId;
@@ -94,7 +113,6 @@ public:
     // Variables used by the tracking
     long unsigned int mnTrackReferenceForFrame;
     long unsigned int mnLastFrameSeen;
-
 
     // Variables used by local mapping
     long unsigned int mnBALocalForKF;

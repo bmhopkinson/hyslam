@@ -6,7 +6,7 @@
 #include <ORBFinder.h>
 #include <SURFFinder.h>
 #include <FeatureViews.h>
-#include <ORBUtil.h>
+#include <FeatureUtil.h>
 #include <Stereomatcher.h>
 
 
@@ -76,7 +76,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
     std::vector<FeatureDescriptor> mDescriptors;
     std::vector<FeatureDescriptor> mDescriptorsRight;
-    std::thread orb_thread(ORBUtil::extractORB, extractor_left, std::ref(mImGray), std::ref(mvKeys), std::ref(mDescriptors) );
+    std::thread orb_thread(FeatureUtil::extractFeatures, extractor_left, std::ref(mImGray), std::ref(mvKeys), std::ref(mDescriptors) );
     (*extractor_right)(imGrayRight, cv::Mat(), mvKeysRight, mDescriptorsRight );
     orb_thread.join();
     FeatureExtractorSettings orb_params;// = setFeatureExtractorSettings(mpORBextractorLeft);

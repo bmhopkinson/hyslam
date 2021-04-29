@@ -5,6 +5,16 @@
 #ifndef HYSLAM_FEATUREDESCRIPTOR_H
 #define HYSLAM_FEATUREDESCRIPTOR_H
 
+/*
+ * represents a Feature Descriptor, distance function can be supplied making the class generic to type of feature (as long as it's a KeyPoint type)
+ * data:
+ *  descriptor - as cv::Mat so can be integer or float of variable length
+ *  distance function
+ *
+ * Functionality:
+ *  distance() - distance/dissimilarity measure between itself and another FeatureDescriptor of the same type - uses supplied distance function
+ */
+
 #include <DescriptorDistance.h>
 
 #include <opencv2/core/core.hpp>

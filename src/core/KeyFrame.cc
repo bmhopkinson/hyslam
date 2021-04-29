@@ -34,13 +34,13 @@ long unsigned int KeyFrame::nNextId=0;
 std::mutex KeyFrame::class_mutex;
 
 KeyFrame::KeyFrame(Frame &F) ://, Map* pMap_):
-    kfImgName(F.fimgName), mnFrameId(F.mnId),  mTimeStamp(F.mTimeStamp), mnGridCols(FRAME_GRID_COLS), mnGridRows(FRAME_GRID_ROWS),
+    kfImgName(F.fimgName), mnFrameId(F.mnId), mTimeStamp(F.mTimeStamp), mnGridCols(FRAME_GRID_COLS), mnGridRows(FRAME_GRID_ROWS),
     mfGridElementWidthInv(F.mfGridElementWidthInv), mfGridElementHeightInv(F.mfGridElementHeightInv),
     mnTrackReferenceForFrame(0), mnBALocalForKF(0), mnBAFixedForKF(0),
     mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0), mnRelocWords(0), mnBAGlobalForKF(0), camera(F.camera),
     mThDepth(F.mThDepth), N(F.N), mBowVec(F.mBowVec), mFeatVec(F.mFeatVec),
     mnMinX(F.mnMinX), mnMinY(F.mnMinY), mnMaxX(F.mnMaxX),
-    mnMaxY(F.mnMaxY), mpORBvocabulary(F.mpORBvocabulary), pMap(nullptr), mpParent(NULL), mbProtected(false),mbBad(false), mbToBeErased(false)
+    mnMaxY(F.mnMaxY), mpORBvocabulary(F.feature_vocabulary), pMap(nullptr), mpParent(NULL), mbProtected(false), mbBad(false), mbToBeErased(false)
    //, mnFuseTargetForKF(0)
     
 {

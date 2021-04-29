@@ -1,6 +1,15 @@
 #ifndef HYSLAM_FEATUREVIEWS_H_
 #define HYSLAM_FEATUREVIEWS_H_
 
+/*
+ * class representing features + descriptors in a single image or keyframe - mostly a data structure, little functionality
+ * core data is:
+ *  keypoint (cv::Keypoint) data stored in mvKeys and for stereo frames mvKeysRight
+ *  associated keypoint descriptors (mDescriptors and for stereo mDescriptorsRight
+ *  stereo info: mvuRight (column coordinate for stereomatched keypoint, -1 if not stereo), mvDepth (distance along principal axis) - NOTE: not all keypoints in a stereo-image have stereomatches
+ *  all are organized as vectors of same length, indexed by keypoint number
+ */
+
 #include <FeatureExtractorSettings.h>
 #include <opencv2/opencv.hpp>
 #include <FeatureDescriptor.h>

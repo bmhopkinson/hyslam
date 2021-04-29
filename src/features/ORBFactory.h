@@ -5,6 +5,10 @@
 #ifndef HYSLAM_ORBFACTORY_H
 #define HYSLAM_ORBFACTORY_H
 
+/*
+ * factory class that creates and returns classes to extract and match ORB Features
+ */
+
 #include <FeatureFactory.h>
 #include <FeatureExtractorSettings.h>
 

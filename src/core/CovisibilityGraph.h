@@ -1,6 +1,26 @@
 #ifndef COVISIBILITYGRAPH_H_
 #define COVISIBILITYGRAPH_H_
 
+/*
+ * graph recording covisibility of landmarks between keyframes
+ * graph nodes = keyframes; edges: weights = landmarks shared between keyframes; edges are added if weight exceeds a threshold (currently hardcoded at 15)
+ *
+ *
+ * CovisNode functionality
+ *      AddConnection, EraseConnection directly add to mConnectedKeyFrameWeights; these functions call UpdateBestCovisibles to update mvpOrderedConnectedKeyFrames and mvOrderedWeights
+ *      UpdateConnnections(symmetric_updates) works through all landmarks viewed in node_KF and finds covisible keyframes updating all node datastructures- returns symmetric_updates for updating covisibility nodes of connected KFs
+ *      UpdateBestCovisibles - used internally to update mvpOrderedConnectedKeyFrames and mvOrderedWeights based on content of mConnectedKeyFrameWeights
+ *      both GetConnectedKeyFrames() and GetVectorCovisibleKeyFrames() return all connected KFs, the first function as a set, the second function as a vector
+ *      GetBestCovisibilityKeyFrames(const int &N) returns N keyframes with highest edge weights (or all keyframes)
+ *      GetCovisiblesByWeight(const int &w) returns all keyframes with edge weight exceeding w.
+ *
+ * CovisibilityGraph functionality
+ *       addNode(KeyFrame* pKF) - adds pKF to the graph, creating a CovisNode for it and calling CovisibilityGraph::UpdateConnections(pKF) on it
+ *       eraseNode(KeyFrame* pKF) - first erases all edges containing pKF in CovisibilityGraph then deletes the node for pKF
+ *       UpdateConnections(KeyFrame* pKF); updates covis connections for pKF (by calling CovisNode::UpdateConnections()) and handles updating weights to keyframes connected to pKF
+ *       remaining functions (GetConnectedKeyFrames through GetWeight simply forward calls on to respective CovisNode function)
+ */
+
 #include <KeyFrame.h>
 #include <map>
 #include <vector>
@@ -28,7 +48,7 @@ namespace HYSLAM{
     private:
         KeyFrame* pKF_node;
         std::map<KeyFrame*,int> mConnectedKeyFrameWeights;  //edges
-        std::vector<KeyFrame*> mvpOrderedConnectedKeyFrames;
+        std::vector<KeyFrame*> mvpOrderedConnectedKeyFrames;//connected keyframes ordered from most shared landmarks to least
         std::vector<int> mvOrderedWeights;
         std::mutex node_mutex;
         
