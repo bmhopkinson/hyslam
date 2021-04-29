@@ -7,15 +7,15 @@ namespace HYSLAM{
 StereoInitializer::StereoInitializer(StereoInitializerParameters params_) :  params(params_)
      {}
 
- int StereoInitializer::initialize(Frame &frame){
-     if(frame.N > params.N_min_features)
-     {
-         frame_init = frame;
-         init_success = true;
-         return 0;
-     } else {
-         return -1;
-     }
+int StereoInitializer::initialize(Frame &frame){
+ if(frame.N > params.N_min_features)
+ {
+     frame_init = frame;
+     init_success = true;
+     return 0;
+ } else {
+     return -1;
+ }
 }
 
 int StereoInitializer::createMap( KeyFrame* &pKF1, KeyFrame* &pKF2, std::vector<MapPoint*> mappoints){
@@ -97,42 +97,6 @@ void StereoInitializer::clear(){
     Initializer::clear();
 
 }
-/*
-int StereoInitializer::initialize(Frame &frame){
-    if(frame.N > min_features)
-    {
-        // Set Frame pose to the origin
-        frame.SetPose(cv::Mat::eye(4,4,CV_32F));
 
-        // Create KeyFrame
-        pKFinit = new KeyFrame(frame);
-        pKFinit->SetRefQuat(frame.getSensorData());
-        pKFinit->SetRefGPS(frame.getSensorData());
-
-        // Insert KeyFrame in the map 
-        std::cout << "adding to Map KeyFrame: " << pKFinit->mnId <<std::endl;
-        pMap->AddKeyFrame(pKFinit);
-
-        // Create MapPoints and asscoiate to KeyFrame
-        const FeatureViews views = frame.getViews();
-        for(int i=0; i<frame.N;i++)
-        {
-            float z = views.depth(i);
-            if(z>0)
-            {
-                cv::Mat x3D = frame.UnprojectStereo(i);
-                MapPoint* pNewMP = pMap->newMapPoint(x3D, pKFinit, i);
-                int res = frame.associateLandMark(i, pNewMP, true);
-            }
-        }
-
-        cout << "New map created with " << pMap->MapPointsInMap() << " points" << endl;
-        return 0;
-    }
-    else {
-        return -1;
-    }
-}
- */
 
 } // end namespace

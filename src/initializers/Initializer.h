@@ -1,6 +1,25 @@
 #ifndef INITIALIZER_H_
 #define INITIALIZER_H_
 
+/*
+ * abstract base class for slam initialization
+ * key functionality:
+ * int initialize(Frame &frame)
+ *      attempts initialization procedure on frame. returns 0 if initialization is succesful
+ *
+ * int createMap( KeyFrame* &pKF1, KeyFrame* &pKF2, std::vector<MapPoint*> mappoints)
+ *      creates an initial map from the data passed in, stores new map internally not in official "Map" datastructure
+ *
+ * int transformMap(Trajectory* trajectory, const Frame &F_ref, cv::Mat F_ref_T)
+ *      transforms new initialized map to align with existing data
+ *
+ * int addToMap(Map* pMap)
+ *      adds internal initial map data to existing map pMap;
+ *
+ * Frame getInitializedFrame()
+ *      returns updated Frame after initialization
+ */
+
 #include <Frame.h>
 #include <KeyFrame.h>
 #include <MapPoint.h>

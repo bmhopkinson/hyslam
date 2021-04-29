@@ -20,6 +20,13 @@
 #ifndef MONOESTIMATOR_H
 #define MONOESTIMATOR_H
 
+/*
+ * class from ORBSLAM2 that attempts to estimate a homography and fundamental matrix from keypoint matches between
+ * two frames for monocular initialization.
+ * prefers homography for planar initialization and fundamental matrix for general conditions (w/ 3D structure)
+ * also triangulates inlier matches to give 3D location with unit distance between two frames
+ */
+
 #include <opencv2/opencv.hpp>
 #include "Frame.h"
 #include "Tracking_datastructs.h"

@@ -1,0 +1,10 @@
+/snap/clion/151/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "CodeBlocks - Unix Makefiles" /home/hopkinsonlab/Documents/hyslam
+-- Build type: RelWithDebInfo
+-- CMAKE PROJECT_SOURCE_DIR /home/hopkinsonlab/Documents/hyslam   
+-- G2O_ROOT /usr/local
+-- CMAKE_MODULE_PATH: /home/hopkinsonlab/Documents/hyslam/cmake_modules
+-- in FindG2O.cmake: G2O_ROOT: /usr/local
+-- G2O FOUND? : YES
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/hopkinsonlab/Documents/hyslam/cmake-build-relwithdebinfo
