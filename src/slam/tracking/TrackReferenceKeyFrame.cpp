@@ -56,7 +56,7 @@ namespace HYSLAM{
             }
         }
 
-        std::cout << "TrackReferenceKeyFrame after PoseOptimization nmatchesMap: " << nmatchesMap <<std::endl;
+      //  std::cout << "TrackReferenceKeyFrame after PoseOptimization nmatchesMap: " << nmatchesMap <<std::endl;
         return nmatchesMap;
     }
 }

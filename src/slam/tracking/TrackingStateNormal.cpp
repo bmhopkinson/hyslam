@@ -83,7 +83,7 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsi
 
     // If Local Mapping is freezed by a Loop Closure do not insert keyframes
    // if(pLocalMapper->isStopped() || pLocalMapper->stopRequested())
-   if(thread_status->mapping.isStopped() || thread_status->mapping.isStopRequested())
+   if(!force && (thread_status->mapping.isStopped() || thread_status->mapping.isStopRequested()) )
         return false;
 
     const int nKFs = pMap->KeyFramesInMap();
@@ -151,27 +151,18 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsi
         // If the mapping accepts keyframes, insert keyframe.
         // Otherwise send a signal to interrupt BA
 //        if(cam_cur != "SLAM") {std::cout << "attempting to insert keyframe" << std::endl;}
-        if(local_mapping_idle)
+        if(local_mapping_idle || force)
         {
             insertKF = true;
         }
         else
         {
-            //pLocalMapper->InterruptBA();
-         //   thread_status->mapping.setInterrupt(true);
-            if(camera.sensor !=0) //if not a monocular camera
-            {
-               // if(pLocalMapper->KeyframesInQueue()<3) {
-               if(thread_status->mapping.getQueueLength() < 3){
-                    insertKF = true;
-                }
-                else {
-                    insertKF = false;
-                }
-            }
-            else {
+           if(thread_status->mapping.getQueueLength() < 3){
+                insertKF = true;
+           }
+           else {
                 insertKF = false;
-            }
+           }
         }
     }
     (*pftracking) << insertKF << "\t";

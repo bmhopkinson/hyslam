@@ -75,7 +75,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
         current_frame.clearAssociations();
         th =  params.match_theshold_inflation_factor*th;
         nmatches = matcher->SearchByProjection(current_frame,last_frame, th,camera.sensor==0);
-        std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
+      //  std::cout << "TrackMotionModel, 2nd attempt to SearchByProjection, nmatches: " << nmatches << std::endl;
     }
 
     if(nmatches < params.N_min_matches){

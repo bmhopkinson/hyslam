@@ -220,9 +220,9 @@ void Tracking::_Track_()
     {
         HandlePostTrackingSuccess();
         bool force = false;
-        if( recent_init[cam_cur] > 0 ){ //refine this - recent_mono_init should be map for each cam
+        if( recent_init[cam_cur] > 0 ){
             force = true;
-            recent_init[cam_cur]--;
+            std::cout << "forcing new keyframe due to recent initialization for this and more frames: " <<  recent_init[cam_cur] << std::endl;
         }
 
         thread_status->mapping.setStoppable(false);
@@ -231,8 +231,12 @@ void Tracking::_Track_()
             for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                 KeyFrame *pKFnew = *it;
                 output_queue->push(pKFnew);
-                std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << std::endl;
+                std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << " , from cam: " << cam_cur << std::endl;
                 maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
+
+                if( recent_init[cam_cur] > 0 ){
+                    recent_init[cam_cur]--;
+                }
             }
 
             mpReferenceKF[cam_cur] = newKFs.back();
