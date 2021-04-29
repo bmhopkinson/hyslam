@@ -366,6 +366,7 @@ endif ()
 
 # Set up the top-level include directories
 include_directories(${g2o_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+message(STATUS "g2o source dir: ${g2o_SOURCE_DIR} ")
 
 # Generate config.h
 set(G2O_OPENGL_FOUND ${OPENGL_FOUND})

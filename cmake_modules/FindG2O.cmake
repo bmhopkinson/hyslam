@@ -1,5 +1,7 @@
 # Find the header files
 
+message(STATUS "in FindG2O.cmake: G2O_ROOT: ${G2O_ROOT}")
+
 find_path(G2O_INCLUDE_DIR g2o/core/base_vertex.h
   ${G2O_ROOT}/include
   $ENV{G2O_ROOT}/include
@@ -116,3 +118,4 @@ set(G2O_FOUND "NO")
 if(G2O_STUFF_LIBRARY AND G2O_CORE_LIBRARY AND G2O_INCLUDE_DIR AND G2O_SOLVERS_FOUND)
   set(G2O_FOUND "YES")
 endif(G2O_STUFF_LIBRARY AND G2O_CORE_LIBRARY AND G2O_INCLUDE_DIR AND G2O_SOLVERS_FOUND)
+message(STATUS "G2O FOUND? : ${G2O_FOUND}")

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(HYSLAM)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/CMakeHelper.cmake NO_POLICY_SCOPE)
@@ -30,9 +30,10 @@ message(STATUS "G2O_ROOT ${G2O_ROOT}")
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
 #find_package(OpenCV 3.1.0 REQUIRED PATHS /home/nvidia/Documents/opencv_build/share/OpenCV NO_DEFAULT_PATH)
-find_package(OpenCV 3.1.0 REQUIRED PATHS /home/cv-bhlab/Documents/Libraries/opencv/opencv_3_4_nonfree/install/share/OpenCV NO_DEFAULT_PATH)
+#find_package(OpenCV 3.1.0 REQUIRED PATHS /home/cv-bhlab/Documents/Libraries/opencv/opencv_3_4_nonfree/install/share/OpenCV NO_DEFAULT_PATH)
 #find_package(OpenCV 3.1.0 REQUIRED PATHS /home/brian/Documents/Libraries/opencv/3_4_13/install/share/OpenCV NO_DEFAULT_PATH)
-find_package(G2O REQUIRED)
+find_package(OpenCV 3.1.0 REQUIRED PATHS /home/hopkinsonlab/Documents/Libraries/OpenCV/opencv_3_4/install/share/OpenCV NO_DEFAULT_PATH)
+
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 find_package(G2O REQUIRED)
