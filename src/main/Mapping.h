@@ -1,25 +1,43 @@
-/**
-* This file is part of ORB-SLAM2.
-*
-* Copyright (C) 2014-2016 Raúl Mur-Artal <raulmur at unizar dot es> (University of Zaragoza)
-* For more information see <https://github.com/raulmur/ORB_SLAM2>
-*
-* ORB-SLAM2 is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM2 is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #ifndef MAPPING_H
 #define MAPPING_H
+
+/*
+ * class that maintains and updates Maps (keyframes, landmarks, and associations between the two)
+ * runs in a separate thread and receives new keyframes (input) from tracking, incorporates them into the map, and
+ * then passes them on to LoopClosing
+ * Mapping is organized around running of jobs (see slam->mapping for jobs). receipt of a new KeyFrame triggers creation
+ * of new jobs, some of which are mandatory others of which are optional. Mandatory jobs must be run but optional jobs can be
+ * interrupted (e.g. if a new keyframe arrives). triggering job creation upon new keyframe makes sense for jobs directly connected to
+ * the new keyframe but may not be the best choice for some jobs since arrival of new keyframes often comes in bursts (consider deferring optional jobs to less busy times)
+ *
+ * Key functionality:
+ * Run() - the function that runs in a loop in a separate thread.
+ *   it checks for new keyframes on the queue and if new keyframes are present it sets up the mandatory jobs defined in
+ *   SetupMandatoryJobs(). the mandatory jobs are run simulatenously (in separate threads). once all mandatory jobs have completed
+ *   optional jobs are created with SetupOptionalJobs() and then run with RunOptionalJobs.
+ *   after this a global bundle adjustment is run if needed (break this code out into separate function). tracking is stopped during
+ *   GBA b/c it takes a long time so this can only be done on post-processed data not real-time
+ *   finally, execution enters a stopping point if a pause has been requested. it waits in a safe spot until asked to restart (release).
+ *
+ * SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandatory_jobs)
+ *   sets up jobs critical to incorporation of new keyframe
+ *   ProcessNewKeyFrame
+ *   LandMarkCuller
+ *
+ * SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> >  &optional_jobs);
+ *   sets up optional jobs that are needed for a high quality map but don't need to be run with every new keyframe:
+ *   LandMarkTriangulator
+ *   LandMarkFuser
+ *   LocalBundleAdjustmentJob
+ *   KeyFrameCuller
+ *
+ * RunOptionalJobs() - runs optional jobs either single threaded
+ *   or multithreaded (but this needs more work - get occasional segfaults). the optional jobs can be interrupted if needed.
+ *   but if number of consecutive interrupts is tracked and interruption can be overriden if needed since the optional jobs must run
+ *   periodically to obtain a high quality map.
+ *
+ */
 
 #include "KeyFrame.h"
 #include "Map.h"

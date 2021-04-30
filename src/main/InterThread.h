@@ -5,6 +5,19 @@
 #ifndef HYSLAM_INTERTHREAD_H
 #define HYSLAM_INTERTHREAD_H
 
+/*
+ * defines clasess for interthread data passage and communication.
+ *
+ * ImageFeatureData - data structure used to pass data from ImageProcessing to Tracking via ThreadSafeQueue
+ *
+ * ThreadStatus - class that enables interthread communication including
+ *   - stopping temporarily (stop) and restarting (release)
+ *   - terminating thread (finishing)
+ *   - ability to accept input, size of input queue
+ *
+ * MainThreadsStatus - simple composite of two ThreadStatus stuctures to hold info about tracking and mapping threads
+ */
+
 #include <mutex>
 #include <FeatureViews.h>
 #include <SensorData.h>

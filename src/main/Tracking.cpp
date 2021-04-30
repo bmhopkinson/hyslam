@@ -222,7 +222,7 @@ void Tracking::_Track_()
         bool force = false;
         if( recent_init[cam_cur] > 0 ){
             force = true;
-            std::cout << "forcing new keyframe due to recent initialization for this and more frames: " <<  recent_init[cam_cur] << std::endl;
+        //    std::cout << "forcing new keyframe due to recent initialization for this and more frames: " <<  recent_init[cam_cur] << std::endl;
         }
 
         thread_status->mapping.setStoppable(false);

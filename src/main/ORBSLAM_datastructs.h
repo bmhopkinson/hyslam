@@ -1,6 +1,12 @@
 #ifndef ORBSLAM_DATASTRUCTS_H_
 #define ORBSLAM_DATASTRUCTS_H_
 
+/*
+ * LEGACY - set of disjointed data structures - need to revise
+ * Imgdata holds basic data about an image
+ *
+ * optInfo holds parameters for optimization/ bundle adjustment
+ */
 
 #include <FeatureExtractor.h>
 #include <FeatureViews.h>

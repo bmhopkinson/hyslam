@@ -1,26 +1,34 @@
-/**
-* This file is part of ORB-SLAM2.
-*
-* Copyright (C) 2014-2016 Raúl Mur-Artal <raulmur at unizar dot es> (University of Zaragoza)
-* For more information see <https://github.com/raulmur/ORB_SLAM2>
-*
-* ORB-SLAM2 is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM2 is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
-*/
-
 
 #ifndef SYSTEM_H
 #define SYSTEM_H
+
+/*
+ * class representing the SLAM system to be used by external applications/libraries.
+ * also sets up the main objects and threads and handles shutdown (and data export - but that should be moved to another class)
+ * Key functionality:
+ * System(const std::string &strVocFile, const std::string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true)
+ *  - initializes the system using the settings in strSettingsFile (strVocFile is LEGACY - not used, should be removed), sensor is the SLAM camera type
+ *    sets up FeatureFactory, loads camera data and other settings, sets up Tracking, Mapping, and LoopClosing threads as well as
+ *    interthread queues. sets up Viewer is bUseViewer=true
+ *
+ *
+ * TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const Imgdata &img_info, const SensorData &sensor_data)
+ *   note: doesn't return camera pose right now
+ *   initiates processing of the stereoframe.
+ *   hands off stereoimage data to ImageProcessing (which then passes to Tracking, etc), waits to return if tracking queue is backing up
+ *
+ * TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const SensorData &sensor_data)
+ *   note: doesn't return camera pose right now
+ *   initiates processing of the monocular frame.
+ *   hands off image data to ImageProcessing (which then passes to Tracking, etc), waits to return if tracking queue is backing up
+ *
+ * RunImagingBundleAdjustment() - runs imaging bundle adjustment to finalize alignment of imaging camera data after end of SLAM run
+ *
+ * void Shutdown() - shutsdown all threads (Tracking, Mapping, LoopClosing) in preparation to exit 
+ *
+ * ExportCOLMAP(const std::string &foldername)
+ *   exports SLAM data in format for sparse reconstrution import for COLAMP
+ */
 
 #include <Tracking.h>
 #include <Mapping.h>
@@ -38,7 +46,6 @@
 #include <ThreadSafeQueue.h>
 #include <FeatureVocabulary.h>
 #include <FeatureFactory.h>
-
 
 #include <opencv2/core/core.hpp>
 
@@ -78,7 +85,6 @@ public:
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
     cv::Mat TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const Imgdata &img_info, const SensorData &sensor_data);
-
 
     // Proccess the given monocular frame
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.

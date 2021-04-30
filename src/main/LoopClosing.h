@@ -18,6 +18,11 @@
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+ * class that handles loopclosing - this is LEGACY and almost entirely from ORBSLAM2
+ * it really should be updated but isn't that important for current work so it's been left only lightly modified
+ */
+
 #ifndef LOOPCLOSING_H
 #define LOOPCLOSING_H
 
