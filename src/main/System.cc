@@ -30,8 +30,10 @@
 #include <ORBFactory.h>
 #include <SURFFactory.h>
 
-#include <thread>
 #include <pangolin/pangolin.h>
+#include <tinyxml2.h>
+
+#include <thread>
 #include <iomanip>
 #include <iostream>
 #include <sys/stat.h>
@@ -203,9 +205,25 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 
 void System::RunImagingBundleAdjustment(){
     //stop LocalMapping and LoopClosing
-  thread_status->mapping.setStopRequested(true);
+    bool has_imaging_cam = false;
+    for(auto it = maps.begin(); it != maps.end(); ++it){
+        std::string cam_name = it->first;
+        if(cam_name == "Imaging") {
+            //there is an imaging camera, but was it used
+            Map* pMap = it->second;
+            std::vector<KeyFrame*> vKFs = pMap->GetAllKeyFrames();
+            if(vKFs.size() >1) {  //need at least 2 keyframes for bundle adjustment
+                has_imaging_cam = true;
+                break;
+            }
+        }
+    }
+    if(!has_imaging_cam){
+        return;
+    }
 
-    // Wait until Local Mapping has effectively stopped
+    thread_status->mapping.setStopRequested(true);
+        // Wait until Local Mapping has effectively stopped
     std::cout << "waiting for Mapping to stop" << std::endl;
     while(!thread_status->mapping.isStopped())
     {
@@ -307,7 +325,33 @@ std::vector<int> System::ValidImagingKeyFrames(){
 
 }
 
+std::map< std::string, KeyFrameExportData > System::KeyFramesInfoForExport(){
+    std::map< std::string, KeyFrameExportData > output_data;
 
+    for(auto it = maps.begin(); it != maps.end(); ++it) {
+        std::string cam_name = it->first;
+        Map *pMap = it->second;
+
+        std::vector<KeyFrame *> vpKFs = pMap->GetAllKeyFrames();
+        if (vpKFs.size() == 0) { //camera was present but not used in SLAM
+            continue;
+        }
+        sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+
+        KeyFrameExportData cam_export_data;
+        for(auto it = vpKFs.begin(); it != vpKFs.end(); ++it){
+            KeyFrame* pKF = *it;
+            int frame_id = std::stoi(pKF->kfImgName);
+            std::string file_name = createImageFileName(cam_name, pKF->kfImgName, ".jpg");
+            cam_export_data.push_back( std::make_pair(frame_id, file_name) );
+        }
+
+        output_data[cam_name] = cam_export_data;
+    }
+
+    return output_data;
+
+}
 
 
 void System::SaveTrajectoryMapping(const std::string &filename)
@@ -481,6 +525,166 @@ void System::ExportCOLMAP(const std::string &foldername){
   f.close();
   std::cout.flags(fmt_flags); //restore format flags
 
+}
+
+void System::SaveKeyFramesAgisoft(const std::string &filename){
+    std::cout << std::endl << "Saving camera trajectory to " << filename << " ..." << std::endl;
+    for(auto it = maps.begin(); it != maps.end(); ++it) {
+        std::string cam_name = it->first;
+        Map *pMap = it->second;
+
+        tinyxml2::XMLDocument xmlDoc;
+        tinyxml2::XMLElement *pRoot = xmlDoc.NewElement("document");
+        pRoot->SetAttribute("version", "1.4.0");
+        xmlDoc.InsertFirstChild(pRoot);
+
+        tinyxml2::XMLElement *pChunk = xmlDoc.NewElement("chunk");
+
+        //camera calibration
+        Camera camera = cam_data[cam_name];
+
+        tinyxml2::XMLElement *pSensors = xmlDoc.NewElement("sensors");
+        pSensors->SetAttribute("next_id", 1);
+
+        tinyxml2::XMLElement *pSensor = xmlDoc.NewElement("sensor");
+        pSensor->SetAttribute("id", 0);
+        pSensor->SetAttribute("label", cam_name.c_str());
+        pSensor->SetAttribute("type","frame");
+
+        tinyxml2::XMLElement *pResolution = xmlDoc.NewElement("resolution");
+        int width  = static_cast<int>(camera.mnMaxX);
+        int height = static_cast<int>(camera.mnMaxY);
+        pResolution->SetAttribute("width", width);
+        pResolution->SetAttribute("height", height);
+        pSensor->InsertEndChild(pResolution);
+
+        tinyxml2::XMLElement *pProperty1 = xmlDoc.NewElement("property");
+        pProperty1->SetAttribute("name","fixed");
+        pProperty1->SetAttribute("value",0);
+        pSensor->InsertEndChild(pProperty1);
+
+        tinyxml2::XMLElement *pProperty2 = xmlDoc.NewElement("property");
+        pProperty2->SetAttribute("name","layer_index");
+        pProperty2->SetAttribute("value",0);
+        pSensor->InsertEndChild(pProperty2);
+
+        tinyxml2::XMLElement *pCalibration = xmlDoc.NewElement("calibration");
+        pCalibration->SetAttribute("type", "frame");
+        pCalibration->SetAttribute("class", "adjusted");
+
+        tinyxml2::XMLElement *pResolution2 = xmlDoc.NewElement("resolution"); //seems like you can't insert a node twice so duplicate creating resolution - must be a better way
+        pResolution2->SetAttribute("width", width);
+        pResolution2->SetAttribute("height", height);
+        pCalibration->InsertEndChild(pResolution2);
+
+        std::stringstream ss; //using stringstream lets us fix the precision.
+        ss << std::fixed << std::setprecision(6);
+        tinyxml2::XMLElement *pFocal_length = xmlDoc.NewElement("f");
+        float focal_length = (camera.fx() + camera.fy())/2.000;
+        ss << focal_length;
+        pFocal_length->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pFocal_length);
+        ss.str("");//clear stringstream;
+
+        tinyxml2::XMLElement *pcx = xmlDoc.NewElement("cx");
+        float cx = camera.cx() -  (width/2.000);
+        ss << cx;
+        pcx->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pcx);
+        ss.str("");//clear stringstream;
+
+        tinyxml2::XMLElement *pcy = xmlDoc.NewElement("cy");
+        float cy = camera.cy() -  (height/2.000);
+        ss << cy;
+        pcy->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pcy);
+        ss.str("");//clear stringstream;
+
+        float k1, k2, p1, p2;  //radial and tangential distortion
+        k1 = camera.distCoef.at<float>(0);
+        k2 = camera.distCoef.at<float>(1);
+        p1 = camera.distCoef.at<float>(2);
+        p2 = camera.distCoef.at<float>(3);
+
+        tinyxml2::XMLElement *pk1 = xmlDoc.NewElement("k1");
+        ss << k1;
+        pk1->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pk1);
+        ss.str("");//clear stringstream;
+
+        tinyxml2::XMLElement *pk2 = xmlDoc.NewElement("k2");
+        ss << k2;
+        pk2->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pk2);
+        ss.str("");//clear stringstream;
+
+        tinyxml2::XMLElement *pp1 = xmlDoc.NewElement("p1");
+        ss << p1;
+        pp1->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pp1);
+        ss.str("");//clear stringstream;
+
+        tinyxml2::XMLElement *pp2 = xmlDoc.NewElement("p2");
+        ss << p2;
+        pp2->SetText(ss.str().c_str());
+        pCalibration->InsertEndChild(pp2);
+        ss.str("");//clear stringstream;
+
+        pSensor->InsertEndChild(pCalibration);
+        pSensors->InsertEndChild(pSensor);
+        pChunk->InsertEndChild(pSensors);
+
+        //Keyframe data
+        std::vector<KeyFrame *> vpKFs = pMap->GetAllKeyFrames();
+        if(vpKFs.size() == 0){ //camera was present but not used in SLAM
+            continue;
+        }
+        sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+
+        tinyxml2::XMLElement *pCameras = xmlDoc.NewElement("cameras");
+        int n_keyframes = vpKFs.size();
+        pCameras->SetAttribute("next_id", n_keyframes);
+        pCameras->SetAttribute("next_group_id", 0);
+
+        int i = 0;
+        for (auto it2 = vpKFs.begin(); it2 != vpKFs.end(); ++it2) {
+            KeyFrame *pKF = *it2;
+            cv::Mat Twc = pKF->GetPoseInverse();
+
+            tinyxml2::XMLElement *pElement = xmlDoc.NewElement("camera");
+            pElement->SetAttribute("id", i);
+            i++;
+            std::string file_name = createImageFileName(cam_name, pKF->kfImgName, "");
+            pElement->SetAttribute("label", file_name.c_str());
+            pElement->SetAttribute("sensor_id", 0);
+            pElement->SetAttribute("enabled", "1");
+
+            tinyxml2::XMLElement *pCamElement = xmlDoc.NewElement("transform");
+            std::stringstream ss;
+            ss << std::scientific << std::setprecision(9)
+               << Twc.at<float>(0, 0) << " " << Twc.at<float>(0, 1) << " " << Twc.at<float>(0, 2) << " "
+               << Twc.at<float>(0, 3) << " "
+               << Twc.at<float>(1, 0) << " " << Twc.at<float>(1, 1) << " " << Twc.at<float>(1, 2) << " "
+               << Twc.at<float>(1, 3) << " "
+               << Twc.at<float>(2, 0) << " " << Twc.at<float>(2, 1) << " " << Twc.at<float>(2, 2) << " "
+               << Twc.at<float>(2, 3) << " "
+               << Twc.at<float>(3, 0) << " " << Twc.at<float>(3, 1) << " " << Twc.at<float>(3, 2) << " "
+               << Twc.at<float>(3, 3);
+
+            std::string s = ss.str();
+            pCamElement->SetText(s.c_str());
+            pElement->InsertEndChild(pCamElement);
+            pCameras->InsertEndChild(pElement);
+
+
+        }
+        pChunk->InsertEndChild(pCameras);
+        std::string filename_cam = filename + "_" + cam_name + ".xml";
+        pRoot->InsertEndChild(pChunk);
+        tinyxml2::XMLError eResult = xmlDoc.SaveFile(filename_cam.c_str());
+    }
+
+    std::cout << std::endl << "KeyFrames saved in Agisoft format!" << std::endl;
 }
 
     // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose graph).
@@ -738,4 +942,9 @@ void System::LoadVocabulary(const std::string vocab_file, FeatureVocabulary* voc
     printf("Vocabulary loaded in %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 }
 */
+std::string createImageFileName(std::string cam_name, std::string img_id, std::string file_ext){
+    std::string file_name = cam_name + "_" + img_id + file_ext;
+    return file_name;
+}
+
 } //namespace ORB_SLAM

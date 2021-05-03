@@ -65,6 +65,7 @@ class Mapping;
 class LoopClosing;
 class ImageProcessing;
 
+using KeyFrameExportData = std::vector< std::pair<int, std::string > >;
 
 class System
 {
@@ -93,6 +94,8 @@ public:
 
     void RunImagingBundleAdjustment(); //after completion of SLAM run call to align imaging cameras
 
+    std::map<std::string, Camera>  getCameras(){return cam_data;};
+
 
     // Returns true if there have been a big map change (loop closure, global BA)
     // since last call to this function
@@ -112,6 +115,8 @@ public:
     void SaveTrajectoryMapping(const std::string &filename);
 
     void ExportCOLMAP(const std::string &foldername);
+    void SaveKeyFramesAgisoft(const std::string &filename);
+    std::map< std::string, KeyFrameExportData > KeyFramesInfoForExport();
     std::vector<int> ValidImagingKeyFrames();
 
 
@@ -213,6 +218,8 @@ private:
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
 };
+
+std::string createImageFileName(std::string cam_name, std::string img_id, std::string file_ext);
 
 }// namespace ORB_SLAM
 
