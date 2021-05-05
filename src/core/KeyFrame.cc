@@ -479,7 +479,17 @@ int KeyFrame::associateLandMark(int i, MapPoint* pMP, bool replace)
     return matches.associateLandMark(i, pMP, replace);
 }
 
-int KeyFrame::associateLandMarkVector(std::vector<MapPoint*> vpMapPointMatches, bool replace){
+int KeyFrame::associateLandMark(int i, MapPoint* pMP, bool replace, MapPoint* &pMP_old){
+    MapPoint* pMP_previous = matches.hasAssociation(i);
+    if(pMP_previous){
+        if(pMP_previous != pMP){  //make sure the request genuinely overwrite a previous assocaition rather than simply rewritting the same association.
+            pMP_old = pMP_previous;
+        }
+    }
+    return associateLandMark(i, pMP, replace);
+}
+
+    int KeyFrame::associateLandMarkVector(std::vector<MapPoint*> vpMapPointMatches, bool replace){
    int vec_size = vpMapPointMatches.size();
    if(vec_size != N){
     return -1;

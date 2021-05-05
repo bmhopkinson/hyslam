@@ -405,25 +405,25 @@ void System::ExportCOLMAP(const std::string &foldername){
       return;
     }
   }
-  //ULTIMATELY WILL NEED TO ACCOUNT FOR IMAGE SCALING !!!!!!
 
   //COLMAP required file names
-  std::string cam_file_name  = "cameras.txt";
-  std::string imgs_file_name = "images.txt";
-  std::string pts_file_name  = "points3D.txt";
+  std::string cam_file_name  = foldername + "cameras.txt";
+  std::string imgs_file_name = foldername + "images.txt";
+  std::string pts_file_name  = foldername + "points3D.txt";
 
   //camera file
-    std::ofstream f;
+  std::ofstream f;
   f.open(cam_file_name.c_str()); //add folder path at some point
-    std::vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
-  Camera camera_data  = vpKFs[0]->camera;
+  std::vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
+ // Camera camera_data  = vpKFs[0]->camera;
+  Camera camera_data = cam_data["Imaging"];
   f << "# Camera list with one line of data per camera:" << "\n"  //header
     << "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]"   << "\n"
     << "# Number of cameras: 1" << std::endl;
 
-  f << "1 OPENCV "; //currently only have one camera and the camer std::setprecision(1) <<a model is the OPENCV model
-  int dim_x = vpKFs[0]->mnMaxX;
-  int dim_y = vpKFs[0]->mnMaxY;
+  f << "1 OPENCV "; //currently only have one camera and the camer std::setprecision(1) <<model is the OPENCV model
+  int dim_x = static_cast<int>(camera_data.mnMaxX);
+  int dim_y = static_cast<int>(camera_data.mnMaxY);
   f << dim_x << " " << dim_y << " ";
 
   float fx, fy, cx, cy;  //focal length and principal point
@@ -441,20 +441,6 @@ void System::ExportCOLMAP(const std::string &foldername){
   f << std::fixed << std::setprecision(6) << k1 << " " << k2 << " " << p1 << " "  << p2 << std::endl;
   f.close();
 
-  //find optimized Tslam_to_img
-  cv::Mat Tcam_opt;
-  for(std::vector<KeyFrame*>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); ++vit){
-    KeyFrame* pKFi = *vit;
-    if(pKFi->isBad()){
-      continue;
-    }
-
-    if( !pKFi->camera.Tcam_opt.empty() ){
-      Tcam_opt = pKFi->camera.Tcam_opt;
-    }
-
-  }
-
   //image file - keyframes and KeyPoints
   f.open(imgs_file_name.c_str());
   for(std::vector<KeyFrame*>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); ++vit){
@@ -462,8 +448,6 @@ void System::ExportCOLMAP(const std::string &foldername){
     if(pKF->isBad()){
       continue;
     }
-  //  cv::Mat Twc = pKF->GetPoseInverse(); //pose in camera to world convention
-  //  Twc = Tcam_opt * Twc; // chain
 
     f << pKF->mnId << " ";
 
@@ -479,7 +463,8 @@ void System::ExportCOLMAP(const std::string &foldername){
     f << std::fixed << std::setprecision(4) << t_cw.at<float>(0) << " " << t_cw.at<float>(1) << " " << t_cw.at<float>(2) << " ";
 
     f << "1" << " "; //camera id - right now assuming only one camera
-    std::string img_file_name = "imgcam_" + pKF->kfImgName + ".jpg";
+    //std::string img_file_name = "imgcam_" + pKF->kfImgName + ".jpg";
+    std::string img_file_name = createImageFileName("Imaging", pKF->kfImgName, ".jpg");
     f << img_file_name << std::endl;
 
 
@@ -509,6 +494,10 @@ void System::ExportCOLMAP(const std::string &foldername){
   std::vector<MapPoint*> mpts_all =  maps["Imaging"]->GetAllMapPoints();
   for(std::vector<MapPoint*>::iterator vit = mpts_all.begin(); vit != mpts_all.end(); ++vit){
     MapPoint* pMP = *vit;
+    if(pMP->isBad()){
+        std::cout << "this shouldn't happen: bad mappoint in map->GetAllMapPoints():  " << pMP->mnId << std::endl;
+        continue;
+    }
     cv::Mat pos = pMP->GetWorldPos();
     f << pMP->mnId << " " << std::fixed << std::setprecision(4) <<  pos.at<float>(0) << " " << pos.at<float>(1) << " " << pos.at<float>(2) << " ";
     f << "125 125 125 0.1 "; //dummy RGB and error values
@@ -517,6 +506,9 @@ void System::ExportCOLMAP(const std::string &foldername){
     std::map<KeyFrame*, size_t> KFobs =  pMP->GetObservations();
     for(std::map<KeyFrame*, size_t>::iterator mit = KFobs.begin(); mit != KFobs.end(); ++mit){
       KeyFrame* pKFobs = (*mit).first;
+      if(pKFobs->isBad()){  //bad keyframes shouldn't show up in the list of observations but they do - tried to work out why but wasn't able to figure it out
+          continue;
+      }
       size_t idx_obs = (*mit).second;
       f << pKFobs->mnId << " "  << idx_obs << " ";
     }

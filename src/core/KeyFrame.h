@@ -95,6 +95,7 @@ public:
     int hasAssociation(MapPoint* pMP) const; //determine if landmark pMP is assocaited with a landmarkview, if so return it, otherwise return -1
 
     int associateLandMark(int i, MapPoint* pMP, bool replace);     //associate Landmark i with mappoint pMP; if "replace" allows replacement of previously matched maptpoint, return 0 if succesful
+    int associateLandMark(int i, MapPoint* pMP, bool replace, MapPoint* &pMP_old);     //associate Landmark i with mappoint pMP; if "replace" allows replacement of previously matched maptpoint, return 0 if succesful
     int associateLandMarkVector(std::vector<MapPoint*> vpMapPointMatches, bool replace); //as above, but assumes vector length = N keypoints and each entry is an assocaited mappoint (or nullptr),
     int removeLandMarkAssociation(int i); // remove mappoint association with KeyPoint i.
     int removeLandMarkAssociation(MapPoint* pMP);

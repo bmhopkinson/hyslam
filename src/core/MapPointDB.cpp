@@ -8,7 +8,7 @@ namespace HYSLAM{
     MapPointDBEntry::MapPointDBEntry(MapPoint* pMP, KeyFrame* pKF_ref_, int idx): pMP_entry(pMP) {
         normal_vector = cv::Mat::zeros(3,1,CV_32F);
         _setRefKF_(pKF_ref_);
-        addObservation(pKF_ref_, idx);
+        addObservation(pKF_ref_, idx, true);
         FeatureDescriptor descriptor = pKF_ref_->getViews().descriptor(idx);
         addDescriptor(pKF_ref_, descriptor);
         _setBestDescriptor_(descriptor); //only descriptor right now
@@ -18,9 +18,9 @@ namespace HYSLAM{
 
     }
 
-    void MapPointDBEntry::addObservation(KeyFrame* pKF, size_t idx){
+    void MapPointDBEntry::addObservation(KeyFrame* pKF, size_t idx, bool replace){
         std::unique_lock<std::mutex> lock(entry_mutex);
-        if(observations.count(pKF)) //don't allow replacement
+        if(observations.count(pKF) && !replace) //don't allow replacement
             return;
         observations[pKF]=idx;
         if(pKF->getViews().uR(idx)>=0)  //seems like this could just be passed in as a parameter (and saved for erasing)
@@ -376,12 +376,12 @@ namespace HYSLAM{
         }
     }
 
-    int MapPointDB::addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx){
+    int MapPointDB::addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx, bool replace){
         if(!inDB(pMP)){
             return -1;
         }
         else {
-            mappoint_db[pMP]->addObservation(pKF, idx);
+            mappoint_db[pMP]->addObservation(pKF, idx, replace);
             FeatureDescriptor desc = pKF->getViews().descriptor(idx);
             mappoint_db[pMP]->addDescriptor(pKF, desc);
         }
@@ -425,7 +425,7 @@ namespace HYSLAM{
 
             if (!mappoint_db[pMP_new]->isInKeyFrame(pKF)) {
                 pKF->associateLandMark(mit->second, pMP_new, true);
-                addObservation(pMP_new, pKF, mit->second);
+                addObservation(pMP_new, pKF, mit->second, true);
             } else {
                 pKF->removeLandMarkAssociation(mit->second);
             }

@@ -82,7 +82,8 @@ void Map::SetBadKeyFrame(KeyFrame* pKF){
         return;
     }
 
-    std::cout << "erasing mapts for KF: " << pKF->mnId << std::endl;
+    std::cout << "erasing landmark associations for KF: " << pKF->mnId << ", named: " << pKF->kfImgName << std::endl;
+    // do i need to set it bad immediately so that no other associations will be made !!!!
     std::set<MapPoint*> spMP = pKF->GetMapPoints();
     for(auto it = spMP.begin(); it != spMP.end(); ++it) {
         //mappoint_db.eraseObservation(*it, pKF);
@@ -181,20 +182,32 @@ void  Map::visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts
 }
 
 int Map::addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace){
-     pKF->associateLandMark(idx, pMP, true); //should run this through keyframedb so that it can track changing assocations and update covis etc as needed
-     mappoint_db.addObservation(pMP,pKF, idx );
+    if(pKF->isBad()){
+        return -1;
+    }
+    //two potential replacement issues: 1: idx is already associated with another mappoint; 2: mappoint is already associated with another idx. #2 is handled at lower level by propagating "replace"
+    // in case 1 need to manually remove old association in mappoint_db
+
+     MapPoint* pMP_old;
+     pKF->associateLandMark(idx, pMP, replace, pMP_old); //should run this through keyframedb so that it can track changing assocations and update covis etc as needed
+
+    if(pMP_old && replace){ //remove old association first in case pMP_old = pMP;
+        //std::cout << "removing old observation, which would have lingered in past" << std::endl;
+        mappoint_db.eraseObservation(pMP_old, pKF);
+    }
+
+     mappoint_db.addObservation(pMP,pKF, idx, replace );
      mappoint_db.updateEntry(pMP);
+
      return 0;
 }
 
 int Map::eraseAssociation(KeyFrame* pKF,  MapPoint* pMP){
     pKF->removeLandMarkAssociation(pMP);
-  //  bool erased = pmappoint_db->eraseObservation(pMP, pKF);
-    bool erased = mappoint_db.eraseObservation(pMP, pKF);    
+    bool erased = mappoint_db.eraseObservation(pMP, pKF);
+
     if(erased){
-   //     EraseMapPoint(pMP);
     } else {
-      //  pmappoint_db->updateEntry(pMP); 
         mappoint_db.updateEntry(pMP); 
     }
     return 0;

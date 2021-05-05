@@ -80,7 +80,7 @@ void LandMarkTriangulator::run() {
         cv::Mat F12 = GenUtils::ComputeF12(pKF,pKF2);
 
         std::vector<std::pair<size_t,size_t> > vMatchedIndices;
-        int nmatches_search = matcher->SearchForTriangulation(pKF,pKF2,F12,vMatchedIndices,false);
+        matcher->SearchForTriangulation(pKF,pKF2,F12,vMatchedIndices,false);
    //     std::cout << "LMTriangulator: pKF1 " << pKF->mnId << " pKF2: " << pKF2->mnId << " ; matches: " << nmatches_search << std::endl;
 
         // Triangulate each match

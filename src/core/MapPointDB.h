@@ -54,7 +54,7 @@ namespace HYSLAM{
     public:
         MapPointDBEntry();
         MapPointDBEntry(MapPoint* pMP, KeyFrame* pKF_ref_, int idx);  //mimics mappoint constructor
-        void addObservation(KeyFrame* pKF, size_t idx);
+        void addObservation(KeyFrame* pKF, size_t idx, bool replace);
         bool eraseObservation(KeyFrame* pKF);  //returns whether mappoint is bad - can happen if all observations erased
         void eraseAllObservations(); //used when mappoint is set bad so also clears matches in keyframes
         bool isInKeyFrame(KeyFrame* pKF) ;
@@ -126,7 +126,7 @@ namespace HYSLAM{
         int addEntry(MapPoint* pMP, KeyFrame* pKF_ref, int idx);
         int eraseEntry(MapPoint* pMP);  //does the work of SetBadFlag
         int updateEntry(MapPoint* pMP); // update normal and depth
-        int addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx); //also add descriptor
+        int addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx, bool replace); //also add descriptor
         bool eraseObservation(MapPoint* pMP, KeyFrame* pKF); // also erase descriptor, //returns whether mappoint is bad - can happen if all observations erased
         int replace(MapPoint* pMP_old, MapPoint* pMP_new);
         void clear();

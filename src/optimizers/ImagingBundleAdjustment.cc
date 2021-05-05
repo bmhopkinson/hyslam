@@ -264,11 +264,13 @@ void ImagingBundleAdjustment::AssignStrandedKeyFrames(){
 
    // std::cout << "unable to assign: " << KFs_stranded.size() << " stranded KeyFrames" << std::endl;
     //set unassigned keyframes "bad" e.g. erase them
+
     for(auto it = KFs_stranded.begin(); it != KFs_stranded.end(); ++it) {
         KeyFrame *pKF = *it;
       //  std::cout << "about to set KF bad: " << pKF->mnId << std::endl;
         pMap->SetBadKeyFrame(pKF);
     }
+
 // std::cout << "finished setting stranded KeyFrames as bad   " << std::endl;
 
 }
