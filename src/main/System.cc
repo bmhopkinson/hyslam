@@ -29,6 +29,7 @@
 #include <ImagingBundleAdjustment.h>
 #include <ORBFactory.h>
 #include <SURFFactory.h>
+#include <GenUtils.h>
 
 #include <pangolin/pangolin.h>
 #include <tinyxml2.h>
@@ -394,127 +395,125 @@ void System::ExportCOLMAP(const std::string &foldername){
   struct stat sb;
   std::ios_base::fmtflags fmt_flags( std::cout.flags() ); // save fmt flags to restore after manipulation
 
-  if(stat(foldername.c_str(), &sb) == -1){
-    perror("stat");
-    exit(EXIT_FAILURE);
+  for(auto it = maps.begin(); it != maps.end(); ++it) {
+      std::string cam_name = it->first;
+      Map *pMap = it->second;
+      std::string full_path = foldername + cam_name + "/";
+
+      GenUtils::mkdirRecursive(full_path.c_str(), ACCESSPERMS);
+
+      //COLMAP required file names
+      std::string cam_file_name  = full_path + "cameras.txt";
+      std::string imgs_file_name = full_path + "images.txt";
+      std::string pts_file_name  = full_path + "points3D.txt";
+
+      //camera file
+      std::ofstream f;
+      f.open(cam_file_name.c_str()); //add folder path at some point
+      std::vector<KeyFrame *> vpKFs = pMap->GetAllKeyFrames();
+      Camera camera_data = cam_data[cam_name];
+      f << "# Camera list with one line of data per camera:" << "\n"  //header
+        << "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]" << "\n"
+        << "# Number of cameras: 1" << std::endl;
+
+      f << "1 OPENCV "; //currently only have one camera and the camer std::setprecision(1) <<model is the OPENCV model
+      int dim_x = static_cast<int>(camera_data.mnMaxX);
+      int dim_y = static_cast<int>(camera_data.mnMaxY);
+      f << dim_x << " " << dim_y << " ";
+
+      float fx, fy, cx, cy;  //focal length and principal point
+      fx = camera_data.fx();
+      fy = camera_data.fy();
+      cx = camera_data.cx();
+      cy = camera_data.cy();
+      f << fx << " " << fy << " " << cx << " " << cy << " ";
+
+      float k1, k2, p1, p2;  //radial and tangential distortion
+      k1 = camera_data.distCoef.at<float>(0);
+      k2 = camera_data.distCoef.at<float>(1);
+      p1 = camera_data.distCoef.at<float>(2);
+      p2 = camera_data.distCoef.at<float>(3);
+      f << std::fixed << std::setprecision(6) << k1 << " " << k2 << " " << p1 << " " << p2 << std::endl;
+      f.close();
+
+      //image file - keyframes and KeyPoints
+      f.open(imgs_file_name.c_str());
+      for (std::vector<KeyFrame *>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); ++vit) {
+          KeyFrame *pKF = *vit;
+          if (pKF->isBad()) {
+              continue;
+          }
+
+          f << pKF->mnId << " ";
+
+          std::vector<float> quat = Converter::toQuaternion(pKF->GetRotation());  //rotation is world to camera
+          float qw, qx, qy, qz;
+          qw = quat[3];
+          qx = quat[0];
+          qy = quat[1];
+          qz = quat[2];
+          f << std::fixed << std::setprecision(5) << qw << " " << qx << " " << qy << " " << qz << " ";
+
+          cv::Mat t_cw = pKF->GetTranslation();  //world to camera translation
+          f << std::fixed << std::setprecision(4) << t_cw.at<float>(0) << " " << t_cw.at<float>(1) << " "
+            << t_cw.at<float>(2) << " ";
+
+          f << "1" << " "; //camera id - right now assuming only one camera
+          //std::string img_file_name = "imgcam_" + pKF->kfImgName + ".jpg";
+          std::string img_file_name = createImageFileName(cam_name, pKF->kfImgName, ".jpg");
+          f << img_file_name << std::endl;
+
+
+          //now write out keypoints and corresponding mappt ids - all pts from a single keyframe go on one line
+          std::vector<MapPoint *> mappts_indexed = pKF->GetMapPointMatches();
+          const FeatureViews views = pKF->getViews();
+          std::vector<cv::KeyPoint> keypts_indexed = views.getKeys();
+          int n_keypts = keypts_indexed.size();
+          for (int i = 0; i < n_keypts; ++i) {
+              if (!mappts_indexed[i]) {
+                  continue;  //no mappt associated with this keypoint
+              }
+              if (mappts_indexed[i]->isBad()) {
+                  continue;
+              }
+
+              f << std::fixed << std::setprecision(1) << keypts_indexed[i].pt.x << " " << keypts_indexed[i].pt.y << " "
+                << mappts_indexed[i]->mnId << " ";
+
+          }
+          f << std::endl;
+
+      } //end loop on keyframes
+      f.close();
+
+      //store 3D MapPoints
+      f.open(pts_file_name.c_str());
+      std::vector<MapPoint *> mpts_all = pMap->GetAllMapPoints();
+      for (std::vector<MapPoint *>::iterator vit = mpts_all.begin(); vit != mpts_all.end(); ++vit) {
+          MapPoint *pMP = *vit;
+          if (pMP->isBad()) {
+              std::cout << "this shouldn't happen: bad mappoint in map->GetAllMapPoints():  " << pMP->mnId << std::endl;
+              continue;
+          }
+          cv::Mat pos = pMP->GetWorldPos();
+          f << pMP->mnId << " " << std::fixed << std::setprecision(4) << pos.at<float>(0) << " " << pos.at<float>(1)
+            << " " << pos.at<float>(2) << " ";
+          f << "125 125 125 0.1 "; //dummy RGB and error values
+
+          //"track" = observations
+          std::map<KeyFrame *, size_t> KFobs = pMP->GetObservations();
+          for (std::map<KeyFrame *, size_t>::iterator mit = KFobs.begin(); mit != KFobs.end(); ++mit) {
+              KeyFrame *pKFobs = (*mit).first;
+              if (pKFobs->isBad()) {  //bad keyframes shouldn't show up in the list of observations but they do - tried to work out why but wasn't able to figure it out
+                  continue;
+              }
+              size_t idx_obs = (*mit).second;
+              f << pKFobs->mnId << " " << idx_obs << " ";
+          }
+          f << std::endl;
+      } // end loop on mappoints
+      f.close();
   }
-
-  if(!S_ISDIR(sb.st_mode)){
-    if( mkdir(foldername.c_str(), S_IRUSR | S_IWUSR ) != 0) {
-      std::cout << "could not create: " << foldername << std::endl;
-      return;
-    }
-  }
-
-  //COLMAP required file names
-  std::string cam_file_name  = foldername + "cameras.txt";
-  std::string imgs_file_name = foldername + "images.txt";
-  std::string pts_file_name  = foldername + "points3D.txt";
-
-  //camera file
-  std::ofstream f;
-  f.open(cam_file_name.c_str()); //add folder path at some point
-  std::vector<KeyFrame*> vpKFs = maps["Imaging"]->GetAllKeyFrames();
- // Camera camera_data  = vpKFs[0]->camera;
-  Camera camera_data = cam_data["Imaging"];
-  f << "# Camera list with one line of data per camera:" << "\n"  //header
-    << "#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]"   << "\n"
-    << "# Number of cameras: 1" << std::endl;
-
-  f << "1 OPENCV "; //currently only have one camera and the camer std::setprecision(1) <<model is the OPENCV model
-  int dim_x = static_cast<int>(camera_data.mnMaxX);
-  int dim_y = static_cast<int>(camera_data.mnMaxY);
-  f << dim_x << " " << dim_y << " ";
-
-  float fx, fy, cx, cy;  //focal length and principal point
-  fx = camera_data.fx();
-  fy = camera_data.fy();
-  cx = camera_data.cx();
-  cy = camera_data.cy();
-  f << fx << " " << fy << " " << cx << " " << cy << " ";
-
-  float k1, k2, p1, p2;  //radial and tangential distortion
-  k1 = camera_data.distCoef.at<float>(0);
-  k2 = camera_data.distCoef.at<float>(1);
-  p1 = camera_data.distCoef.at<float>(2);
-  p2 = camera_data.distCoef.at<float>(3);
-  f << std::fixed << std::setprecision(6) << k1 << " " << k2 << " " << p1 << " "  << p2 << std::endl;
-  f.close();
-
-  //image file - keyframes and KeyPoints
-  f.open(imgs_file_name.c_str());
-  for(std::vector<KeyFrame*>::iterator vit = vpKFs.begin(); vit != vpKFs.end(); ++vit){
-    KeyFrame* pKF = *vit;
-    if(pKF->isBad()){
-      continue;
-    }
-
-    f << pKF->mnId << " ";
-
-    std::vector<float> quat = Converter::toQuaternion(pKF->GetRotation());  //rotation is world to camera
-    float qw, qx, qy, qz;
-    qw = quat[3];
-    qx = quat[0];
-    qy = quat[1];
-    qz = quat[2];
-    f << std::fixed << std::setprecision(5) << qw << " " << qx << " " << qy << " " << qz << " ";
-
-    cv::Mat t_cw =  pKF->GetTranslation();  //world to camera translation
-    f << std::fixed << std::setprecision(4) << t_cw.at<float>(0) << " " << t_cw.at<float>(1) << " " << t_cw.at<float>(2) << " ";
-
-    f << "1" << " "; //camera id - right now assuming only one camera
-    //std::string img_file_name = "imgcam_" + pKF->kfImgName + ".jpg";
-    std::string img_file_name = createImageFileName("Imaging", pKF->kfImgName, ".jpg");
-    f << img_file_name << std::endl;
-
-
-    //now write out keypoints and corresponding mappt ids - all pts from a single keyframe go on one line
-    std::vector<MapPoint*> mappts_indexed = pKF->GetMapPointMatches();
-    const FeatureViews views = pKF->getViews();
-    std::vector<cv::KeyPoint> keypts_indexed = views.getKeys();
-    int n_keypts = keypts_indexed.size();
-    for(int i = 0; i < n_keypts; ++i){
-      if(!mappts_indexed[i]){
-        continue;  //no mappt associated with this keypoint
-      }
-      if(mappts_indexed[i]->isBad()){
-        continue;
-      }
-
-      f  <<std::fixed << std::setprecision(1) << keypts_indexed[i].pt.x << " " << keypts_indexed[i].pt.y << " " << mappts_indexed[i]->mnId<< " ";
-
-    }
-    f << std::endl;
-
-  } //end loop on keyframes
-  f.close();
-
-  //store 3D MapPoints
-  f.open(pts_file_name.c_str());
-  std::vector<MapPoint*> mpts_all =  maps["Imaging"]->GetAllMapPoints();
-  for(std::vector<MapPoint*>::iterator vit = mpts_all.begin(); vit != mpts_all.end(); ++vit){
-    MapPoint* pMP = *vit;
-    if(pMP->isBad()){
-        std::cout << "this shouldn't happen: bad mappoint in map->GetAllMapPoints():  " << pMP->mnId << std::endl;
-        continue;
-    }
-    cv::Mat pos = pMP->GetWorldPos();
-    f << pMP->mnId << " " << std::fixed << std::setprecision(4) <<  pos.at<float>(0) << " " << pos.at<float>(1) << " " << pos.at<float>(2) << " ";
-    f << "125 125 125 0.1 "; //dummy RGB and error values
-
-    //"track" = observations
-    std::map<KeyFrame*, size_t> KFobs =  pMP->GetObservations();
-    for(std::map<KeyFrame*, size_t>::iterator mit = KFobs.begin(); mit != KFobs.end(); ++mit){
-      KeyFrame* pKFobs = (*mit).first;
-      if(pKFobs->isBad()){  //bad keyframes shouldn't show up in the list of observations but they do - tried to work out why but wasn't able to figure it out
-          continue;
-      }
-      size_t idx_obs = (*mit).second;
-      f << pKFobs->mnId << " "  << idx_obs << " ";
-    }
-    f << std::endl;
-  } // end loop on mappoints
-  f.close();
   std::cout.flags(fmt_flags); //restore format flags
 
 }

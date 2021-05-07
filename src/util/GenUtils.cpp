@@ -3,6 +3,7 @@
 #include <Converter.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <sys/stat.h>
 
 namespace HYSLAM{
 
@@ -95,6 +96,22 @@ bool GenUtils::PointHasPositiveDepth(cv::Mat ProjectionMatrix, cv::Mat point){
    // std::cout << "z_alt: " << z <<std::endl;
     return z >= 0.000;
 
+}
+
+
+int GenUtils::mkdirRecursive(const char* pathname, mode_t mode) {
+    std::string pathstring(pathname);
+    std::string pathtemp;
+
+    int ret = 0;
+    int searched = 0;
+    do {
+        searched = pathstring.find('/', searched+1);
+        pathtemp.assign(pathstring, 0, searched);
+        ret = mkdir(pathtemp.c_str(), mode);
+    } while (searched != std::string::npos);
+
+    return ret;
 }
 
 } //end namespace
