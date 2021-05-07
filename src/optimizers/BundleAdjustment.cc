@@ -170,7 +170,7 @@ void BundleAdjustment::SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames ){
                 p.at<float>(1,0) = relpos[1];
                 p.at<float>(2,0) = relpos[2];
                 p.at<float>(3,0) = 1.0000;
-                cv::Mat p_orb = Thorn*p;
+                cv::Mat p_orb = Thorn*p; //convert GPS data from absolute reference frame to SLAM reference frame
                 g2o::Vector3d gpsData(Converter::toVector3d(p_orb( cv::Range(0,3),cv::Range::all() ) )); //take first 3 elements of transformed vector (cv range is exclusive like python)
                 Eigen::Matrix<double, 3,3> gpsInf  = Rotate_GpsError(pKFi->getSensorData().getGPSerr(), Rhorn);  // rotate gps error into orb coordinate frame
 

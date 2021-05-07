@@ -1,6 +1,28 @@
 #ifndef GLOBAL_BUNDLE_ADJUSTMENT_H_
 #define GLOBAL_BUNDLE_ADJUSTMENT_H_
 
+/*
+ * class that implements a global bundle adjustment. relies heavily on BundleAdjustment base class
+ * does global bundle adjustment of pMap, keeping keyframes in vpKFfix constant
+ * can be used either as periodic global bundle adjustment in which case keyframe poses and landmark positions are
+ * automatically updated post optimization in RecoverOptimizedKeyFrame and RecoverOptimizedMapPoints, or can be called
+ * during loop closing in which case updates are deferred in case new keyframes/landmarks have been added to the map in the mean time
+ * (for loop closing updated data is stored in KeyFrame and MapPoint objects.)
+ * options - including loop closing vs periodic mode are specified in optParams
+ *
+ * makes use of constraints from:
+ *  LandMark observations
+ *  IMU data
+ *  GPS data
+ *  Depth data
+ *  when those data sources are available
+ *
+ *  usage:
+ *  simply construct the object and then Run(). optimization can take along time so best to run in a separate thread.
+ *  remember that for loop closing the updated pose/positions must be manually applied later.
+ *
+ */
+
 #include "Map.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
