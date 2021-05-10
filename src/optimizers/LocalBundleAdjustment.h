@@ -1,6 +1,26 @@
 #ifndef LOCAL_BUNDLE_ADJUSTMENT_H_
 #define LOCAL_BUNDLE_ADJUSTMENT_H_
 
+/*
+ * class that implements optimization of  camera and landmark positions in a local region around the newest keyframe (pCentralKF)
+ * makes heavy use of BundleAdjustment base class. primarily this class finds the local keyframes and landmarks near pCentralKF
+ * and then relies on functionality of BundleAdjustment base to do the optimization
+ *
+ * KeyFunctions:
+ * FindLocalKFs(KeyFrame *pCentralKF) - all keyframes connected in the covisibility graph to pCentralKF are considered "local".
+ *  the pose of these local keyframes will be modified by optimization
+ * FindLocalMapPoints() - collects all landmarks observed in local keyframes as the local mappoints.
+ * FindFixedKFs() - peripheral keyframes that observe local landmarks (but are not in the local keyframe list).
+ * these keyframes will be included as constraints in the optimization but their positions will be fixed.
+ *
+ * Run() - finds local keyframes, local landmarks, and fixed keyframes. sets up vertices and edges between keyframes,
+ * landmarks, and accessory sensor data (IMU, GPS, depth). runs an initial optimization (currently 5 iterations) and
+ * then removes outlier edges, and optimizes again. after successful optimization, updates pose of local keyframe and
+ * positions of local landmarks based on optimization.
+ *
+ *
+ */
+
 #include "Map.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"

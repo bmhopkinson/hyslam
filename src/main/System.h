@@ -28,6 +28,9 @@
  *
  * ExportCOLMAP(const std::string &foldername)
  *   exports SLAM data in format for sparse reconstrution import for COLAMP
+ *
+ * SaveKeyFramesAgisoft(const std::string &filename) - exports keyframes and associated camera intrinsics in Agisoft
+ * metashape format for use with metashape
  */
 
 #include <Tracking.h>

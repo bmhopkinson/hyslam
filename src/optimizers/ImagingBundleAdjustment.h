@@ -29,7 +29,15 @@
  *  ApplySimilarityTransforms() - applies similarity transforms computed for each segment in the previous step to keyframes and mappoints
  *  associated with each segment (mappoints are not strictly associated to a single segment so need to ensure tranform is only applied once).
  *
- *  RotatePosestoAlign() -
+ *  RotatePosestoAlign() - since segments are often linear the Horn transform applied in ApplySimilarityTransform will not properly align
+ *  the orientation of the keyframes with that implied by SLAM camera + SLAM->Imaging rigid transform. this step corrects that by determining
+ *  a rotation for each segment that best aligns poses of imaging keyframes with expected position (by SLAM camera + SLAM->Imaging rigid transform).
+ *  uses OptHelper function PoseAlignmentTransform to calculate rotation, which is done by augmenting camera centers with points that represent
+ *  orientation axes and then using Horn method to calculate a transform.
+ *
+ *  FindAdditionalMapPointMatches() - for each keyframe, finds all landmarks in the viewing frustum (even in different segments) and attempts to
+ *  Fuse (FeatureMatcher::Fuse()) all visible landmarks into the frame. this will create cross-segment matches critical for global consistency
+ *  of the final map.
  *
  */
 

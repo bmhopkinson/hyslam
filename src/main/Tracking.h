@@ -23,6 +23,45 @@
 #ifndef TRACKING_H
 #define TRACKING_H
 
+/*
+ * class that performs frame to frame tracking with respect to a Map
+ * organized as a state machine where the attempted tracking method varies depending on state (normal, initalization, relocalization)
+ * and potentially camera. tracking states and tracking strategies are defined in slam->tracking pacakge.
+ * runs in a separate thread and receives extracted feature data per frame from ImageProcessing. attempts to determine pose of frame
+ * and landmark to feature correspondences based on various tracking strategies. after successful tracking determines if a new
+ * keyframe is needed - if so it creates one from the existing frame and puts it onto the output queue for mapping to handle.
+ * also maintains the frame by frame trajectory for each camera.
+ *
+ * key data:
+ *
+ * currentFrame - represents the current image holding its extracted features, correspondences to landmarks, and pose
+ * maps, camera_data - self explanatory, one per camera
+ * state - current tracking state, one per camera
+ * state_options - tracking states available for use, one set per camera
+ * trajectories - trajectories representing the per frame path of each camera
+ *
+ * key functions:
+ * constructor - sets pointers to various resources (some of which should be refactored to eliminate - drawers, system)
+ * loads settings from strSettingPath using internal function LoadSettings(std::string settings_path) which loads optimizer settings,
+ * , finds tracking state and strategies settings file, and sets up data structures. Finally, calls SetupStates() that uses tracking configuration data
+ * to set up tracking states and strategies for each camera - currently must have the following states: Normal, Initialize, Relocalize (but would like
+ * to make this more generic)
+ *
+ * Run() - main looping function run in a thread. looks for image feature data on the input queue and if available runs track().
+ * then tests if a stop has been requested and waits in a safe area if one has been requested until asked to resume (release)
+ *
+ * track() - creates Frame from image feature data and calls internal function _Track()_
+ * _Track()_ - attempts to track the Frame (i.e. determine its pose and landmark to feature correspondences) with calls
+ *  to intialPoseEstimatation() and if successful refinePoseEstimate() implemented by the current tracking state. if tracking was successful
+ *  decides whether a new keyframe needs to be inserted by calling newKeyFrame(), again implemented by the current tracking state (and so state dependent).
+ *  if a new keyframe is created it is passed on to mapping via the output queue.
+ *  adds current frame to the cameras trajectory. updates viewer (FrameDrawer; this should be implemented differently to reduce dependency)
+ *  and finally determines next state and sets it in "state" - currently this logic is hard coded but would like to make it more flexible (run time loadable or implemented by states)
+ *
+ *
+ *
+ */
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 

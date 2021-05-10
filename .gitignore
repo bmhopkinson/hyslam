@@ -7,7 +7,7 @@
 *.o
 *.log
 **/cmake-build-debug
-**/cmake-build-relwithdeinfo
+**/cmake-build-relwithdebinfo
 
 
 # Uncompressed Vocab

@@ -21,6 +21,15 @@
 #ifndef OPTIMIZER_H
 #define OPTIMIZER_H
 
+/*
+ * legacy optimization functions from ORBSLAM2.
+ * PoseOptimization(Frame* pFrame, optInfo optParams) is used in various tracking strategies to optimize the pose
+ * of pFrame based on landmark observations. returns number of inlier feature-landmark correspondences which helps
+ * determine if tracking was successful.
+ *
+ * OptimizeEssentialGraph and OptimizeSim3 are used in LoopClosing
+ */
+
 #include "Map.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
