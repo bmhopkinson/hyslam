@@ -1,6 +1,29 @@
 #ifndef TRACKINGSTATEINITIALIZE_H_
 #define TRACKINGSTATEINITIALIZE_H_
 
+/*
+ * TrackingState for initialization of tracking - makes use of underlying Initializer class 
+ *    to do the actual initialization (currently there are monocular and stereo initializers but could be
+ *    expanded for other cameras or be made condition dependent).
+ *    needs access to FeatureFactory because monocular initialization relies on feature matching. 
+ * 
+ *  key functions:
+ *  initialPoseEstimation() - passes current_frame to initializer and if initializer is succesful
+ *   has the initializer create a map and new keyframes (stored in KFnew). handles alignment of imaging camera with SLAM in a opaque manner, which
+ *   really should be updated - tests if camera is monocular and not SLAM (i.e. must be imaging) and if so calls initializer->transformMap();
+ *   if the camera is a monocular SLAM camera calls a special helper function HandlePostMonoInitSLAM()
+ *  
+ *  refinePoseEstimate() - dummy function, just returns true.
+ * 
+ *  needNewKeyFrame() - always returns true b/c we'll always need a new keyframe when a camera is first initialized. 
+ *
+ *  createNewKeyFrame() - returns keyframes stored in KFnew, updates current_frame whose pose may have been altered upon initialization,
+ *    also sets pMap->mvpKeyFrameOrigins to current keyframe - this is an obscure piece of data used in loop closing. 
+ *  
+ *  HandlePostMonoInitSLAM() - runs global bundle adjustment and scales the map so that the median scene depth is one.  
+ * 
+ */
+
 #include <TrackingState.h>
 #include <Tracking_datastructs.h>
 #include <InterThread.h>

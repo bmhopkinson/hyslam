@@ -37,7 +37,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
 
     } else {  //THIS FAILS IF SLAM CAM HAS LOST TRACKING
         if(slam_trajectory->integrateVelocity( last_slamframe.mTimeStamp, last_frame.mTimeStamp, Vcw) == 0){
-            cv::Mat Tcw_slam = Vcw*last_slamframe .mTcw;  //inferred position of SLAM camera at current frame
+            cv::Mat Tcw_slam = Vcw*last_slamframe.mTcw;  //inferred position of SLAM camera at current frame
             Tcw_cur = camera.Tcam.inv() * Tcw_slam; //convert from position of SLAM camera to current camera
 
         }

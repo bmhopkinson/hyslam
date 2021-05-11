@@ -1,6 +1,17 @@
 #ifndef TRACKREFERENCEKEYFRAME_H_
 #define TRACKREFERENCEKEYFRAME_H_
 
+/*
+ * TrackingStrategy that attempts to track (determine pose and landmark associations) current_frame by matching features
+ *   with reference keyframe (pKF)
+ *
+ *   track() - establishes feature matches between current_frame and reference keyframe (pKF) with FeatureMatcher::SearchByBoW().
+ *     if a sufficient number of landmark matches are made to the current_frame, runs PoseOptimization to refine pose estimate
+ *     (sets initial pose to that of the previous frame) based on landmark to image feature correspondences.
+ *     subsequently removes outlier landmark associations and returns number of remaining associations (inlier matches).
+ *
+ */
+
 #include <TrackingStrategy.h>
 #include <ORBSLAM_datastructs.h>
 #include <Tracking_datastructs.h>

@@ -7,6 +7,9 @@
 #include <vector>
 #include <deque>
 
+/*
+ * data structures related to tracking. most hold parameters for TrackingStrategies or TrackingStates
+ */
 
 namespace HYSLAM{
 

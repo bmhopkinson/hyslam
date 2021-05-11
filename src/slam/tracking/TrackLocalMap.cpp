@@ -78,7 +78,7 @@ void TrackLocalMap::SearchLocalPoints(){
 
     //int th = 5;
     std::vector<MapPoint*> v_lmp(local_map_points.begin(), local_map_points.end());
-    int n_matches = matcher->SearchByProjection(*pcurrent_frame, v_lmp, params.match_radius_threshold);
+    matcher->SearchByProjection(*pcurrent_frame, v_lmp, params.match_radius_threshold);
 
 //    std::cout << "tracklocal map, N_local_mpts: " << v_lmp.size() << ", matches SearchByProjection: "  << n_matches << std::endl;
 

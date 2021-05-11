@@ -1,6 +1,20 @@
 #ifndef TRACKINGSTATERELOCALIZE_H_
 #define TRACKINGSTATERELOCALIZE_H_
 
+/*
+ * TrackingState when tracking has been lost and a relocalization based on image appearance is being attempted
+ *
+ * initialPoseEstimation() uses TrackPlaceRecognition strategy to attempt to relocalize and obtain pose for current_frame.
+ *   considers tracking successful if number of landmarks tracked exceeds a threshold (threshold can be set from parameters)
+ *
+ * refinePoseEstimate() - uses TrackLocalMap strategy to refine pose estimate.
+ *   considers tracking successful if number of landmarks tracked exceeds a threshold (threshold can be set from parameters)
+ *
+ * needNewKeyFrame() - currently returns false - don't immediately create a new keyframe after relocalization (but haven't tried true,
+ *    it might make sense to insert a keyframe immediately upon successful relocalization )
+ *
+ */
+
 #include <TrackingState.h>
 #include <Tracking_datastructs.h>
 #include <InterThread.h>
