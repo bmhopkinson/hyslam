@@ -1,6 +1,16 @@
 #ifndef MAPJOB_H_
 #define MAPJOB_H_
 
+/*
+ * abstract base class for map jobs.
+ * defines key functionality:
+ * run() - run the map job.
+ * abort() - request that the map job stop (not all necessarily will or can)
+ * stopped() - informs caller whether the job has stopped based on requested abort.
+ * finished()-  informs caller whether the job has finished, that is has completed. the final thing any map job should do
+ *    is set has_finished = true
+ */
+
 namespace HYSLAM{
 class MapJob{
 public:

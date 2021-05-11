@@ -1,6 +1,11 @@
 #ifndef MAPPINGDATASTRUCTS_H_
 #define MAPPINGDATASTRUCTS_H_
 
+/*
+ * data structures holding parameters for map jobs
+ *
+ */
+
 #include <opencv2/opencv.hpp>
 
 namespace HYSLAM{

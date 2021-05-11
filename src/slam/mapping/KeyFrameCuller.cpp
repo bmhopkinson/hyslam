@@ -47,7 +47,7 @@ void KeyFrameCuller::run(){
                     if(!is_mono)
                     {
                         float depth_pt = KFviews.depth(i);
-                        if( depth_pt > pKFi->mThDepth ||depth_pt <0)
+                        if( depth_pt > pKFi->mThDepth ||depth_pt <0) //if the mappoint is far away (>mThDepth) and so expected to be viewed in many keyframes, ignore. also if depth is not valid ignore.
                             continue;
                     }
 

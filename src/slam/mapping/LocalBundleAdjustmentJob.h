@@ -1,6 +1,13 @@
 #ifndef LOCALBUNDLEADJUSTMENTJOB_H_
 #define LOCALBUNDLEADJUSTMENTJOB_H_
 
+/*
+ * map job that runs a LocalBundleAdjustment centered on pKF_
+ *
+ * this is just a wrapper to LocalBundleAdjustment, derived from MapJob so it can be handled identically to other map jobs
+ *
+ */
+
 #include <MapJob.h>
 #include <KeyFrame.h>
 #include <Map.h>
