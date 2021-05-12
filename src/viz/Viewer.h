@@ -21,6 +21,9 @@
 
 #ifndef VIEWER_H
 #define VIEWER_H
+/*
+ * class that creates and manages visualization of SLAM process: FrameDrawer and MapDrawer.
+ */
 
 #include "FrameDrawer.h"
 #include "MapDrawer.h"

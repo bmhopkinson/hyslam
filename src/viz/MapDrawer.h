@@ -21,6 +21,12 @@
 #ifndef MAPDRAWER_H
 #define MAPDRAWER_H
 
+/*
+ * pangolin (openGL) based drawer to visualize maps. all maps are displayed in a single window.
+ * optionally displays: KeyFrames, LandMarks (points), Covisibility Graph (ConnGraph), Spanning tree (SpanTree)
+ * and camera trajectories (Trajectory)
+ */
+
 #include "Map.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"

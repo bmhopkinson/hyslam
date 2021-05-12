@@ -21,6 +21,24 @@
 #ifndef FRAMEDRAWER_H
 #define FRAMEDRAWER_H
 
+/*
+ * class to display images and information about feature tracking (keypoints, initialization matches, etc)
+ * unfortunate dependancy on Tracking should be eliminated.
+ *
+ * Displays each frame the SLAM system attempts to track. for tracked frames it displays markers indicating the tracked
+ * features (i.e. features associated with landmarks) with the marker size proportional to the feature size.
+ *  the color of the outer square indicates how many consecutive frames the landmark has been tracked in (currently: <5 = green; 5 - 20 = cyan; >20 blue).
+ *  the color of the point at the center of the marker indicates the total number of keyframes in which the landmark has been observed
+ *   (currently: <30 = green, 30 -100 = cyan; >100 = blue)
+ *  Along the bottom of the image indicates information about the map associated with the camera: total keyframes, total mappoints (landmarks)
+ *  and current number of feature to landmark matches.
+ *
+ *  Key functionality:
+ *   cv::Mat DrawFrame() - creates and returns annotated image of most recent frame for display
+ *
+ *   void Update(Tracking *pTracker) - pulls image and tracking data of most recent frame for processing
+ */
+
 #include <Tracking.h>
 #include <Tracking_datastructs.h>
 #include <MapPoint.h>

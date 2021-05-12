@@ -1,25 +1,12 @@
-/**
-* This file is part of ORB-SLAM2.
-*
-* Copyright (C) 2014-2016 Raúl Mur-Artal <raulmur at unizar dot es> (University of Zaragoza)
-* For more information see <https://github.com/raulmur/ORB_SLAM2>
-*
-* ORB-SLAM2 is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM2 is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #ifndef CONVERTER_H
 #define CONVERTER_H
+
+/*
+ * class holding static member functions used to convert between data structures
+ * most should be self explantory but are documented below
+ * be careful with quaternion vector order conventions ( [w, x, y, z] vs. [x, y, z, w])
+ */
 
 #include <FeatureDescriptor.h>
 
@@ -39,25 +26,25 @@ class Converter
 public:
     static std::vector<cv::Mat> toDescriptorVector(const std::vector<FeatureDescriptor> &Descriptors);
 
-    static g2o::SE3Quat toSE3Quat(const cv::Mat &cvT);
-    static g2o::SE3Quat toSE3Quat(const g2o::Sim3 &gSim3);
-    static Isometry3 cvMatToIso3(cv::Mat m);
-    static cv::Mat   Iso3tocvMat(Isometry3 Teig);
+    static g2o::SE3Quat toSE3Quat(const cv::Mat &cvT);  //converts from cv::Mat transform matrix to g2o::SE3Quat, translation + rotation in quaternion form.
+   // static g2o::SE3Quat toSE3Quat(const g2o::Sim3 &gSim3);
+    static Isometry3 cvMatToIso3(cv::Mat m); //converts cv::Mat transform into Eigen Isometry3
+    static cv::Mat   Iso3tocvMat(Isometry3 Teig);//converts Eigen Isometry3  into  cv::Mat transform
 
-    static cv::Mat toCvMat(const g2o::SE3Quat &SE3);
-    static cv::Mat toCvMat(const g2o::Sim3 &Sim3);
-    static cv::Mat toCvMat(const Eigen::Matrix<double,4,4> &m);
-    static cv::Mat toCvMat(const Eigen::Matrix3d &m);
-    static cv::Mat toCvMat(const Eigen::Matrix<double,3,1> &m);
-    static cv::Mat toCvSE3(const Eigen::Matrix<double,3,3> &R, const Eigen::Matrix<double,3,1> &t);
+    static cv::Mat toCvMat(const g2o::SE3Quat &SE3); //converts from g2o::SE3Quat (translation + rotation in quaternion) to  cv::Mat transform matrix (SE3)
+    static cv::Mat toCvMat(const g2o::Sim3 &Sim3); // converts from g2o::Sim3 (similarity) to cv::Mat form.
+    static cv::Mat toCvMat(const Eigen::Matrix<double,4,4> &m);  //converts 4 x 4 eigen matrix to cv::Mat
+    static cv::Mat toCvMat(const Eigen::Matrix3d &m); //converts 3 x 3 eigen matrix to cv::Mat
+    static cv::Mat toCvMat(const Eigen::Matrix<double,3,1> &m);  //converts 3 row x 1 col Eigen to  3 row x 1 col cv::Mat
+    static cv::Mat toCvSE3(const Eigen::Matrix<double,3,3> &R, const Eigen::Matrix<double,3,1> &t);  //construct cv::Mat matrix representing SE3 transform from Eigen components: R rotation matrix, t translation vector
 
-    static Eigen::Matrix<double,3,1> toVector3d(const cv::Mat &cvVector);
-    static Eigen::Matrix<double,3,1> toVector3d(const cv::Point3f &cvPoint);
-    static Eigen::Matrix<double,3,3> toMatrix3d(const cv::Mat &cvMat3);
+    static Eigen::Matrix<double,3,1> toVector3d(const cv::Mat &cvVector);  //convert from cv::Mat 3 rows by 1 col to Eigen equivalent
+    static Eigen::Matrix<double,3,1> toVector3d(const cv::Point3f &cvPoint); // convert from cv::Point3f to Eigen 3 x 1 matrix.
+    static Eigen::Matrix<double,3,3> toMatrix3d(const cv::Mat &cvMat3); //convert from 3 x 3 cv::Mat to Eighen equivalent.
 
-    static std::vector<float> toQuaternion(const cv::Mat &M);
-    static Eigen::Quaterniond toQuatEigen(const std::vector<double> q);
-    static std::vector<double> toQuatStdvec(Eigen::Quaterniond q_eig);
+    static std::vector<float> toQuaternion(const cv::Mat &M);  //convert from cv::Mat rotation matrix (3x3) to quaternion in x, y, z, w order (DIFFERENT BELOW!!!)
+    static Eigen::Quaterniond toQuatEigen(const std::vector<double> q); //convert from raw quaternion in w, x, y, z order to Eigen form
+    static std::vector<double> toQuatStdvec(Eigen::Quaterniond q_eig); //convert from  Eigen quaternion to raw quaternion in w, x, y, z order
 };
 
 }// namespace ORB_SLAM

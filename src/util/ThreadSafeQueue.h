@@ -5,6 +5,19 @@
 #ifndef HYSLAM_THREADSAFEQUEUE_H
 #define HYSLAM_THREADSAFEQUEUE_H
 
+/*
+ * templated class defining a very simple threadsafe queue. used for interthread data passage
+ * built on top of STL queue
+ *
+ * functions:
+ * push() - add item to queue
+ * pop() - remove item from queue and return it.
+ * back() - returns last (most recently added) item on the queue  - does not remove this item from the queue
+ * clear() - remove all elements from the queue
+ * size() - returns number of items on the queue
+ *
+ */
+
 #include <queue>
 #include <mutex>
 #include <iostream>
