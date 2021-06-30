@@ -1,15 +1,6 @@
 #ifndef TRACKINGSTATE_H_
 #define TRACKINGSTATE_H_
 
-#include <Frame.h>
-#include <KeyFrame.h>
-#include <Map.h>
-#include <Trajectory.h>
-#include <TrackingStrategy.h>
-#include <InterThread.h>
-
-#include <iostream>
-
 /*
  * abstract base class defining interface for TrackingState classes
  * the derived classes implement different tracking behaviors dependent on quality of tracking
@@ -33,6 +24,14 @@
  *   the keyframe isn't officially in the map yet. probably preferable to do this in mapping. 
  * 
  */
+#include <Frame.h>
+#include <KeyFrame.h>
+#include <Map.h>
+#include <Trajectory.h>
+#include <TrackingStrategy.h>
+#include <InterThread.h>
+
+#include <iostream>
 
 namespace HYSLAM{
   //  class Mapping;

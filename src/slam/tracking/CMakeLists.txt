@@ -9,6 +9,7 @@ HYSLAM_ADD_SOURCES(
         TrackingStateNormal.h   TrackingStateNormal.cpp
         TrackingStateRelocalize.h   TrackingStateRelocalize.cpp
         TrackingStateInitialize.h   TrackingStateInitialize.cpp
+        TrackingStateNull.h TrackingStateNull.cpp
 )
 
 

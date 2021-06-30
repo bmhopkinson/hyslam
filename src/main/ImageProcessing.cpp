@@ -85,7 +85,7 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
         cv::Mat imCopy = imGrayRight.clone();
         cv::drawKeypoints(imCopy, mvKeysRight, imCopy, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         cv::imwrite("features_extracted_right.jpg", imCopy);
-        std::cout << "N Features Extracted: " << mvKeys.size() << std::endl;
+     //   std::cout << "N Features Extracted: " << mvKeys.size() << std::endl;
 
 
         cv::Mat imCopyLeft = mImGray.clone();

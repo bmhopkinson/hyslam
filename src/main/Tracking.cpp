@@ -33,6 +33,7 @@
 #include <TrackingStateNormal.h>
 #include <TrackingStateRelocalize.h>
 #include <TrackingStateInitialize.h>
+#include <TrackingStateNull.h>
 #include <Tracking_datastructs.h>
 
 #include <fstream>
@@ -189,7 +190,6 @@ void Tracking::_Track_()
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(maps[cam_cur]->mMutexMapUpdate);
 
-    bool bOK = false;
     if(slam_ever_initialized) {
         UpdateLastFrame();
     }
@@ -198,7 +198,7 @@ void Tracking::_Track_()
     frame_buf.push_back(mLastFrame[cam_cur]); //should probably pass pointers here
     frame_buf.push_back(mLastFrame["SLAM"]);
     mCurrentFrame.mpReferenceKF = mpReferenceKF[cam_cur];
-    bOK = state[cam_cur]->initialPoseEstimation(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur], trajectories);
+    bool bOK = state[cam_cur]->initialPoseEstimation(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur], trajectories);
 
     if(bOK){
         bOK = state[cam_cur]->refinePoseEstimate(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur], trajectories);
@@ -290,6 +290,13 @@ void Tracking::_Track_()
             if (cam_cur == "SLAM") {
                 pnext_track_state = state_options[cam_cur]["RELOCALIZE"];
                 next_state = eTrackingState::RELOCALIZATION;
+                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO RELOCALIZE" << std::endl;
+
+                if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
+                    state["Imaging"]  = state_options["Imaging"]["NULL"];
+                    mState["Imaging"] = eTrackingState::NULL_STATE;
+                }
+
             } else {
                 //  state[cam_cur] = state_options["INITIALIZE"]; //don't try to relocalize accessory cameras - just reinitialize
                 next_state = eTrackingState::INITIALIZATION;
@@ -305,6 +312,15 @@ void Tracking::_Track_()
         if(bOK){
             pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = eTrackingState::NORMAL;
+
+            if(cam_cur == "SLAM" && state.find("Imaging") != state.end()){ //if the SLAM camera was localized and there's an imaging camera, can allow imaging to start operating again
+                mState["Imaging"] = eTrackingState::INITIALIZATION;
+                cv::FileNode cam_states = config_data["Cameras"];
+                cv::FileNode state_config = config_data["States"];
+                StateInitializeParameters state_initialize_params(state_config[cam_states["Imaging"]["Initialize"].string()], config_data["Strategies"]);
+                pnext_track_state = new TrackingStateInitialize(optParams, cam_data["Imaging"], init_data["Imaging"],
+                                                                state_initialize_params, ftracking, thread_status, feature_factory);
+            }
         }
     }
     mState[cam_cur] = next_state;
@@ -348,6 +364,9 @@ void Tracking::SetupStates(){
                                                         strategy_config);
       state_options[cam_name]["RELOCALIZE"] = new TrackingStateRelocalize(optParams, state_relocalize_params,
                                                                           ftracking, thread_status, feature_factory);
+
+      //Null
+      state_options[cam_name]["NULL"] = new TrackingStateNull(ftracking, thread_status);
   }
 }
 

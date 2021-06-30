@@ -19,7 +19,8 @@ enum class eTrackingState{
     NO_IMAGES_YET,
     INITIALIZATION,
     NORMAL,
-    RELOCALIZATION
+    RELOCALIZATION,
+    NULL_STATE
 };
 
 class RANSACParameters{
