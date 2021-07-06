@@ -74,9 +74,15 @@ public:
 
    void erase(KeyFrame* pKF, std::string option); //i'm sure there's a better way to do this
 
+    bool exists(KeyFrame *pKF);
+
    void update(KeyFrame* pKF);
 
    bool updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF);
+
+    std::set<KeyFrame*> getAllKeyFrames(){return KF_set;};
+
+    long unsigned int getNumberOfKeyFrames(){return KF_set.size();};
 
    void clear();
 

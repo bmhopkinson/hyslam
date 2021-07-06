@@ -219,4 +219,8 @@ std::vector<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
    return place_recog.detectRelocalizationCandidates(F);
 }
 
+bool KeyFrameDB::exists(KeyFrame *pKF) {
+    return KF_set.count(pKF)>0;
+}
+
 } //namespace ORB_SLAM

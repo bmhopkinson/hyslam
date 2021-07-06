@@ -101,7 +101,10 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
         std::cout << "system loadsettings: cameras: " << cam_name << std::endl;
 
         //create map
-        Map* mpMap = new Map();
+        std::shared_ptr<KeyFrameDB> keyframe_db = std::make_shared<KeyFrameDB>();
+        std::shared_ptr<MapPointDB> mappoint_db = std::make_shared<MapPointDB>();
+        Map* mpMap = new Map(keyframe_db, mappoint_db);
+
         mpMap->setKeyFrameDBVocab(mpVocabulary);
         maps.insert(std::make_pair(cam_name, mpMap));
 

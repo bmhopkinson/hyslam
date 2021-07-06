@@ -441,6 +441,9 @@ namespace HYSLAM{
         mappoint_db.clear();
     }
 
+    bool MapPointDB::exists(MapPoint* pMP) {
+        return mappoint_db.count(pMP)>0;
+    }
 
     void MapPointDB::validateMapPointDB(){
         std::cout << "VALIDATING MAPPOINTDB"  <<std::endl;
@@ -564,6 +567,8 @@ namespace HYSLAM{
         std::cout <<"finished w/ MapPointDB, total mpts: " <<n_total << " , diff: " << n_diff <<std::endl;
         
     }
+
+
 
 } //end namespace
 

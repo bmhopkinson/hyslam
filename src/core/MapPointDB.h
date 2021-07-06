@@ -129,6 +129,7 @@ namespace HYSLAM{
         int addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx, bool replace); //also add descriptor
         bool eraseObservation(MapPoint* pMP, KeyFrame* pKF); // also erase descriptor, //returns whether mappoint is bad - can happen if all observations erased
         int replace(MapPoint* pMP_old, MapPoint* pMP_new);
+        bool exists(MapPoint* pMP);
         void clear();
 
         void validateMapPointDB();
