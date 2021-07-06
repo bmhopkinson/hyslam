@@ -25,58 +25,69 @@
 namespace HYSLAM
 {
 
-Map::Map():mnMaxKFid(0),mnBigChangeIdx(0)
-{
-}
+//Map::Map():mnMaxKFid(0),mnBigChangeIdx(0)
+//{
+//}
 
 Map::Map(Map* parent, std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_ ):
-parent_map(parent), keyframe_db(keyframe_db_), mappoint_db(mappoint_db_), mnMaxKFid(0), mnBigChangeIdx(0)
+parent_map(parent), keyframe_db(keyframe_db_), mappoint_db(mappoint_db_),mnBigChangeIdx(0)
 {
+    keyframe_db_local = std::make_shared<KeyFrameDB>();
+    keyframe_db_local->setVocab(keyframe_db->getVocab());
+
+    mappoint_db_local = std::make_shared<MapPointDB>();
+
 }
 
-/*
-void Map::setKeyFrameDB(KeyFrameDB* pKFDB){
-    pkeyframe_db = pKFDB;
+void Map::createSubMap() {
+    sub_maps.push_back(std::make_unique<Map>(this, keyframe_db, mappoint_db));
 }
-*/
+
 void Map::AddKeyFrame(KeyFrame *pKF)
 {
 //    std::cout << "to map, adding KF: " << pKF->mnId << " from cam: " << pKF->camera.camName << std::endl;
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    if(active_map == this) {
-        pKF->setMap(this);
-        keyframe_db_local.add(pKF);
-        if(registered){
-            keyframe_db->add(pKF);
-        }
+    Map* map_root = getRoot();
+    pKF->setMap(map_root);
+    map_root->_addKeyFrame_(pKF);
+}
 
-       // keyframes_local.insert(pKF);
-        if (pKF->mnId > mnMaxKFid)
-            mnMaxKFid = pKF->mnId;
+bool Map::_addKeyFrame_(KeyFrame *pKF) {
+    if(isActive()) {
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        keyframe_db_local->add(pKF);
+        return true;
     }
     else{
-        active_map->AddKeyFrame(pKF);
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it) {
+            if((*it)->_addKeyFrame_(pKF)){
+                return true;
+            }
+        }
     }
+    return false;
 }
 
 
 bool Map::EraseKeyFrame(KeyFrame *pKF)
 {
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    if(keyframe_db_local.exists(pKF)) {
-        keyframe_db_local.erase(pKF, "All");
-        if(registered){
-            keyframe_db->erase(pKF, "All");
-        }
+    Map* map_root = getRoot();
+    pKF->setMap(map_root);
+    return map_root->_eraseKeyFrame_(pKF);
+}
+
+bool Map::_eraseKeyFrame_(KeyFrame *pKF) {
+
+    if(keyframe_db_local->exists(pKF)) {
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        keyframe_db_local->erase(pKF, "All");
         return true;
     }
     else{
         for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
-            if((*it)->EraseKeyFrame(pKF)){
+            if((*it)->_eraseKeyFrame_(pKF)){
                 return true;
             }
         }
-        //pass up to parent? if not found in children?????
     }
     return false;
 }
@@ -107,7 +118,7 @@ void Map::SetBadKeyFrame(KeyFrame* pKF){
         return;
     }
 
-    std::cout << "erasing landmark associations for KF: " << pKF->mnId << ", named: " << pKF->kfImgName << std::endl;
+ //   std::cout << "erasing landmark associations for KF: " << pKF->mnId << ", named: " << pKF->kfImgName << std::endl;
     // do i need to set it bad immediately so that no other associations will be made !!!!
     std::set<MapPoint*> spMP = pKF->GetMapPoints();
     for(auto it = spMP.begin(); it != spMP.end(); ++it) {
@@ -118,12 +129,222 @@ void Map::SetBadKeyFrame(KeyFrame* pKF){
     EraseKeyFrame(pKF);
 }
 
+long unsigned int Map::KeyFramesInMap()
+{
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    if(registered) {
+        return keyframe_db->getNumberOfKeyFrames();
+    }
+    else {
+        return keyframe_db_local->getNumberOfKeyFrames();
+    }
+}
+
+std::vector<KeyFrame*> Map::GetAllKeyFrames()
+{
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    std::set<KeyFrame*> all_kfs;
+    if(registered){
+        all_kfs = keyframe_db->getAllKeyFrames();
+    } else {
+        all_kfs = keyframe_db_local->getAllKeyFrames();
+    }
+    return std::vector<KeyFrame*>(all_kfs.begin(), all_kfs.end());
+}
+
+void Map::AddMapPoint(MapPoint *pMP,KeyFrame* pKF_ref, int idx)
+{
+    pKF_ref->associateLandMark(idx, pMP, true);
+    Map* map_root = getRoot();
+    map_root->_addMapPoint_(pMP, pKF_ref, idx);
+}
+
+bool Map::_addMapPoint_(MapPoint *pMP, KeyFrame *pKF_ref, int idx) {
+    if(isActive()) {
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        mappoint_db_local->addEntry(pMP, pKF_ref, idx);
+        return true;
+    }
+    else{
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it) {
+            if((*it)->_addMapPoint_(pMP, pKF_ref, idx)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+MapPoint*  Map::newMapPoint( const cv::Mat &Pos, KeyFrame* pKF, int idx){
+    MapPoint* pMP = MPfactory.construct(Pos, pKF, idx);
+    AddMapPoint(pMP, pKF, idx);
+    return pMP;
+}
+
+
+bool Map::eraseMapPoint(MapPoint *pMP)
+{
+    Map* map_root = getRoot();
+    return map_root->_eraseMapPoint_(pMP);
+
+
+    // TODO: This only erases records of  the pointer.
+    // Delete the MapPoint
+}
+
+bool Map::_eraseMapPoint_(MapPoint *pMP) {
+    if(mappoint_db_local->exists(pMP)) {
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        mappoint_db_local->eraseEntry(pMP);
+        return true;
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->_eraseMapPoint_(pMP)){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int Map::replaceMapPoint(MapPoint* pMP_old, MapPoint* pMP_new){
+    if(registered) {
+        return mappoint_db->replace(pMP_old, pMP_new);
+    }
+    else {
+        return mappoint_db_local->replace(pMP_old, pMP_new);
+    }
+}
+
 
 void Map::SetReferenceMapPoints(const std::vector<MapPoint *> &vpMPs)
 {
     std::unique_lock<std::mutex> lock(mMutexMap);
     mvpReferenceMapPoints = vpMPs;
 }
+
+long unsigned int Map::MapPointsInMap()
+{
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    if(registered) {
+        return mappoint_db->numMapPoints();
+    }
+    else {
+        return mappoint_db_local->numMapPoints();
+    }
+}
+
+void  Map::visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts){
+    //finds all mappoints visible in the given keyframe
+    //TO DO: acclerate with BVH or similar
+    std::vector<MapPoint*> mpts_all = GetAllMapPoints();
+    for(std::vector<MapPoint*>::iterator mit =  mpts_all.begin(); mit !=  mpts_all.end(); ++mit){
+        MapPoint* mpt = *mit;
+        //   cv::Mat mpt_pos = mpt->GetWorldPos();
+        if(pKFi->isLandMarkVisible(mpt)){
+            visible_mpts.push_back(mpt);
+        }
+    }
+
+}
+
+std::vector<MapPoint*> Map::GetAllMapPoints()
+{
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    if(registered) {
+        return mappoint_db->getAllMapPoints();
+    }
+    else {
+        return mappoint_db_local->getAllMapPoints();
+    }
+}
+
+std::vector<MapPoint*> Map::GetReferenceMapPoints()
+{
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    return mvpReferenceMapPoints;
+}
+
+
+int Map::addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace){
+    if(pKF->isBad()){
+        return -1;
+    }
+
+    //two potential replacement issues: 1: idx is already associated with another mappoint; 2: mappoint is already associated with another idx. #2 is handled at lower level by propagating "replace"
+    // in case 1 need to manually remove old association in mappoint_db
+    MapPoint* pMP_old;
+    pKF->associateLandMark(idx, pMP, replace, pMP_old); //should run this through keyframedb so that it can track changing assocations and update covis etc as needed
+
+    if(pMP_old && replace){ //remove old association first in case pMP_old = pMP;
+        //std::cout << "removing old observation, which would have lingered in past" << std::endl;
+        eraseAssociation(pKF, pMP_old);
+    }
+
+    Map* map_root = getRoot();
+    bool res = map_root->_addAssociation_(pKF, idx, pMP, replace);
+
+    if(res){
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+
+bool Map::_addAssociation_(KeyFrame *pKF, int idx, MapPoint *pMP, bool replace) {
+    if(mappoint_db_local->exists(pMP)) {
+        mappoint_db_local->addObservation(pMP, pKF, idx, replace);
+        mappoint_db_local->updateEntry(pMP);
+        return true;
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->_addAssociation_(pKF, idx, pMP, replace)){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+
+int Map::eraseAssociation(KeyFrame* pKF,  MapPoint* pMP){
+    pKF->removeLandMarkAssociation(pMP);
+
+    Map* map_root = getRoot();
+    bool res = map_root->_eraseAssociation_(pKF, pMP);
+
+    if(res){
+        return 0;
+    } else {
+        return -1;
+    }
+
+}
+
+bool Map::_eraseAssociation_(KeyFrame *pKF, MapPoint *pMP) {
+    if(mappoint_db_local->exists(pMP)){
+        int res = mappoint_db_local->eraseObservation(pMP, pKF);
+        if(res ==0){
+            mappoint_db_local->updateEntry(pMP);
+        }
+        return true;
+    }
+
+    else{
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->_eraseAssociation_(pKF, pMP) ){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 
 void Map::InformNewBigChange()
 {
@@ -137,204 +358,6 @@ int Map::GetLastBigChangeIdx()
     return mnBigChangeIdx;
 }
 
-void Map::setKeyFrameDBVocab(FeatureVocabulary* pVoc){
-  //  pkeyframe_db->setVocab(pVoc);
-   keyframe_db->setVocab(pVoc);
-}
-std::vector<KeyFrame*> Map::GetAllKeyFrames()
-{
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    std::set<KeyFrame*> all_kfs = keyframe_db->getAllKeyFrames();
-    return std::vector<KeyFrame*>(all_kfs.begin(), all_kfs.end());
-  // return std::vector<KeyFrame*>(keyframes_local.begin(), keyframes_local.end());
-}
-/*
-void Map::setMapPointDB(MapPointDB* pMPDB){
-    pmappoint_db = pMPDB;
-}
-*/
-void Map::AddMapPoint(MapPoint *pMP,KeyFrame* pKF_ref, int idx)
-{
-    pKF_ref->associateLandMark(idx, pMP, true);
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    if(active_map == this){
-        mappoint_db_local.addEntry(pMP, pKF_ref, idx);
-        if(registered) {
-            mappoint_db->addEntry(pMP, pKF_ref, idx);
-        }
-    } else{
-        active_map->AddMapPoint(pMP,pKF_ref, idx);
-    }
-
-}
-
-MapPoint*  Map::newMapPoint( const cv::Mat &Pos, KeyFrame* pKF, int idx){
-   MapPoint* pMP = MPfactory.construct(Pos, pKF, idx);
-   AddMapPoint(pMP, pKF, idx);
-   return pMP; 
-}
-
-
-bool Map::eraseMapPoint(MapPoint *pMP)
-{
-    if(mappoint_db_local.exists(pMP)) {
-        mappoint_db_local.eraseEntry(pMP);
-        if(registered) {
-            mappoint_db->eraseEntry(pMP);
-        }
-        return true;
-    } else {
-        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
-            if((*it)->eraseMapPoint(pMP)){
-                return true;
-            }
-        }
-    }
-
-    return false;
-
-    // TODO: This only erases records of  the pointer.
-    // Delete the MapPoint
-}
-
-int Map::replaceMapPoint(MapPoint* pMP_old, MapPoint* pMP_new){
-     return mappoint_db->replace(pMP_old, pMP_new);
-/// STILL WORKING ON THIS !!!!!
-    if(mappoint_db_local.exists(pMP)) {
-        mappoint_db_local.eraseEntry(pMP);
-        if(registered) {
-            mappoint_db->eraseEntry(pMP);
-        }
-        return true;
-    } else {
-        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
-            if((*it)->eraseMapPoint(pMP)){
-                return true;
-            }
-        }
-    }
-
-    return false;
-
-
-}
-
-std::vector<MapPoint*> Map::GetAllMapPoints()
-{
-    return mappoint_db->getAllMapPoints();
-}
-
-long unsigned int Map::MapPointsInMap()
-{
-    return mappoint_db->numMapPoints();
-}
-
-long unsigned int Map::KeyFramesInMap()
-{
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    return  keyframe_db->getNumberOfKeyFrames();
-}
-
-void  Map::visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts){
-  //finds all mappoints visible in the given keyframe
-  //TO DO: acclerate with BVH or similar
-  std::vector<MapPoint*> mpts_all = GetAllMapPoints();
-  for(std::vector<MapPoint*>::iterator mit =  mpts_all.begin(); mit !=  mpts_all.end(); ++mit){
-    MapPoint* mpt = *mit;
- //   cv::Mat mpt_pos = mpt->GetWorldPos();
-    if(pKFi->isLandMarkVisible(mpt)){
-      visible_mpts.push_back(mpt);
-    }
-  }
-   
-}
-
-int Map::addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace){
-    if(pKF->isBad()){
-        return -1;
-    }
-
-    //two potential replacement issues: 1: idx is already associated with another mappoint; 2: mappoint is already associated with another idx. #2 is handled at lower level by propagating "replace"
-    // in case 1 need to manually remove old association in mappoint_db
-     MapPoint* pMP_old;
-     pKF->associateLandMark(idx, pMP, replace, pMP_old); //should run this through keyframedb so that it can track changing assocations and update covis etc as needed
-    //note: the above line will get called multiple times if submaps are searched. correct operation of this function (addAsssocaition) relies on the fact that pMP_old will only get assigned a value
-    // if pMP_old != pMP; this is not ideal but is done to avoid having to search upward in map graph structure (i.e. going up to parents).
-
-    if(pMP_old && replace){ //remove old association first in case pMP_old = pMP;
-        //std::cout << "removing old observation, which would have lingered in past" << std::endl;
-        eraseAssociation(pKF, pMP_old);
-    }
-
-    if(mappoint_db_local.exists(pMP)) {
-        mappoint_db_local.addObservation(pMP, pKF, idx, replace);
-        mappoint_db_local.updateEntry(pMP);
-        if(registered) {
-            mappoint_db->addObservation(pMP, pKF, idx, replace);
-            mappoint_db->updateEntry(pMP);
-        }
-        return 0;
-    } else {
-        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
-            if((*it)->addAssociation(pKF, idx, pMP, replace) == 0){
-                return 0;
-            }
-        }
-    }
-
-    return -1;
-}
-
-int Map::eraseAssociation(KeyFrame* pKF,  MapPoint* pMP){
-
-
-    if(mappoint_db_local.exists(pMP)){
-        pKF->removeLandMarkAssociation(pMP);
-        bool erased = mappoint_db_local.eraseObservation(pMP, pKF);
-
-        if(erased){
-        } else {
-            mappoint_db_local.updateEntry(pMP);
-        }
-
-        if(registered){
-            bool erased_global = mappoint_db->eraseObservation(pMP, pKF);
-
-            if(erased_global){
-            } else {
-                mappoint_db->updateEntry(pMP);
-            }
-        }
-
-        return 0;
-    }
-
-    else{
-        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
-            if((*it)->eraseAssociation(pKF, pMP) == 0){
-                return 0;
-            }
-        }
-    }
-
-    return -1;
-}
-/*
-int  Map::eraseAssociation(KeyFrame* pKF,  int idx){
-  return -1;
-}
-*/
-std::vector<MapPoint*> Map::GetReferenceMapPoints()
-{
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    return mvpReferenceMapPoints;
-}
-
-long unsigned int Map::GetMaxKFid()
-{
-    std::unique_lock<std::mutex> lock(mMutexMap);
-    return mnMaxKFid;
-}
 
 void Map::clear()
 {
@@ -343,12 +366,12 @@ void Map::clear()
         (*it)->clear();
     }
 
-    std::vector<MapPoint*> mpts_all = GetAllMapPoints();
+    std::vector<MapPoint*> mpts_all = mappoint_db_local->getAllMapPoints();
     for(std::vector<MapPoint*>::iterator sit=mpts_all.begin(), send=mpts_all.end(); sit!=send; sit++) {
         delete *sit;
     }
 
-    std::set<KeyFrame*> keyframes_local2 = keyframe_db_local.getAllKeyFrames();
+    std::set<KeyFrame*> keyframes_local2 = keyframe_db_local->getAllKeyFrames();
     for(std::set<KeyFrame*>::iterator sit=keyframes_local2.begin(), send=keyframes_local2.end(); sit != send; sit++) {
          delete *sit;
     }
@@ -358,20 +381,39 @@ void Map::clear()
    // }
 
 //    pkeyframe_db->clear();
-    keyframe_db_local.clear();
-    mappoint_db_local.clear();
+    keyframe_db_local->clear();
+    mappoint_db_local->clear();
    // keyframes_local.clear();
-    mnMaxKFid = 0;
     mvpReferenceMapPoints.clear();
     mvpKeyFrameOrigins.clear();
 }
 
-    void Map::createSubMap() {
-        sub_maps.push_back(std::make_unique<Map>(this, keyframe_db, mappoint_db));
-    }
-/*
-void Map::validateCovisiblityGraph(){
-    pkeyframe_db->validateCovisiblityGraph();
+
+
+bool Map::isActive() const {
+    return active;
 }
-*/
+
+void Map::setActive(bool active) {
+    Map::active = active;
+}
+
+
+bool Map::isRegistered() const {
+    return registered;
+}
+
+void Map::setRegistered(bool registered) {
+    Map::registered = registered;
+}
+
+
+Map *Map::getRoot() {
+    Map* map_root = this;
+    while(map_root->getParent()){  //find root of map tree
+        map_root = map_root->getParent();
+    }
+    return map_root;
+}
+
 } //namespace ORB_SLAM

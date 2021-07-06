@@ -288,8 +288,8 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
                                        const LoopClosing::KeyFrameAndPose &CorrectedSim3,
                                        const std::map<KeyFrame *, std::set<KeyFrame *> > &LoopConnections, const bool &bFixScale)
 {
-    // Setup optimizer
-
+    // NEEDS TO BE REWORKED
+/*
     g2o::SparseOptimizer optimizer;
     std::unique_ptr<g2o::BlockSolver_7_3::LinearSolverType> linearSolver;
 
@@ -551,6 +551,7 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
 //        pMP->UpdateNormalAndDepth();
         pMap->getMapPointDB()->updateEntry(pMP);
     }
+    */
 }
 
 int Optimizer::OptimizeSim3(KeyFrame *pKF1, KeyFrame *pKF2, std::vector<MapPoint *> &vpMatches1, g2o::Sim3 &g2oS12, const float th2, const bool bFixScale)

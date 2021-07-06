@@ -102,10 +102,13 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
 
         //create map
         std::shared_ptr<KeyFrameDB> keyframe_db = std::make_shared<KeyFrameDB>();
+        keyframe_db->setVocab(mpVocabulary);
         std::shared_ptr<MapPointDB> mappoint_db = std::make_shared<MapPointDB>();
-        Map* mpMap = new Map(keyframe_db, mappoint_db);
+        Map* mpMap = new Map(nullptr, keyframe_db, mappoint_db);
+        mpMap->setActive(true);
+        mpMap->setRegistered(true);
 
-        mpMap->setKeyFrameDBVocab(mpVocabulary);
+       // mpMap->setKeyFrameDBVocab(mpVocabulary);
         maps.insert(std::make_pair(cam_name, mpMap));
 
         //create frame drawer

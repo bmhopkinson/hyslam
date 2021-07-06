@@ -223,4 +223,8 @@ bool KeyFrameDB::exists(KeyFrame *pKF) {
     return KF_set.count(pKF)>0;
 }
 
+FeatureVocabulary *KeyFrameDB::getVocab() {
+    return place_recog.getVocab();
+}
+
 } //namespace ORB_SLAM

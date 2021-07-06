@@ -318,7 +318,17 @@ namespace HYSLAM{
     // MAPPOINTDB MEMBER FUNCTIONS ////
 
     bool MapPointDB::inDB(MapPoint* pMP){
-        return  mappoint_db.count(pMP);
+        if(mappoint_db.count(pMP)){
+            return true;
+        }
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                if((*it)->inDB(pMP)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     std::vector<MapPoint*> MapPointDB::getAllMapPoints() {
@@ -327,11 +337,21 @@ namespace HYSLAM{
         for(auto it = mappoint_db.begin(); it != mappoint_db.end(); ++it){
             all_mps.push_back(it->first);
         }
+
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            std::vector<MapPoint*> all_sub = (*it)->getAllMapPoints();
+            all_mps.reserve(all_mps.size() + std::distance(all_sub.begin(), all_sub.end()));
+            all_mps.insert(all_mps.end(),all_sub.begin(), all_sub.end() );
+        }
         return all_mps;
     }
 
     long unsigned int MapPointDB::numMapPoints(){
-        return mappoint_db.size();
+        long unsigned int total = mappoint_db.size();
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it) {
+          total=+ (*it)->numMapPoints();
+        }
+        return total;
     }
 
     int MapPointDB::addEntry(MapPoint* pMP, KeyFrame* pKF_ref, int idx){
@@ -349,58 +369,103 @@ namespace HYSLAM{
     }
 
 
-    int MapPointDB::eraseEntry(MapPoint* pMP) {   
-        if(!inDB(pMP)){
-            return -1;
+    int MapPointDB::eraseEntry(MapPoint* pMP) {
+        if(mappoint_db.count(pMP)){
+            std::unique_lock <std::mutex> lock(db_mutex);
+            _eraseEntry_(pMP);
+            return 0;
         }
-        else {
-            {
-                std::unique_lock <std::mutex> lock(db_mutex);
-                pMP->setBad();
-                mappoint_db[pMP]->eraseAllObservations();
-                mappoint_db.erase(pMP);
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                if((*it)->eraseEntry(pMP) == 0){
+                    return 0;
+                }
             }
         }
+        return -1;
+    }
+
+
+    int MapPointDB::_eraseEntry_(MapPoint *pMP) {
+        pMP->setBad();
+        mappoint_db[pMP]->eraseAllObservations();
+        mappoint_db.erase(pMP);
         return 0;
     }
 
     int MapPointDB::updateEntry(MapPoint* pMP) {
-        if(!inDB(pMP)){
-            return -1;
-        }
-        else {
-         //   mappoint_db[pMP]->computeDistinctiveDescriptor();
-         //   mappoint_db[pMP]->UpdateNormalAndDepth();
+        if(mappoint_db.count(pMP)){
+            std::unique_lock <std::mutex> lock(db_mutex);
             mappoint_db[pMP]->updateEntry();
             return 0;
         }
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                if((*it)->updateEntry(pMP) == 0){
+                    return 0;
+                }
+            }
+        }
+        return -1;
     }
 
     int MapPointDB::addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx, bool replace){
-        if(!inDB(pMP)){
-            return -1;
-        }
-        else {
+
+        if(mappoint_db.count(pMP)){
             mappoint_db[pMP]->addObservation(pKF, idx, replace);
             FeatureDescriptor desc = pKF->getViews().descriptor(idx);
             mappoint_db[pMP]->addDescriptor(pKF, desc);
+            return 0;
         }
-        return 0;
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                if((*it)->addObservation( pMP, pKF, idx, replace) == 0){
+                    return 0;
+                }
+            }
+        }
+        return -1;
+
     }
 
-    bool MapPointDB::eraseObservation(MapPoint* pMP, KeyFrame* pKF){ //returns whether mappoint is bad - can happen if all observations erased
-        if(!inDB(pMP)){
-            return false;
-        }
-        else {
+    int MapPointDB::eraseObservation(MapPoint* pMP, KeyFrame* pKF){ //returns whether mappoint is bad - can happen if all observations erased
+
+        if(mappoint_db.count(pMP)){
+            std::unique_lock <std::mutex> lock(db_mutex);
             bool to_erase = mappoint_db[pMP]->eraseObservation(pKF);
             mappoint_db[pMP]->eraseDescriptor(pKF);
             if (to_erase && !pMP->Protected()) {
-                eraseEntry(pMP);
-                return true;
+                _eraseEntry_(pMP);
+                return 1;
             }
-            return false;
+            return 0;
         }
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                int res = (*it)->eraseObservation(pMP, pKF);
+                if( res >= 0){
+                    return res;
+                }
+            }
+        }
+        return -1;
+    }
+
+    std::map<KeyFrame *, size_t> MapPointDB::getObservations(MapPoint *pMP) {
+        std::map<KeyFrame *, size_t> obs;
+        if(mappoint_db.count(pMP)){
+            std::unique_lock<std::mutex> lock1(db_mutex);
+            obs = mappoint_db[pMP]->getObservations();
+        }
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                obs = (*it)->getObservations(pMP);
+                if( !obs.empty()){
+                    return obs;
+                }
+            }
+        }
+        return obs;
     }
 
     int MapPointDB::replace(MapPoint* pMP_old, MapPoint* pMP_new) {
@@ -410,20 +475,20 @@ namespace HYSLAM{
         if (!inDB(pMP_old) || !inDB(pMP_new))
             return -1;
 
-        std::map<KeyFrame *, size_t> obs;
         {
-            std::unique_lock<std::mutex> lock1(db_mutex);
-            obs = mappoint_db[pMP_old]->getObservations();
+            std::unique_lock<std::mutex> lock1(db_mutex);  //lock to set bad so no new observations are added
             pMP_old->setBad();
             pMP_old->setReplaced(pMP_new);
-
         }
+
+        std::map<KeyFrame *, size_t> obs= getObservations(pMP_old);
+        MapPointDBEntry* entry_pMPnew = _findEntry_(pMP_new);
 
         for (std::map<KeyFrame *, size_t>::iterator mit = obs.begin(), mend = obs.end(); mit != mend; mit++) {
             // Replace measurement in keyframe
             KeyFrame *pKF = mit->first;
 
-            if (!mappoint_db[pMP_new]->isInKeyFrame(pKF)) {
+            if (!entry_pMPnew->isInKeyFrame(pKF)) {
                 pKF->associateLandMark(mit->second, pMP_new, true);
                 addObservation(pMP_new, pKF, mit->second, true);
             } else {
@@ -439,11 +504,41 @@ namespace HYSLAM{
 
     void MapPointDB::clear(){
         mappoint_db.clear();
+        for(auto it= sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            (*it)->clear();
+        }
     }
 
     bool MapPointDB::exists(MapPoint* pMP) {
-        return mappoint_db.count(pMP)>0;
+        if(mappoint_db.count(pMP)){
+            return true;
+        }
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                if((*it)->inDB(pMP)){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+
+    MapPointDBEntry *MapPointDB::_findEntry_(MapPoint *pMP) {
+        MapPointDBEntry* entry = nullptr;
+        if(mappoint_db.count(pMP)){
+            return mappoint_db[pMP].get();
+        }
+        else{
+            for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+                entry = (*it)->_findEntry_(pMP);
+                if(entry){
+                    return entry;
+                }
+            }
+        }
+        return nullptr;
+    }
+
 
     void MapPointDB::validateMapPointDB(){
         std::cout << "VALIDATING MAPPOINTDB"  <<std::endl;

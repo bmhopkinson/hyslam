@@ -70,6 +70,8 @@ public:
 
    void setVocab(FeatureVocabulary* pVoc);
 
+   FeatureVocabulary* getVocab();
+
    void add(KeyFrame* pKF);
 
    void erase(KeyFrame* pKF, std::string option); //i'm sure there's a better way to do this

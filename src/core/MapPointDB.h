@@ -2,9 +2,11 @@
 #define HYSLAM_MAPPOINTDB_H_
 
 /*
+ *
  * class that holds information about LandMarks (mappoints) and their associations with KeyFrame features
  * pushes down data (observations, normal, size, etc) to individual MapPoints so that data is available when needed
  * MapPointDB contains MapPointDBEntry for each LandMark
+ * NOTE: might pull out a separate "AssociationsDB" - currently the "MapPointDB" does double duty as a true mappoint database and as an associations database
  *
  * MapPointDBEntry:
  *    core data are:
@@ -127,9 +129,10 @@ namespace HYSLAM{
         int eraseEntry(MapPoint* pMP);  //does the work of SetBadFlag
         int updateEntry(MapPoint* pMP); // update normal and depth
         int addObservation(MapPoint* pMP, KeyFrame* pKF, size_t idx, bool replace); //also add descriptor
-        bool eraseObservation(MapPoint* pMP, KeyFrame* pKF); // also erase descriptor, //returns whether mappoint is bad - can happen if all observations erased
+        int eraseObservation(MapPoint* pMP, KeyFrame* pKF); // also erase descriptor, //-1 = failed, 0 = erased observation, 1 = erased observation which made mappoint bad
+        std::map<KeyFrame *, size_t> getObservations(MapPoint* pMP);
         int replace(MapPoint* pMP_old, MapPoint* pMP_new);
-        bool exists(MapPoint* pMP);
+        bool exists(MapPoint* pMP);  //DUPLICATE OF inDB - UNIFY
         void clear();
 
         void validateMapPointDB();
@@ -138,6 +141,10 @@ namespace HYSLAM{
     private:
         MapPointDB_t mappoint_db;
         std::mutex db_mutex;
+        std::vector<std::shared_ptr<MapPointDB>> sub_dbs;
+
+        int _eraseEntry_(MapPoint* pMP); //nonlocking
+        MapPointDBEntry* _findEntry_(MapPoint* pMP); //use carefully - returns raw pointer to unique pointer
 
     };
 

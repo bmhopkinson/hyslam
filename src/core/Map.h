@@ -62,6 +62,7 @@
 
 #include <set>
 #include <mutex>
+#include <memory>
 
 namespace HYSLAM
 {
@@ -70,9 +71,10 @@ namespace HYSLAM
 class Map
 {
 public:
-    Map();
+  //  Map();
 
     Map(Map* parent, std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_);
+    Map* getParent(){return parent_map;};
 
     //multimap functions
     void createSubMap();
@@ -82,11 +84,10 @@ public:
     bool EraseKeyFrame(KeyFrame* pKF);  //details on erasing KFs is complicated due to multithreading/loop closing - probably should rename these functions
     void ClearKeyFrameProtection(KeyFrame* pKF);   //used once loop closing is done w/ a keyframe to allow its removal, and to erase it if it was marked for removal during the loop closing attempt - this isn't the best - would be better to clearprotection directly on keyframe, add keyframes to be deleted to a queue for later deletion once protection is cleared
     void SetBadKeyFrame(KeyFrame* pKF);
-    void setKeyFrameDBVocab(FeatureVocabulary* pVoc); // this is a hack right now to preserve old functions of keyframe db
  //   void validateCovisiblityGraph();
     KeyFrameDB* getKeyFrameDB(){return keyframe_db.get();}
     long unsigned  KeyFramesInMap();
-    long unsigned int GetMaxKFid();
+    std::vector<KeyFrame*> GetAllKeyFrames();
     
     //mappointDB functions
     MapPointDB* getMapPointDB(){ return mappoint_db.get(); }
@@ -97,19 +98,17 @@ public:
     void SetReferenceMapPoints(const std::vector<MapPoint*> &vpMPs);
     long unsigned int MapPointsInMap();
     void visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts);
-    
+    std::vector<MapPoint*> GetAllMapPoints();
+    std::vector<MapPoint*> GetReferenceMapPoints();
+
     //Associations
     int addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace);
     int eraseAssociation(KeyFrame* pKF,  MapPoint* pMP);
  //   int eraseAssociation(KeyFrame* pKF,  int idx);  //NOT YET IMPLEMENTED
 
-
+    Map* getRoot();
     void InformNewBigChange();
     int GetLastBigChangeIdx();
-
-    std::vector<KeyFrame*> GetAllKeyFrames();
-    std::vector<MapPoint*> GetAllMapPoints();
-    std::vector<MapPoint*> GetReferenceMapPoints();
 
     void clear();
 
@@ -120,6 +119,9 @@ public:
     // This avoid that two points are created simultaneously in separate threads (id conflict)
     std::mutex mMutexPointCreation;
 
+    bool isActive() const;
+    void setActive(bool active);
+
 protected:
 
   //  KeyFrameDB keyframe_db;
@@ -128,15 +130,15 @@ protected:
     std::shared_ptr<MapPointDB> mappoint_db  = nullptr;
     MapPointFactory MPfactory;
 
-    //local map data
-    KeyFrameDB keyframe_db_local;
-    MapPointDB mappoint_db_local;
+    //local map data - can become nodes in global keyframe and mappoint dbs.
+    std::shared_ptr<KeyFrameDB> keyframe_db_local;
+    std::shared_ptr<MapPointDB> mappoint_db_local;
   //  std::set<KeyFrame*> keyframes_local;
   //  std::set<MapPoint*> landmarks_local;
 
     std::vector<MapPoint*> mvpReferenceMapPoints;
 
-    long unsigned int mnMaxKFid;
+   // long unsigned int mnMaxKFid;
 
     // Index related to a big change in the map (loop closure, global BA)
     int mnBigChangeIdx;
@@ -147,8 +149,26 @@ protected:
     std::vector<std::unique_ptr<Map>> sub_maps;
     std::vector<cv::Mat> sub_map_Tse3; //relationship between parent map origin and submap origin
     Map* parent_map = nullptr;
-    bool registered = true; //is this map registered to the parent or global map
-    Map* active_map = this;
+    bool registered = true;
+public:
+    bool isRegistered() const;
+
+    void setRegistered(bool registered);
+
+protected:
+    //is this map registered to the parent or global map
+    bool active = false;
+
+    //private KeyFrame functions
+    bool _addKeyFrame_(KeyFrame* pKF);
+    bool _eraseKeyFrame_(KeyFrame* pKF);
+
+    //private mappointDB functions
+    bool _addMapPoint_(MapPoint* pMP, KeyFrame* pKF_ref, int idx);
+    bool _eraseMapPoint_(MapPoint* pMP);
+
+    bool _addAssociation_(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace);
+    bool _eraseAssociation_(KeyFrame* pKF,  MapPoint* pMP);
 
 };
 

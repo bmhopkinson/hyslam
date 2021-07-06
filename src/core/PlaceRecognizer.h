@@ -63,6 +63,8 @@ public:
 
     void setVocab(FeatureVocabulary* mpVoc_);
 
+    FeatureVocabulary* getVocab(){return mpVoc;};
+
    void add(KeyFrame* pKF);
 
    void erase(KeyFrame* pKF);
