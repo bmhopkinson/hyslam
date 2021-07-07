@@ -50,6 +50,7 @@
 
 #include <map>
 #include <mutex>
+#include <list>
 
 namespace HYSLAM{
     class MapPointDBEntry{
@@ -135,13 +136,16 @@ namespace HYSLAM{
         bool exists(MapPoint* pMP);  //DUPLICATE OF inDB - UNIFY
         void clear();
 
+        void addChild(std::shared_ptr<MapPointDB> child);
+        void removeChild(std::shared_ptr<MapPointDB> child);
+
         void validateMapPointDB();
 
 
     private:
         MapPointDB_t mappoint_db;
         std::mutex db_mutex;
-        std::vector<std::shared_ptr<MapPointDB>> sub_dbs;
+        std::list<std::shared_ptr<MapPointDB>> sub_dbs;
 
         int _eraseEntry_(MapPoint* pMP); //nonlocking
         MapPointDBEntry* _findEntry_(MapPoint* pMP); //use carefully - returns raw pointer to unique pointer

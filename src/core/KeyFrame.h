@@ -170,14 +170,14 @@ public:
     static bool lId(KeyFrame* pKF1, KeyFrame* pKF2){
         return pKF1->mnId<pKF2->mnId;
     }
-    
-    void setMap(Map* pMap_){pMap = pMap_;}
+
     //getters
     bool isStereo() const {return is_stereo; }
     const Camera& getCamera() const {return camera;}
     const FeatureViews& getViews() const {return views; }
     FeatureViews copyViews() const {return views;}
-    Map* getMap(){return pMap;}
+    //  void setMap(Map* pMap_){pMap = pMap_;}
+  //  Map* getMap(){return pMap;}
 
     std::vector<MapPoint*> GetMapPointMatches();
     std::vector<MapPoint*> replicatemvpMapPoints() const; // termporary for eliminating mvpMapPoints from KEyFrame

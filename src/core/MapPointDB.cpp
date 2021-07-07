@@ -663,6 +663,13 @@ namespace HYSLAM{
         
     }
 
+    void MapPointDB::addChild(std::shared_ptr<MapPointDB> child) {
+        sub_dbs.push_back(child);
+    }
+
+    void MapPointDB::removeChild(std::shared_ptr<MapPointDB> child) {
+        sub_dbs.remove(child);
+    }
 
 
 } //end namespace

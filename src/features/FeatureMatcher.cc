@@ -528,6 +528,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
 
 int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
 {
+    /*
     const FeatureViews views = pKF->getViews();
     FeatureExtractorSettings orb_params = views.orbParams();
     // Decompose Scw
@@ -625,6 +626,7 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &v
     }
 
     return nFused;
+     */
 }
 
 

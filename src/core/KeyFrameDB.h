@@ -54,6 +54,7 @@
 #include <set>
 #include <mutex>
 #include <string>
+#include <memory>
 
 namespace HYSLAM
 {
@@ -68,25 +69,25 @@ public:
 
     KeyFrameDB(FeatureVocabulary &voc);
 
-   void setVocab(FeatureVocabulary* pVoc);
+    void setVocab(FeatureVocabulary* pVoc);
 
-   FeatureVocabulary* getVocab();
+    FeatureVocabulary* getVocab();
 
-   void add(KeyFrame* pKF);
+    void add(KeyFrame* pKF);
 
-   void erase(KeyFrame* pKF, std::string option); //i'm sure there's a better way to do this
+    void erase(KeyFrame* pKF, std::string option); //i'm sure there's a better way to do this
 
     bool exists(KeyFrame *pKF);
 
-   void update(KeyFrame* pKF);
+    void update(KeyFrame* pKF);
 
-   bool updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF);
+    bool updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF);
 
     std::set<KeyFrame*> getAllKeyFrames(){return KF_set;};
 
     long unsigned int getNumberOfKeyFrames(){return KF_set.size();};
 
-   void clear();
+    void clear();
 
    //covisibility graph functions
   //  void validateCovisiblityGraph();
@@ -118,8 +119,10 @@ protected:
 
     PlaceRecognizer place_recog;
 
-  // Mutex
-  std::mutex kfdb_mutex;
+    // Mutex
+    std::mutex kfdb_mutex;
+
+    std::list<std::shared_ptr<KeyFrameDB>> sub_dbs;
 };
 
 } //namespace ORB_SLAM

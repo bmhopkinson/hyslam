@@ -73,7 +73,8 @@ class Map
 public:
   //  Map();
 
-    Map(Map* parent, std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_);
+    Map(std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_); //constuctor for NEW map
+    Map(Map* parent); //constructor for submap
     Map* getParent(){return parent_map;};
 
     //multimap functions
@@ -85,12 +86,12 @@ public:
     void ClearKeyFrameProtection(KeyFrame* pKF);   //used once loop closing is done w/ a keyframe to allow its removal, and to erase it if it was marked for removal during the loop closing attempt - this isn't the best - would be better to clearprotection directly on keyframe, add keyframes to be deleted to a queue for later deletion once protection is cleared
     void SetBadKeyFrame(KeyFrame* pKF);
  //   void validateCovisiblityGraph();
-    KeyFrameDB* getKeyFrameDB(){return keyframe_db.get();}
+    KeyFrameDB* getKeyFrameDB(){return keyframe_db_local.get();}
     long unsigned  KeyFramesInMap();
     std::vector<KeyFrame*> GetAllKeyFrames();
     
     //mappointDB functions
-    MapPointDB* getMapPointDB(){ return mappoint_db.get(); }
+    MapPointDB* getMapPointDB(){ return mappoint_db_local.get(); }
     void AddMapPoint(MapPoint* pMP, KeyFrame* pKF_ref, int idx);
     MapPoint* newMapPoint( const cv::Mat &Pos, KeyFrame* pKF, int idx); 
     bool eraseMapPoint(MapPoint* pMP);
@@ -122,19 +123,23 @@ public:
     bool isActive() const;
     void setActive(bool active);
 
+    void registerWithParent();
+
 protected:
 
   //  KeyFrameDB keyframe_db;
   //  MapPointDB mappoint_db;
-    std::shared_ptr<KeyFrameDB> keyframe_db = nullptr;
-    std::shared_ptr<MapPointDB> mappoint_db  = nullptr;
+  //  std::shared_ptr<KeyFrameDB> keyframe_db_global = nullptr; //used for searching
+ //   std::shared_ptr<MapPointDB> mappoint_db_global  = nullptr;
+
+    std::shared_ptr<KeyFrameDB> keyframe_db_parent = nullptr; //local dbs are registred w/ parent to harmonize db tree structure with map tree structure
+    std::shared_ptr<MapPointDB> mappoint_db_parent = nullptr;
+
+    std::shared_ptr<KeyFrameDB> keyframe_db_local;    //local map data - can become nodes in global keyframe and mappoint dbs.
+    std::shared_ptr<MapPointDB> mappoint_db_local;
+
     MapPointFactory MPfactory;
 
-    //local map data - can become nodes in global keyframe and mappoint dbs.
-    std::shared_ptr<KeyFrameDB> keyframe_db_local;
-    std::shared_ptr<MapPointDB> mappoint_db_local;
-  //  std::set<KeyFrame*> keyframes_local;
-  //  std::set<MapPoint*> landmarks_local;
 
     std::vector<MapPoint*> mvpReferenceMapPoints;
 
@@ -149,14 +154,7 @@ protected:
     std::vector<std::unique_ptr<Map>> sub_maps;
     std::vector<cv::Mat> sub_map_Tse3; //relationship between parent map origin and submap origin
     Map* parent_map = nullptr;
-    bool registered = true;
-public:
-    bool isRegistered() const;
-
-    void setRegistered(bool registered);
-
-protected:
-    //is this map registered to the parent or global map
+    bool registered = false;    //is this map registered to the parent or global map
     bool active = false;
 
     //private KeyFrame functions
