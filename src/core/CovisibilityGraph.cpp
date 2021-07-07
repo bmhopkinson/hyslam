@@ -71,8 +71,7 @@ namespace HYSLAM{
                 if(pKF_obs->mnId==pKF_node->mnId)
                     continue;
                if(pKF_obs->isBad()){
-				 //  std::cout << "attempt to add bad KF: " << pKF_obs->mnId << ", via mpt: " << pMP->mnId << std::endl;
-
+                 //  std::cout << "attempt to add bad KF: " << pKF_obs->mnId << ", via mpt: " << pMP->mnId << std::endl;
                     continue;
                }
                 KFcounter[mit->first]++;
@@ -277,7 +276,7 @@ namespace HYSLAM{
             covis_graph[pKF]->UpdateConnections(updates);
             for(auto it = updates.begin(); it != updates.end(); ++it){
                 KeyFrame* pKFdest = it->first;
-                if(inGraph(pKFdest)){  //shouldn't need to do this check
+                if(inGraph(pKFdest)){  //can only update connection to keyframes in this covis graph, maybe connections to other submaps which are not symmetrically updated
                     covis_graph[pKFdest]->AddConnection(pKF, it->second);
                 }
             }
@@ -338,6 +337,15 @@ namespace HYSLAM{
         else{
             return covis_graph[pKFnode]->GetWeight(pKFquery);  //returns 0 if not connected
         }
+    }
+
+    int CovisibilityGraph::eraseConnection(KeyFrame *pKFnode, KeyFrame *pKFconn) {
+        if( !inGraph(pKFnode) ){
+            return -1;
+        } else{
+            covis_graph[pKFnode]->EraseConnection(pKFconn);
+        }
+        return 0;
     }
 /*
     void CovisibilityGraph::validateCovisiblityGraph(){

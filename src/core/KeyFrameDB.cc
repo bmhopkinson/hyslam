@@ -53,38 +53,91 @@ void KeyFrameDB::add(KeyFrame *pKF)
 
 void KeyFrameDB::erase(KeyFrame* pKF, std::string option)
 {
-    if(option == "All" ){
-        std::unique_lock<std::mutex> lock( kfdb_mutex);
-        //set bad and set mTcp which is an incremental motion between parent and KF
-        pKF->mbBad = true;
-        KeyFrame* mpParent = spanning_tree.getParent(pKF);
-        if(mpParent){
-            pKF->mTcp = pKF->GetPose() * mpParent->GetPoseInverse();  //would be good to eliminate the need to do this
-        }
-
- //       std::cout << "updateSpanningTreeforKeyFrameRemoval" << std::endl;
-        updateSpanningTreeforKeyFrameRemoval(pKF);
-        spanning_tree.eraseNode(pKF);
-        KF_set.erase(pKF);
-
- //       std::cout << "covis_graph.eraseNode" << std::endl;
-        covis_graph.eraseNode(pKF);
-        //  place_recog.erase(pKF);  //for consistency w/ ORB_SLAM implementation - on the other hand i dont' see any point in keeping bad keyframes in the place recognition candiate list
-
-
-    }
-    else if(option == "Covis"){
-        covis_graph.eraseNode(pKF);
-    }
-    else {
-        std::cout << "KeyFrameDB::erase option: " << option << " does not exist"  << std::endl;
-    }
+    std::set<KeyFrame*> pKF_conn = covis_graph.GetConnectedKeyFrames(pKF);
+    std::set<KeyFrame*> difference;  // in other KeyFrameDBs - _erase_ takes care of erasing connections to KFs in this covis_graph
+    std::set_difference(pKF_conn.begin(), pKF_conn.end(), KF_set.begin(), KF_set.end(), std::back_inserter(difference)); //finds KFs in pKF_conn that are NOT in KF_set
+    _erase_(pKF, option);
+    _erase_connections_(pKF, difference);
 
 }
 
 
-void KeyFrameDB::update(KeyFrame* pKF){
-    covis_graph.UpdateConnections(pKF);
+bool KeyFrameDB::_erase_(KeyFrame *pKF, std::string option) {
+    if(KF_set.count(pKF)) {
+        if (option == "All") {
+            std::unique_lock<std::mutex> lock(kfdb_mutex);
+            //set bad and set mTcp which is an incremental motion between parent and KF
+            pKF->mbBad = true;
+            KeyFrame *mpParent = spanning_tree.getParent(pKF);
+            if (mpParent) {
+                pKF->mTcp = pKF->GetPose() * mpParent->GetPoseInverse();  //would be good to eliminate the need to do this
+            }
+
+            //       std::cout << "updateSpanningTreeforKeyFrameRemoval" << std::endl;
+            updateSpanningTreeforKeyFrameRemoval(pKF);
+            spanning_tree.eraseNode(pKF);
+            KF_set.erase(pKF);
+
+            //       std::cout << "covis_graph.eraseNode" << std::endl;
+
+            covis_graph.eraseNode(pKF);
+            //  place_recog.erase(pKF);  //for consistency w/ ORB_SLAM implementation - on the other hand i dont' see any point in keeping bad keyframes in the place recognition candiate list
+        } else if (option == "Covis") {
+            covis_graph.eraseNode(pKF);
+        } else {
+            std::cout << "KeyFrameDB::erase option: " << option << " does not exist" << std::endl;
+        }
+        return true;
+    }
+    else{
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_erase_(pKF, option)){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool KeyFrameDB::_erase_connections_(KeyFrame *pKF, std::set<KeyFrame *> &pKF_conn) {
+    for(auto it = pKF_conn.begin(); it != pKF_conn.end(); ){
+        KeyFrame* pKFcur = *it;
+        if(covis_graph.inGraph(pKFcur)){
+            covis_graph.eraseConnection(pKFcur, pKF);
+            it = pKF_conn.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+    if(pKF_conn.empty()){
+        return true;
+    }
+    else{
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_erase_connections_(pKF, pKF_conn)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+bool KeyFrameDB::update(KeyFrame* pKF){
+    //should make this handle reciprocal updates
+    if(covis_graph.inGraph(pKF)){
+        covis_graph.UpdateConnections(pKF);
+        return true;
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->update(pKF)){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
@@ -161,6 +214,10 @@ void KeyFrameDB::clear()
     covis_graph.clear();
     spanning_tree.clear();
     place_recog.clear();
+
+    for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+        (*it)->clear();
+    }
 }
 /*
 void KeyFrameDB::validateCovisiblityGraph(){
@@ -168,23 +225,78 @@ void KeyFrameDB::validateCovisiblityGraph(){
 }
 */
 std::set<KeyFrame*> KeyFrameDB::GetConnectedKeyFrames(KeyFrame* pKF){
-    return covis_graph.GetConnectedKeyFrames(pKF);
+    std::set<KeyFrame*> pKF_conn;
+    if(covis_graph.inGraph(pKF)) {
+        return covis_graph.GetConnectedKeyFrames(pKF);
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            pKF_conn = (*it)->GetConnectedKeyFrames(pKF);
+            if(!pKF_conn.empty()){
+                return pKF_conn;
+            }
+        }
+    }
+    return pKF_conn;
 }
 
 std::vector<KeyFrame* > KeyFrameDB::GetVectorCovisibleKeyFrames(KeyFrame* pKF){
-    return covis_graph.GetVectorCovisibleKeyFrames(pKF);
+    std::vector<KeyFrame* > pKF_conn;
+    if(covis_graph.inGraph(pKF)) {
+        return covis_graph.GetVectorCovisibleKeyFrames(pKF);
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            pKF_conn = (*it)->GetVectorCovisibleKeyFrames(pKF);
+            if(!pKF_conn.empty()){
+                return pKF_conn;
+            }
+        }
+    }
+    return pKF_conn;
 }
 
 std::vector<KeyFrame*> KeyFrameDB::GetBestCovisibilityKeyFrames(KeyFrame* pKF, const int &N){
-    return covis_graph.GetBestCovisibilityKeyFrames(pKF, N);
+    std::vector<KeyFrame* > pKF_conn;
+    if(covis_graph.inGraph(pKF)) {
+        return covis_graph.GetBestCovisibilityKeyFrames(pKF, N);
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            pKF_conn = (*it)->GetBestCovisibilityKeyFrames(pKF, N);
+            if(!pKF_conn.empty()){
+                return pKF_conn;
+            }
+        }
+    }
+    return pKF_conn;
 }
 
 std::vector<KeyFrame*> KeyFrameDB::GetCovisiblesByWeight(KeyFrame* pKF, const int &w){
-    return covis_graph.GetCovisiblesByWeight(pKF, w);
+    std::vector<KeyFrame* > pKF_conn;
+    if(covis_graph.inGraph(pKF)) {
+        return covis_graph.GetCovisiblesByWeight(pKF, w);
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            pKF_conn = (*it)->GetCovisiblesByWeight(pKF, w);
+            if(!pKF_conn.empty()){
+                return pKF_conn;
+            }
+        }
+    }
+    return pKF_conn;
 }
 
 int KeyFrameDB::GetWeight(KeyFrame* pKFnode, KeyFrame* pKFquery){
-    return covis_graph.GetWeight(pKFnode, pKFquery);
+    int weight = -1; // less than zero indicates pKFnode not found yet
+    if(covis_graph.inGraph(pKFnode)) {
+        return covis_graph.GetWeight(pKFnode, pKFquery);
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            weight = (*it)->GetWeight(pKFnode, pKFquery);
+            if(weight >=0){
+                return weight;
+            }
+        }
+    }
+    return weight;
 }
 /*
 void KeyFrameDB::validateSpanningTree(){
@@ -220,11 +332,31 @@ std::vector<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
 }
 
 bool KeyFrameDB::exists(KeyFrame *pKF) {
-    return KF_set.count(pKF)>0;
+    if(KF_set.count(pKF)){
+        return true;
+    }
+    else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->exists(pKF)){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 FeatureVocabulary *KeyFrameDB::getVocab() {
     return place_recog.getVocab();
 }
+
+void KeyFrameDB::addChild(std::shared_ptr<KeyFrameDB> child) {
+    sub_dbs.push_back(child);
+}
+
+void KeyFrameDB::removeChild(std::shared_ptr<KeyFrameDB> child) {
+    sub_dbs.remove(child);
+}
+
+
 
 } //namespace ORB_SLAM

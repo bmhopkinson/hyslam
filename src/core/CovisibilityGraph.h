@@ -64,6 +64,7 @@ namespace HYSLAM{
         int addNode(KeyFrame* pKF);
         int eraseNode(KeyFrame* pKF);
         int UpdateConnections(KeyFrame* pKF);
+        int eraseConnection(KeyFrame* pKFnode, KeyFrame* pKFconn);
         std::set<KeyFrame *> GetConnectedKeyFrames(KeyFrame* pKF); //used in LoopClosing and KeyFrameDatabase
         std::vector<KeyFrame* > GetVectorCovisibleKeyFrames(KeyFrame* pKF); //used in LocalMapping, LocalBA, and LoopClosing
         std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(KeyFrame* pKF, const int &N); //used in Tracking, KeyFrameDatabase, LocalMapping

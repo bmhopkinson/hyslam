@@ -79,7 +79,7 @@ public:
 
     bool exists(KeyFrame *pKF);
 
-    void update(KeyFrame* pKF);
+    bool update(KeyFrame* pKF);
 
     bool updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF);
 
@@ -88,6 +88,9 @@ public:
     long unsigned int getNumberOfKeyFrames(){return KF_set.size();};
 
     void clear();
+
+    void addChild(std::shared_ptr<KeyFrameDB> child);
+    void removeChild(std::shared_ptr<KeyFrameDB> child);
 
    //covisibility graph functions
   //  void validateCovisiblityGraph();
@@ -123,6 +126,10 @@ protected:
     std::mutex kfdb_mutex;
 
     std::list<std::shared_ptr<KeyFrameDB>> sub_dbs;
+
+    //private implementations
+    bool _erase_(KeyFrame* pKF, std::string option);
+    bool _erase_connections_(KeyFrame* pKF, std::set<KeyFrame*> &pKF_conn);
 };
 
 } //namespace ORB_SLAM
