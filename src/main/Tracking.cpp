@@ -212,8 +212,6 @@ void Tracking::_Track_()
         mpReferenceKF[cam_cur] = mCurrentFrame.mpReferenceKF;
     }
 
-
-
     // If tracking was good, check if we insert a keyframe
     std::vector<KeyFrame*> newKFs;
     if(bOK)

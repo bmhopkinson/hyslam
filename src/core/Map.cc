@@ -195,7 +195,7 @@ std::vector<KeyFrame*> Map::GetAllKeyFrames()
 
 void Map::AddMapPoint(MapPoint *pMP,KeyFrame* pKF_ref, int idx)
 {
-//    pKF_ref->associateLandMark(idx, pMP, true);
+    pKF_ref->associateLandMark(idx, pMP, true);
 //    Map* map_root = getRoot();
 //    map_root->_addMapPoint_(pMP, pKF_ref, idx);
     _addMapPoint_(pMP, pKF_ref, idx);
