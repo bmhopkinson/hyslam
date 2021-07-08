@@ -243,8 +243,8 @@ int MonoInitializer::transformMap(Trajectory* trajectory, const Frame &F_ref, cv
 }
 
 int MonoInitializer::addToMap(Map* pMap){
-    pKFfirst->setMap(pMap);
-    pKFsecond->setMap(pMap);
+  //  pKFfirst->setMap(pMap);
+  //  pKFsecond->setMap(pMap);
     std::cout << "adding to Map KeyFrame: " << pKFfirst->mnId <<std::endl;
     pMap->AddKeyFrame(pKFfirst);
     std::cout << "adding to Map KeyFrame: " << pKFsecond->mnId <<std::endl;

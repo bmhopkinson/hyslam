@@ -55,7 +55,7 @@ void KeyFrameDB::erase(KeyFrame* pKF, std::string option)
 {
     std::set<KeyFrame*> pKF_conn = covis_graph.GetConnectedKeyFrames(pKF);
     std::set<KeyFrame*> difference;  // in other KeyFrameDBs - _erase_ takes care of erasing connections to KFs in this covis_graph
-    std::set_difference(pKF_conn.begin(), pKF_conn.end(), KF_set.begin(), KF_set.end(), std::back_inserter(difference)); //finds KFs in pKF_conn that are NOT in KF_set
+    std::set_difference(pKF_conn.begin(), pKF_conn.end(), KF_set.begin(), KF_set.end(), std::inserter(difference, difference.begin())); //finds KFs in pKF_conn that are NOT in KF_set
     _erase_(pKF, option);
     _erase_connections_(pKF, difference);
 
@@ -142,15 +142,22 @@ bool KeyFrameDB::update(KeyFrame* pKF){
 
 bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
     // Update Spanning Tree - requires cooperation of spanning tree and covis graph so can't be done at a lower level (e.g. within spanning_tree);
+    // BH 2021/07/08 simplified this and now simply assign parent of keyframe being removed to current children  - if this works ok can be moved down into SpanningTree b/c doesn't require covisibility graph
     KeyFrame* mpParent = spanning_tree.getParent(pKF);
-  //  std::cout << "KF: " << pKF << " id: " << pKF->mnId <<   "parent: " << mpParent <<std::endl;
-//    std::cout <<" parent Id: "  << mpParent->mnId << std::endl;
+    std::set<KeyFrame*> children = spanning_tree.getChildren(pKF);
     std::set<KeyFrame*> sParentCandidates;
     if(mpParent) {
+        for (std::set<KeyFrame *>::iterator sit =children.begin(); sit != children.end(); sit++) {
+            spanning_tree.changeParent(*sit, mpParent);
+        }
+    }
+    return true;
+
+    /*
         sParentCandidates.insert(mpParent);
     }
 
-    std::set<KeyFrame*> children = spanning_tree.getChildren(pKF);
+    std::set<KeyFrame*> children = spanning_tree.getSpanningTreeChildren(pKF);
     while(!children.empty() ) { //reassign children to new parents
         bool bContinue = false;
 
@@ -203,8 +210,8 @@ bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
          //   }
         }
     }
+*/
 
-    return true;
 }
 
 
@@ -303,11 +310,11 @@ void KeyFrameDB::validateSpanningTree(){
     spanning_tree.validateSpanningTree();
 }
 */
-std::set<KeyFrame*> KeyFrameDB::getChildren(KeyFrame* pKF) {  // used in LoopClosing and Tracking
+std::set<KeyFrame*> KeyFrameDB::getSpanningTreeChildren(KeyFrame* pKF) {  // used in LoopClosing and Tracking
     return spanning_tree.getChildren(pKF);
 }
 
-KeyFrame* KeyFrameDB::getParent(KeyFrame* pKF) {
+KeyFrame* KeyFrameDB::getSpanningTreeParent(KeyFrame* pKF) {
     return spanning_tree.getParent(pKF);
 }
 
@@ -317,18 +324,31 @@ bool KeyFrameDB::isChild(KeyFrame* pKF_node, KeyFrame* pKF_query){
 }
 
 std::vector<KeyFrame*> KeyFrameDB::DetectLoopCandidates(KeyFrame* pKF, float minScore) {
-    if (covis_graph.inGraph(pKF)){
-      std::set<KeyFrame *> KFs_excluded = covis_graph.GetConnectedKeyFrames(pKF);
-      KFs_excluded.insert(pKF);
-      return place_recog.detectLoopCandidates(pKF, minScore, KFs_excluded);
-    } else {
-        return std::vector<KeyFrame*>();
+    //NOTE MAY INSTEAD WANT TO RETURN scores with candidates and screen further for highest scores as the place recognizer uses some relative scoring metrics
+    std::vector<KeyFrame*> candidates =  place_recog.detectLoopCandidates(pKF, minScore);
+
+    for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+        std::vector<KeyFrame*> candidates_addn = (*it)->DetectLoopCandidates(pKF, minScore);
+        if(!candidates_addn.empty()){
+            candidates.insert(candidates.end(), candidates_addn.begin(), candidates_addn.end());
+        }
     }
+    return candidates;
 }
 
 std::vector<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
 {
-   return place_recog.detectRelocalizationCandidates(F);
+    //NOTE MAY INSTEAD WANT TO RETURN scores with candidates and screen further for highest scores as the place recognizer uses some relative scoring metrics
+    std::vector<KeyFrame*> candidates =  place_recog.detectRelocalizationCandidates(F);
+
+    for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+        std::vector<KeyFrame*> candidates_addn = (*it)->DetectRelocalizationCandidates(F);
+        if(!candidates_addn.empty()){
+            candidates.insert(candidates.end(), candidates_addn.begin(), candidates_addn.end());
+        }
+    }
+    return candidates;
+
 }
 
 bool KeyFrameDB::exists(KeyFrame *pKF) {

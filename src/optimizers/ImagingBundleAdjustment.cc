@@ -248,7 +248,7 @@ void ImagingBundleAdjustment::AssignStrandedKeyFrames(){
 
     for(auto it = KFs_stranded.begin(); it != KFs_stranded.end(); ++it){
         KeyFrame* pKF = *it;
-        std::set<KeyFrame*> KFchildren = pMap->getKeyFrameDB()->getChildren(pKF);
+        std::set<KeyFrame*> KFchildren = pMap->getKeyFrameDB()->getSpanningTreeChildren(pKF);
         for(auto cit = KFchildren.begin(); cit != KFchildren.end(); ++cit){
             KeyFrame* KFchild = *cit;
             auto mit = KF_to_segment.find(KFchild);

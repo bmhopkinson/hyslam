@@ -127,7 +127,7 @@ namespace HYSLAM {
         for(auto it = spanning_tree.begin(); it != spanning_tree.end(); ++it){
             KeyFrame* pKF = it->first;
             std::set<KeyFrame*> children_pKF = pKF->GetChilds();
-            std::set<KeyFrame*> children_ST = spanning_tree[pKF]->getChildren();
+            std::set<KeyFrame*> children_ST = spanning_tree[pKF]->getSpanningTreeChildren();
 
             std::vector<KeyFrame*> vchildren_pKF(children_pKF.begin(), children_pKF.end());
             std::vector<KeyFrame*> vchildren_ST(children_ST.begin()  , children_ST.end());
@@ -153,7 +153,7 @@ namespace HYSLAM {
             if(pKF->GetParent()) {
                 std::cout << std::endl << "Spanning Tree data, parent: " << spanning_tree[pKF]->getParent()->mnId
                           << std::endl << "children: ";
-                if(pKF->GetParent()->mnId != spanning_tree[pKF]->getParent()->mnId){
+                if(pKF->GetParent()->mnId != spanning_tree[pKF]->getSpanningTreeParent()->mnId){
                     std::cout << "parents disagree" << std::endl;
                     n_errors++;
                 } else {n_correct++;}

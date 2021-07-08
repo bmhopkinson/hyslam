@@ -79,10 +79,10 @@ void PlaceRecognizer::clear()
 }
 
 
-std::vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float minScore, std::set<KeyFrame*> KFs_excluded)
+std::vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float minScore)
 {
-    //set<KeyFrame*> spConnectedKeyFrames = pKF->GetConnectedKeyFrames();  //a bit tricky to replace this right now
-    std::set<KeyFrame*> spConnectedKeyFrames = KFs_excluded;
+    std::set<KeyFrame*> spConnectedKeyFrames = pKF->GetConnectedKeyFrames(); //will be excluded from candidates
+    //std::set<KeyFrame*> spConnectedKeyFrames = KFs_excluded;
     std::list<KeyFrame*> lKFsSharingWords;
     std::map<KeyFrame*, int> shared_words;
 

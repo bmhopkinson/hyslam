@@ -30,7 +30,7 @@ namespace HYSLAM
 //}
 
 Map::Map(std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_ ):
- keyframe_db_local(keyframe_db_), mappoint_db_local(mappoint_db_),mnBigChangeIdx(0)
+ keyframe_db_local(keyframe_db_), mappoint_db_local(mappoint_db_),mnMaxKFid(0),mnBigChangeIdx(0)
 {
 //    keyframe_db_local = std::make_shared<KeyFrameDB>();
 //    keyframe_db_local->setVocab(keyframe_db_parent->getVocab());
@@ -48,6 +48,9 @@ Map::Map(Map *parent) {
     keyframe_db_local->setVocab(keyframe_db_parent->getVocab());
 
     mappoint_db_local = std::make_shared<MapPointDB>();
+    mnMaxKFid = parent->mnMaxKFid;
+    firstKFid = mnMaxKFid+1;
+
 
 }
 
@@ -68,6 +71,9 @@ bool Map::_addKeyFrame_(KeyFrame *pKF) {
     if(isActive()) {
         std::unique_lock<std::mutex> lock(mMutexMap);
         keyframe_db_local->add(pKF);
+        if(pKF->mnId>mnMaxKFid) {
+            mnMaxKFid = pKF->mnId;
+        }
         return true;
     }
     else{
@@ -105,6 +111,26 @@ bool Map::_eraseKeyFrame_(KeyFrame *pKF) {
     return false;
 }
 
+bool Map::_isKFErasable_(KeyFrame *pKF, bool &erasable) {
+    //don't allow first keyframe added to each map to be erased. it's the reference point relative to other maps and origin of world frame for first map
+    //return value is whether pKF has been found in a map and so searching can terminate.
+    if(keyframe_db_local->exists(pKF)){
+        if(pKF->mnId == firstKFid){
+            erasable = false;
+        } else {
+            erasable = true;
+        }
+        return true;
+    } else{
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->_isKFErasable_(pKF, erasable)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void Map::ClearKeyFrameProtection(KeyFrame* pKF){
 
     if(pKF->GetLoopEdges().empty())
@@ -120,26 +146,26 @@ void Map::ClearKeyFrameProtection(KeyFrame* pKF){
 
 }
 
-void Map::SetBadKeyFrame(KeyFrame* pKF){
-
-    if(pKF->mnId == 0  ){
-        return ;
-    }
-
-    else if(pKF->isProtected()){  //LoopClosing can protect a keyframe by setting mbNotErase, if set don't erase, but mark it to be erased later by setting mbToBeErased
+void Map::SetBadKeyFrame(KeyFrame* pKF) {
+    bool erasable = false;
+    _isKFErasable_(pKF, erasable);
+    if(!erasable){ //don't delete the first keyframe
+        return;
+    } else if (pKF->isProtected()) {  //LoopClosing can protect a keyframe by setting mbNotErase, if set don't erase, but mark it to be erased later by setting mbToBeErased
         pKF->mbToBeErased = true;
         return;
     }
 
- //   std::cout << "erasing landmark associations for KF: " << pKF->mnId << ", named: " << pKF->kfImgName << std::endl;
+    //   std::cout << "erasing landmark associations for KF: " << pKF->mnId << ", named: " << pKF->kfImgName << std::endl;
     // do i need to set it bad immediately so that no other associations will be made !!!!
-    std::set<MapPoint*> spMP = pKF->GetMapPoints();
-    for(auto it = spMP.begin(); it != spMP.end(); ++it) {
+    std::set<MapPoint *> spMP = pKF->GetMapPoints();
+    for (auto it = spMP.begin(); it != spMP.end(); ++it) {
         //mappoint_db.eraseObservation(*it, pKF);
-        MapPoint* pMP = *it;
+        MapPoint *pMP = *it;
         eraseAssociation(pKF, pMP);
     }
     EraseKeyFrame(pKF);
+
 }
 
 long unsigned int Map::KeyFramesInMap()
@@ -421,8 +447,8 @@ void Map::setActive(bool active) {
 
 Map *Map::getRoot() {
     Map* map_root = this;
-    while(map_root->getParent()){  //find root of map tree
-        map_root = map_root->getParent();
+    while(map_root->getParentMap()){  //find root of map tree
+        map_root = map_root->getParentMap();
     }
     return map_root;
 }
@@ -434,6 +460,15 @@ void Map::registerWithParent() {
         registered = true;
     }
 }
+
+Map *Map::getParentMap() const {
+    return parent_map;
+}
+
+void Map::setParentMap(Map *parentMap) {
+    parent_map = parentMap;
+}
+
 
 
 

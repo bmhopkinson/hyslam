@@ -75,10 +75,15 @@ public:
 
     Map(std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_); //constuctor for NEW map
     Map(Map* parent); //constructor for submap
-    Map* getParent(){return parent_map;};
 
     //multimap functions
     void createSubMap();
+    Map *getParentMap() const;
+    void setParentMap(Map *parentMap);
+    void registerWithParent();
+    Map* getRoot();
+    bool isActive() const;
+    void setActive(bool active);
 
     // KeyFrame functions
     void AddKeyFrame(KeyFrame* pKF);
@@ -107,7 +112,7 @@ public:
     int eraseAssociation(KeyFrame* pKF,  MapPoint* pMP);
  //   int eraseAssociation(KeyFrame* pKF,  int idx);  //NOT YET IMPLEMENTED
 
-    Map* getRoot();
+
     void InformNewBigChange();
     int GetLastBigChangeIdx();
 
@@ -120,10 +125,6 @@ public:
     // This avoid that two points are created simultaneously in separate threads (id conflict)
     std::mutex mMutexPointCreation;
 
-    bool isActive() const;
-    void setActive(bool active);
-
-    void registerWithParent();
 
 protected:
 
@@ -143,7 +144,8 @@ protected:
 
     std::vector<MapPoint*> mvpReferenceMapPoints;
 
-   // long unsigned int mnMaxKFid;
+    long unsigned int mnMaxKFid;
+    long unsigned int firstKFid = 0;
 
     // Index related to a big change in the map (loop closure, global BA)
     int mnBigChangeIdx;
@@ -154,12 +156,14 @@ protected:
     std::vector<std::unique_ptr<Map>> sub_maps;
     std::vector<cv::Mat> sub_map_Tse3; //relationship between parent map origin and submap origin
     Map* parent_map = nullptr;
+
     bool registered = false;    //is this map registered to the parent or global map
     bool active = false;
 
     //private KeyFrame functions
     bool _addKeyFrame_(KeyFrame* pKF);
     bool _eraseKeyFrame_(KeyFrame* pKF);
+    bool _isKFErasable_(KeyFrame* pKF, bool &erasble);
 
     //private mappointDB functions
     bool _addMapPoint_(MapPoint* pMP, KeyFrame* pKF_ref, int idx);

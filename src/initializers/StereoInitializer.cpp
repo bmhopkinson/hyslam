@@ -70,7 +70,7 @@ KeyFrame* StereoInitializer::getCurrentKF(){
 }
 
 int StereoInitializer::addToMap(Map* pMap){
-    pKFinit->setMap(pMap);
+   // pKFinit->setMap(pMap);
     pMap->AddKeyFrame(pKFinit);
    // std::cout << "adding to Map KeyFrame: " << pKFinit->mnId <<std::endl;
 

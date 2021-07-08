@@ -403,7 +403,7 @@ void Optimizer::OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* p
             Swi = vScw[nIDi].inverse();
 
         //KeyFrame* pParentKF = pKF->GetParent();
-        KeyFrame* pParentKF = pMap->getKeyFrameDB()->getParent(pKF);
+        KeyFrame* pParentKF = pMap->getKeyFrameDB()->getSpanningTreeParent(pKF);
 
         // Spanning tree edge
         if(pParentKF)

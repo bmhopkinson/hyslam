@@ -156,7 +156,7 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
 
         //can probably eliminate inclusion of children and parents  - seems like overkill and shouldn't they be in the covis graph if they're useful
         //const set<KeyFrame*> spChilds = pKF->GetChilds();
-        const std::set<KeyFrame*> spChilds =  pMap->getKeyFrameDB()->getChildren(pKF);
+        const std::set<KeyFrame*> spChilds = pMap->getKeyFrameDB()->getSpanningTreeChildren(pKF);
         for(std::set<KeyFrame*>::const_iterator sit=spChilds.begin(), send=spChilds.end(); sit!=send; sit++)
         {
             KeyFrame* pChildKF = *sit;

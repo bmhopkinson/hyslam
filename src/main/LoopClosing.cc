@@ -724,7 +724,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
             {
                 KeyFrame* pKF = lpKFtoCheck.front();
                // const set<KeyFrame*> sChilds = pKF->GetChilds();
-                const std::set<KeyFrame*> sChilds = maps[curKF_cam]->getKeyFrameDB()->getChildren(pKF);
+                const std::set<KeyFrame*> sChilds = maps[curKF_cam]->getKeyFrameDB()->getSpanningTreeChildren(pKF);
                 cv::Mat Twc = pKF->GetPoseInverse();
                 for(std::set<KeyFrame*>::const_iterator sit=sChilds.begin();sit!=sChilds.end();sit++)
                 {

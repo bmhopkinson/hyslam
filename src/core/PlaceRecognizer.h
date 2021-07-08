@@ -72,7 +72,7 @@ public:
    void clear();
 
    // Loop Detection
-   std::vector<KeyFrame *> detectLoopCandidates(KeyFrame* pKF, float minScore, std::set<KeyFrame*> KFs_excluded); //soon substitute (pKF, minScore, excludedKFs) excludedKFs = current frame and those connected in covis_graph
+   std::vector<KeyFrame *> detectLoopCandidates(KeyFrame* pKF, float minScore);
 
    // Relocalization
    std::vector<KeyFrame*> detectRelocalizationCandidates(Frame* F);

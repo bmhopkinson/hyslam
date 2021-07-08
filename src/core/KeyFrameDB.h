@@ -103,8 +103,8 @@ public:
 
     //spanning tree functions
    // void validateSpanningTree();
-    std::set<KeyFrame*> getChildren(KeyFrame* pKF);  // used in LoopClosing and Tracking
-    KeyFrame* getParent(KeyFrame* pKF); // used in Tracking, Optimizer, System, Trajectory, LocalMapping, MapDrawer - used whenever a KeyFrame is bad to work back tree
+    std::set<KeyFrame*> getSpanningTreeChildren(KeyFrame* pKF);  // used in LoopClosing and Tracking
+    KeyFrame* getSpanningTreeParent(KeyFrame* pKF);
     bool isChild(KeyFrame* pKF_node, KeyFrame* pKF_query); //used in Optimizer
 
    // Loop Detection
