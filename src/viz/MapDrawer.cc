@@ -29,7 +29,7 @@ namespace HYSLAM
 {
 
 
-MapDrawer::MapDrawer(std::map<std::string, Map*> &_maps, const std::string &strSettingPath):maps(_maps)
+MapDrawer::MapDrawer(std::map<std::string, std::shared_ptr<Map>> &_maps, const std::string &strSettingPath):maps(_maps)
 {
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
@@ -44,9 +44,9 @@ MapDrawer::MapDrawer(std::map<std::string, Map*> &_maps, const std::string &strS
 
 void MapDrawer::DrawMapPoints()
 {
-  for(std::map<std::string, Map*>::const_iterator mit= maps.begin(); mit != maps.end(); ++mit){
+  for(std::map<std::string, std::shared_ptr<Map>>::const_iterator mit= maps.begin(); mit != maps.end(); ++mit){
     std::string cam_name = (*mit).first;
-    Map* mpMap = (*mit).second;
+    std::shared_ptr<Map> mpMap = (*mit).second;
     const std::vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
     const std::vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints();
 
@@ -91,9 +91,9 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
     const float h = w*0.75;
     const float z = w*0.6;
 
-    for(std::map<std::string, Map*>::const_iterator mit= maps.begin(); mit != maps.end(); ++mit){
+    for(std::map<std::string, std::shared_ptr<Map>>::const_iterator mit= maps.begin(); mit != maps.end(); ++mit){
       std::string cam_name = (*mit).first;
-      Map* mpMap = (*mit).second;
+      std::shared_ptr<Map> mpMap = (*mit).second;
 
       const std::vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
 

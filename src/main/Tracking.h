@@ -100,7 +100,7 @@ class Tracking
 //
 public:
 
-    Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, Map* > &_maps,
+    Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, std::shared_ptr<Map> > &_maps,
              std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_, FeatureFactory* factory);
     ~Tracking();
 
@@ -199,7 +199,7 @@ protected:
     MapDrawer* mpMapDrawer;
 
     //Map
-    std::map<std::string, Map* > maps;
+    std::map<std::string, std::shared_ptr<Map> > maps;
 
     //camera data
     std::map<std::string, Camera> cam_data;

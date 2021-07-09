@@ -39,7 +39,7 @@ Map::Map(std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> m
 
 }
 
-Map::Map(Map *parent) {
+Map::Map(std::shared_ptr<Map> parent) {
     parent_map = parent;
     keyframe_db_parent = parent->keyframe_db_local;
     mappoint_db_parent = parent->mappoint_db_local;
@@ -49,13 +49,16 @@ Map::Map(Map *parent) {
 
     mappoint_db_local = std::make_shared<MapPointDB>();
     mnMaxKFid = parent->mnMaxKFid;
-    firstKFid = mnMaxKFid+1;
-
-
 }
 
-void Map::createSubMap() {
-    sub_maps.push_back(std::make_unique<Map>(this));
+std::shared_ptr<Map> Map::createSubMap(bool set_active) {
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    std::shared_ptr<Map> newmap =  std::make_shared<Map>(shared_from_this());
+    if(set_active) {
+        newmap->setActive();
+    }
+    sub_maps.push_back(newmap);
+    return newmap;
 }
 
 void Map::AddKeyFrame(KeyFrame *pKF)
@@ -70,6 +73,10 @@ void Map::AddKeyFrame(KeyFrame *pKF)
 bool Map::_addKeyFrame_(KeyFrame *pKF) {
     if(isActive()) {
         std::unique_lock<std::mutex> lock(mMutexMap);
+        if(!firstKFadded){
+            firstKFid = pKF->mnId;
+            firstKFadded = true;
+        }
         keyframe_db_local->add(pKF);
         if(pKF->mnId>mnMaxKFid) {
             mnMaxKFid = pKF->mnId;
@@ -441,12 +448,13 @@ bool Map::isActive() const {
     return active;
 }
 
-void Map::setActive(bool active) {
-    Map::active = active;
+void Map::setActive() {
+    //NEED TO MAKE SURE NO OTHER MAP IN TREE IS ACTIVE
+    setActive(shared_from_this());
 }
 
-Map *Map::getRoot() {
-    Map* map_root = this;
+std::shared_ptr<Map> Map::getRoot() {
+    std::shared_ptr<Map> map_root = shared_from_this();
     while(map_root->getParentMap()){  //find root of map tree
         map_root = map_root->getParentMap();
     }
@@ -461,15 +469,33 @@ void Map::registerWithParent() {
     }
 }
 
-Map *Map::getParentMap() const {
+std::shared_ptr<Map> Map::getParentMap() const {
     return parent_map;
 }
 
-void Map::setParentMap(Map *parentMap) {
+void Map::setParentMap(std::shared_ptr<Map> parentMap) {
     parent_map = parentMap;
 }
 
+void Map::setActive(std::shared_ptr<Map> active_map) {
+    std::shared_ptr<Map> root = getRoot();
+    root->_setActive_(active_map);
 
+}
+
+void Map::_setActive_(std::shared_ptr<Map> active_map) {
+    //walk through map tree setting all maps except "active_map" as not active.
+    //alternate idea is to create an "ActiveToken" class, create a unique ptr to one for each tree and pass it around via move (but get's tricky when trees are merged)
+    if(shared_from_this() == active_map){
+        active = true;
+    } else{
+        active = false;
+    }
+
+    for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+        (*it)->_setActive_(active_map);
+    }
+}
 
 
 } //namespace ORB_SLAM

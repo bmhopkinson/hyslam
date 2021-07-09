@@ -54,6 +54,7 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <memory>
 
 
 namespace HYSLAM
@@ -63,7 +64,7 @@ class Tracking;
 
 class Mapping {
 public:
-    Mapping(std::map<std::string, Map* > &_maps, const float bMonocular,   const std::string &config_path,
+    Mapping(std::map<std::string, std::shared_ptr<Map> > &_maps, const float bMonocular,   const std::string &config_path,
             MainThreadsStatus* thread_status_, FeatureFactory* factory);
 
     void SetTracker(Tracking* pTracker);
@@ -104,7 +105,7 @@ protected:
 
     void SetAcceptKeyFrames(bool flag);
 
-    std::map<std::string, Map* > maps;
+    std::map<std::string, std::shared_ptr<Map> > maps;
 
     Tracking* mpTracker;
 

@@ -36,6 +36,7 @@
 
 #include <thread>
 #include <mutex>
+#include <memory>
 #include "g2o/types/sim3/types_seven_dof_expmap.h"
 
 namespace HYSLAM
@@ -53,7 +54,7 @@ public:
 
 public:
 
-    LoopClosing(std::map<std::string, Map*> &_maps, FeatureVocabulary* pVoc, FeatureFactory* factory, MainThreadsStatus* thread_status_, const bool bFixScale);
+    LoopClosing(std::map<std::string, std::shared_ptr<Map>> &_maps, FeatureVocabulary* pVoc, FeatureFactory* factory, MainThreadsStatus* thread_status_, const bool bFixScale);
 
     void SetTracker(Tracking* pTracker);
     void setInputQueue(ThreadSafeQueue<KeyFrame*>* input_queue_){input_queue = input_queue_;}
@@ -103,7 +104,7 @@ protected:
     bool mbFinished;
     std::mutex mMutexFinish;
 
-    std::map<std::string, Map*> maps;
+    std::map<std::string, std::shared_ptr<Map> > maps;
     Tracking* mpTracker;
     MainThreadsStatus* thread_status;
     ThreadSafeQueue<KeyFrame*>* input_queue;

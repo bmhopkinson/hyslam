@@ -171,7 +171,7 @@ private:
     void LoadSettings(std::string settings_path);
 
     // camera-specific Map structures that stores the pointers to all KeyFrames and MapPoints.
-    std::map<std::string, Map*> maps;
+    std::map<std::string, std::shared_ptr<Map> > maps;
 
     //data shared between threads
     std::unique_ptr< MainThreadsStatus > thread_status;

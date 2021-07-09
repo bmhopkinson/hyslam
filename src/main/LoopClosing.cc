@@ -34,7 +34,7 @@
 namespace HYSLAM
 {
 
-LoopClosing::LoopClosing(std::map<std::string, Map*> &_maps, FeatureVocabulary* pVoc, FeatureFactory* factory, MainThreadsStatus* thread_status_, const bool bFixScale):
+LoopClosing::LoopClosing(std::map<std::string, std::shared_ptr<Map>> &_maps, FeatureVocabulary* pVoc, FeatureFactory* factory, MainThreadsStatus* thread_status_, const bool bFixScale):
     mbResetRequested(false), mbFinishRequested(false), mbFinished(true), maps(_maps),
     feature_factory(factory), feature_vocabulary(pVoc), thread_status(thread_status_),  mLastLoopKFid(0), mbRunningGBA(false), mbFinishedGBA(true),
     mbStopGBA(false), mbFixScale(bFixScale)
@@ -586,7 +586,7 @@ void LoopClosing::CorrectLoop()
     }
 
     // Optimize graph
-    Optimizer::OptimizeEssentialGraph(maps[curKF_cam], mpMatchedKF, mpCurrentKF, NonCorrectedSim3, CorrectedSim3, LoopConnections, mbFixScale);
+    Optimizer::OptimizeEssentialGraph(maps[curKF_cam].get(), mpMatchedKF, mpCurrentKF, NonCorrectedSim3, CorrectedSim3, LoopConnections, mbFixScale);
 
     // Add loop edge
     mpMatchedKF->AddLoopEdge(mpCurrentKF);
@@ -689,7 +689,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
     int nIter = 20;
     bool bRobust = false;
     g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
-    GlobalBundleAdjustment globalBA(vpKFfixed,  nLoopKF, nIter ,  bRobust, &mbStopGBA, maps[curKF_cam], traj_g2o, mpTracker->optParams);
+    GlobalBundleAdjustment globalBA(vpKFfixed,  nLoopKF, nIter ,  bRobust, &mbStopGBA, maps[curKF_cam].get(), traj_g2o, mpTracker->optParams);
     globalBA.Run();
 
     // Update all MapPoints and KeyFrames

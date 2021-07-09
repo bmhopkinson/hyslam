@@ -49,7 +49,7 @@ namespace HYSLAM
 {
 
 Tracking::Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
-                   std::map<std::string, Map* > &_maps, std::map<std::string, Camera > cam_data_,
+                   std::map<std::string, std::shared_ptr<Map> > &_maps, std::map<std::string, Camera > cam_data_,
                    const std::string &strSettingPath, MainThreadsStatus* thread_status_, FeatureFactory* factory):
             mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
             mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), thread_status(thread_status_), feature_factory(factory)
@@ -198,10 +198,10 @@ void Tracking::_Track_()
     frame_buf.push_back(mLastFrame[cam_cur]); //should probably pass pointers here
     frame_buf.push_back(mLastFrame["SLAM"]);
     mCurrentFrame.mpReferenceKF = mpReferenceKF[cam_cur];
-    bool bOK = state[cam_cur]->initialPoseEstimation(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur], trajectories);
+    bool bOK = state[cam_cur]->initialPoseEstimation(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur].get(), trajectories);
 
     if(bOK){
-        bOK = state[cam_cur]->refinePoseEstimate(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur], trajectories);
+        bOK = state[cam_cur]->refinePoseEstimate(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur].get(), trajectories);
     }
     mCurrentFrame.setTracked(bOK); //indicated frame was successfully tracked  - would probably be better to fold initialPoseEstimate, refinePoseEstiamte into a single method and set this value after taht combined method
     //set reference keyframe
@@ -224,10 +224,19 @@ void Tracking::_Track_()
         }
 
         thread_status->mapping.setStoppable(false);
-        newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur], mnLastKeyFrameId, force);
+        newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur].get(), mnLastKeyFrameId, force);
         if (!newKFs.empty()) { // KeyFrame(s) created
+
+
+
             for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                 KeyFrame *pKFnew = *it;
+
+                if(pKFnew->mnId > 0 && (pKFnew->mnId % 25 == 0)){
+                    std::shared_ptr<Map> newmap = maps[cam_cur]->createSubMap(true);
+                    newmap->registerWithParent();
+                }
+
                 output_queue->push(pKFnew);
                 std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << " , from cam: " << cam_cur << std::endl;
                 maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
@@ -271,7 +280,7 @@ void Tracking::_Track_()
     if(mState[cam_cur] == eTrackingState::INITIALIZATION){
         if(bOK){
 
-            HandlePostInit(newKFs.back(), maps[cam_cur],  cam_cur);
+            HandlePostInit(newKFs.back(), maps[cam_cur].get(),  cam_cur);
             next_state = eTrackingState::NORMAL;
             delete state[cam_cur];
             pnext_track_state = state_options[cam_cur]["NORMAL"];

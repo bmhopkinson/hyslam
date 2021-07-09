@@ -68,22 +68,23 @@ namespace HYSLAM
 {
 
 
-class Map
+class Map : public std::enable_shared_from_this<Map>
 {
 public:
   //  Map();
 
     Map(std::shared_ptr<KeyFrameDB> keyframe_db_, std::shared_ptr<MapPointDB> mappoint_db_); //constuctor for NEW map
-    Map(Map* parent); //constructor for submap
+    Map(std::shared_ptr<Map> parent); //constructor for submap
 
     //multimap functions
-    void createSubMap();
-    Map *getParentMap() const;
-    void setParentMap(Map *parentMap);
+    std::shared_ptr<Map> createSubMap(bool set_active);
+    std::shared_ptr<Map> getParentMap() const;
+    void setParentMap(std::shared_ptr<Map> parentMap);
     void registerWithParent();
-    Map* getRoot();
+    std::shared_ptr<Map> getRoot();
     bool isActive() const;
-    void setActive(bool active);
+    void setActive(); //set this map active - deactivates current active map
+    void setActive(std::shared_ptr<Map> active_map);  //sets active_map as active - deactivates current active map
 
     // KeyFrame functions
     void AddKeyFrame(KeyFrame* pKF);
@@ -146,6 +147,7 @@ protected:
 
     long unsigned int mnMaxKFid;
     long unsigned int firstKFid = 0;
+    bool firstKFadded = false;
 
     // Index related to a big change in the map (loop closure, global BA)
     int mnBigChangeIdx;
@@ -153,12 +155,15 @@ protected:
     std::mutex mMutexMap;
 
     //multimap data
-    std::vector<std::unique_ptr<Map>> sub_maps;
+    std::vector<std::shared_ptr<Map>> sub_maps;
     std::vector<cv::Mat> sub_map_Tse3; //relationship between parent map origin and submap origin
-    Map* parent_map = nullptr;
+    std::shared_ptr<Map> parent_map = nullptr;
 
     bool registered = false;    //is this map registered to the parent or global map
     bool active = false;
+
+    //private Map Functions
+    void _setActive_(std::shared_ptr<Map> active_map);
 
     //private KeyFrame functions
     bool _addKeyFrame_(KeyFrame* pKF);

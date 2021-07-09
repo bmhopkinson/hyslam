@@ -34,7 +34,7 @@
 namespace HYSLAM
 {
 
-    Mapping::Mapping(std::map<std::string, Map* > &_maps, const float bMonocular, const std::string &config_path,
+    Mapping::Mapping(std::map<std::string, std::shared_ptr<Map> > &_maps, const float bMonocular, const std::string &config_path,
                      MainThreadsStatus* thread_status_, FeatureFactory* factory):
     mbMonocular(bMonocular), mbResetRequested(false), maps(_maps), thread_status(thread_status_), feature_factory(factory)
 {
@@ -178,12 +178,12 @@ void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandato
 
     ProcessNewKeyFrameParameters kf_params(config_data["Jobs"]["ProcessNewKF"]);
     mandatory_jobs.push_back(
-            std::make_unique<ProcessNewKeyFrame>(mpCurrentKeyFrame, maps[curKF_cam], &mlpRecentAddedMapPoints, kf_params )
+            std::make_unique<ProcessNewKeyFrame>(mpCurrentKeyFrame, maps[curKF_cam].get(), &mlpRecentAddedMapPoints, kf_params )
             );
 
     LandMarkCullerParameters  lmculler_params(config_data["Jobs"]["LandMarkCuller"]);
     mandatory_jobs.push_back(
-            std::make_unique<LandMarkCuller>(mpCurrentKeyFrame, maps[curKF_cam], &mlpRecentAddedMapPoints, lmculler_params, flocalmap )
+            std::make_unique<LandMarkCuller>(mpCurrentKeyFrame, maps[curKF_cam].get(), &mlpRecentAddedMapPoints, lmculler_params, flocalmap )
             );
 
 }
@@ -192,13 +192,13 @@ void Mapping::SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> > &optional
 
     LandMarkTriangulatorParameters lmtriang_params(config_data["Jobs"]["LandMarkTriangulator"]);
     optional_jobs.push_back(
-            std::make_unique<LandMarkTriangulator>(mpCurrentKeyFrame, maps[curKF_cam],
+            std::make_unique<LandMarkTriangulator>(mpCurrentKeyFrame, maps[curKF_cam].get(),
                                                    &mlpRecentAddedMapPoints, lmtriang_params, feature_factory, flocalmap )
     );
 
     LandMarkFuserParameters lmfuser_params(config_data["Jobs"]["LandMarkFuser"]);
     optional_jobs.push_back(
-            std::make_unique<LandMarkFuser>(mpCurrentKeyFrame, maps[curKF_cam], lmfuser_params, feature_factory,  flocalmap )
+            std::make_unique<LandMarkFuser>(mpCurrentKeyFrame, maps[curKF_cam].get(), lmfuser_params, feature_factory,  flocalmap )
     );
 
     if(maps[curKF_cam]->KeyFramesInMap()>2) {
@@ -206,7 +206,7 @@ void Mapping::SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> > &optional
         g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
 
         optional_jobs.push_back(
-                std::make_unique<LocalBundleAdjustmentJob>(mpCurrentKeyFrame, maps[curKF_cam], traj_g2o, optpar, flocalmap )
+                std::make_unique<LocalBundleAdjustmentJob>(mpCurrentKeyFrame, maps[curKF_cam].get(), traj_g2o, optpar, flocalmap )
         );
 
     }
@@ -215,7 +215,7 @@ void Mapping::SetupOptionalJobs(std::vector< std::unique_ptr<MapJob> > &optional
     if(curKF_cam == "SLAM") {
        // std::cout << "keyframe culler for: " << curKF_cam << std::endl;
         optional_jobs.push_back(
-                std::make_unique<KeyFrameCuller>(mpCurrentKeyFrame, maps[curKF_cam], kfculler_params, flocalmap)
+                std::make_unique<KeyFrameCuller>(mpCurrentKeyFrame, maps[curKF_cam].get(), kfculler_params, flocalmap)
         );
     }
 
@@ -368,7 +368,7 @@ void Mapping::RunGlobalBA(){
     int nIter = 20;
     bool  bRobust = false;
     g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
-    GlobalBundleAdjustment globalBA(vpKFfixed,  0, nIter ,  bRobust, &mbStopGBA, maps[pRefKF->camera.camName], traj_g2o, mpTracker->optParams);
+    GlobalBundleAdjustment globalBA(vpKFfixed,  0, nIter ,  bRobust, &mbStopGBA, maps[pRefKF->camera.camName].get(), traj_g2o, mpTracker->optParams);
     globalBA.Run();
 
     std::cout << "finished global BA" << std::endl;
@@ -391,7 +391,7 @@ void Mapping::Reset(){
     }
     thread_status->mapping.setQueueLength(input_queue->size());
     for(auto it = maps.begin(); it != maps.end(); ++it){
-        Map* pMap  = it->second;
+        Map* pMap  = it->second.get();
         pMap->clear();
     }
 

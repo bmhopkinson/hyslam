@@ -104,14 +104,15 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
         std::shared_ptr<KeyFrameDB> keyframe_db = std::make_shared<KeyFrameDB>();
         keyframe_db->setVocab(mpVocabulary);
         std::shared_ptr<MapPointDB> mappoint_db = std::make_shared<MapPointDB>();
-        Map* mpMap = new Map(keyframe_db, mappoint_db);
-        mpMap->setActive(true);
+       // Map* mpMap = new Map(keyframe_db, mappoint_db);
+       std::shared_ptr<Map> mpMap = std::make_shared<Map>(keyframe_db, mappoint_db);
+        mpMap->setActive();
 
        // mpMap->setKeyFrameDBVocab(mpVocabulary);
         maps.insert(std::make_pair(cam_name, mpMap));
 
         //create frame drawer
-        FrameDrawer* pFrameDrawer = new FrameDrawer(maps[cam_name]);
+        FrameDrawer* pFrameDrawer = new FrameDrawer(maps[cam_name].get());
         mpFrameDrawers.insert(std::make_pair( cam_name ,pFrameDrawer) );
 
     }
@@ -216,7 +217,7 @@ void System::RunImagingBundleAdjustment(){
         std::string cam_name = it->first;
         if(cam_name == "Imaging") {
             //there is an imaging camera, but was it used
-            Map* pMap = it->second;
+            Map* pMap = it->second.get();
             std::vector<KeyFrame*> vKFs = pMap->GetAllKeyFrames();
             if(vKFs.size() >1) {  //need at least 2 keyframes for bundle adjustment
                 has_imaging_cam = true;
@@ -241,7 +242,7 @@ void System::RunImagingBundleAdjustment(){
     }
 
     g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
-    ImagingBundleAdjustment imgBA(maps["Imaging"], mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams );
+    ImagingBundleAdjustment imgBA(maps["Imaging"].get(), mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams );
     imgBA.Run();
 
     thread_status->mapping.setRelease(true);
@@ -336,7 +337,7 @@ std::map< std::string, KeyFrameExportData > System::KeyFramesInfoForExport(){
 
     for(auto it = maps.begin(); it != maps.end(); ++it) {
         std::string cam_name = it->first;
-        Map *pMap = it->second;
+        Map *pMap = it->second.get();
 
         std::vector<KeyFrame *> vpKFs = pMap->GetAllKeyFrames();
         if (vpKFs.size() == 0) { //camera was present but not used in SLAM
@@ -402,7 +403,7 @@ void System::ExportCOLMAP(const std::string &foldername){
 
   for(auto it = maps.begin(); it != maps.end(); ++it) {
       std::string cam_name = it->first;
-      Map *pMap = it->second;
+      Map *pMap = it->second.get();
       std::string full_path = foldername + cam_name + "/";
 
       GenUtils::mkdirRecursive(full_path.c_str(), ACCESSPERMS);
@@ -527,7 +528,7 @@ void System::SaveKeyFramesAgisoft(const std::string &filename){
     std::cout << std::endl << "Saving camera trajectory to " << filename << " ..." << std::endl;
     for(auto it = maps.begin(); it != maps.end(); ++it) {
         std::string cam_name = it->first;
-        Map *pMap = it->second;
+        Map *pMap = it->second.get();
 
         tinyxml2::XMLDocument xmlDoc;
         tinyxml2::XMLElement *pRoot = xmlDoc.NewElement("document");

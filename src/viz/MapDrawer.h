@@ -35,6 +35,7 @@
 
 #include <mutex>
 #include <string>
+#include <memory>
 
 namespace HYSLAM
 {
@@ -48,9 +49,9 @@ struct KeyFrameDrawData{
 class MapDrawer
 {
 public:
-    MapDrawer(std::map<std::string, Map*> &_maps, const std::string &strSettingPath);
+    MapDrawer(std::map<std::string, std::shared_ptr<Map>> &_maps, const std::string &strSettingPath);
 
-    std::map<std::string, Map*> maps;
+    std::map<std::string, std::shared_ptr<Map>> maps;
 
     void DrawMapPoints();
     void DrawKeyFrames( KeyFrameDrawData draw_data );
