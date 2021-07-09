@@ -431,7 +431,7 @@ namespace HYSLAM{
     int MapPointDB::eraseObservation(MapPoint* pMP, KeyFrame* pKF){ //returns whether mappoint is bad - can happen if all observations erased
 
         if(mappoint_db.count(pMP)){
-            //std::unique_lock <std::mutex> lock(db_mutex);
+            std::unique_lock <std::mutex> lock(db_mutex);
             bool to_erase = mappoint_db[pMP]->eraseObservation(pKF);
             mappoint_db[pMP]->eraseDescriptor(pKF);
             if (to_erase && !pMP->Protected()) {
@@ -469,21 +469,19 @@ namespace HYSLAM{
     }
 
     int MapPointDB::replace(MapPoint* pMP_old, MapPoint* pMP_new) {
-        if (pMP_old->mnId == pMP_new->mnId)
-            return -1;
+        if (pMP_old->mnId == pMP_new->mnId){
+            return -1;}
 
-        if (!inDB(pMP_old) || !inDB(pMP_new))
-            return -1;
+        if (!inDB(pMP_old) || !inDB(pMP_new)){
+            return -1;}
 
-        std::map<KeyFrame *, size_t> obs;
-        obs= getObservations(pMP_old);
         {
             std::unique_lock<std::mutex> lock1(db_mutex);  //lock to set bad so no new observations are added
             pMP_old->setBad();
             pMP_old->setReplaced(pMP_new);
         }
 
-       // std::map<KeyFrame *, size_t> obs= getObservations(pMP_old);
+       std::map<KeyFrame *, size_t> obs= getObservations(pMP_old);
         MapPointDBEntry* entry_pMPnew = _findEntry_(pMP_new);
 
         for (std::map<KeyFrame *, size_t>::iterator mit = obs.begin(), mend = obs.end(); mit != mend; mit++) {
