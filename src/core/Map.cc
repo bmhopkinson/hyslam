@@ -149,7 +149,7 @@ void Map::ClearKeyFrameProtection(KeyFrame* pKF){
 void Map::SetBadKeyFrame(KeyFrame* pKF) {
     bool erasable = false;
     _isKFErasable_(pKF, erasable);
-    if(!erasable){ //don't delete the first keyframe
+    if(!erasable){ //don't delete the first keyframe in each submap
         return;
     } else if (pKF->isProtected()) {  //LoopClosing can protect a keyframe by setting mbNotErase, if set don't erase, but mark it to be erased later by setting mbToBeErased
         pKF->mbToBeErased = true;
@@ -324,8 +324,8 @@ int Map::addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace){
     pKF->associateLandMark(idx, pMP, replace, pMP_old); //should run this through keyframedb so that it can track changing assocations and update covis etc as needed
 
     if(pMP_old && replace){ //remove old association first in case pMP_old = pMP;
-        //std::cout << "removing old observation, which would have lingered in past" << std::endl;
-        eraseAssociation(pKF, pMP_old);
+       eraseAssociation(pKF, pMP_old);
+        //mappoint_db_local->eraseObservation(pMP, pKF);  //previous line is much better! just doing this to test consistency with previous implementation
     }
 
   //  Map* map_root = getRoot();
