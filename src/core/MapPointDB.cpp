@@ -515,7 +515,7 @@ namespace HYSLAM{
         }
         else{
             for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
-                if((*it)->inDB(pMP)){
+                if((*it)->exists(pMP)){
                     return true;
                 }
             }

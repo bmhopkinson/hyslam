@@ -312,7 +312,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
         
         if(nEdges==0)
         {
-            std::cout << "excluding mappoint: "<< vertex_name_mp  << std::endl;
+           // std::cout << "excluding mappoint: "<< vertex_name_mp  << std::endl;
             sExcludedMPs.insert( vertex_name_mp );
             optimizer->removeVertex( vPoint );
         }

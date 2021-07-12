@@ -54,10 +54,11 @@ Map::Map(std::shared_ptr<Map> parent) {
 std::shared_ptr<Map> Map::createSubMap(bool set_active) {
     std::unique_lock<std::mutex> lock(mMutexMap);
     std::shared_ptr<Map> newmap =  std::make_shared<Map>(shared_from_this());
+    sub_maps.push_back(newmap); //do this first after creating map!
+
     if(set_active) {
         newmap->setActive();
     }
-    sub_maps.push_back(newmap);
     return newmap;
 }
 
@@ -453,6 +454,28 @@ void Map::setActive() {
     setActive(shared_from_this());
 }
 
+void Map::setActive(std::shared_ptr<Map> active_map) {
+    std::shared_ptr<Map> root = getRoot();
+//    std::cout << "in setActive(active_map), start at: " << root << ", looking to set active: " << active_map << std::endl;
+    root->_setActive_(active_map);
+
+}
+
+void Map::_setActive_(std::shared_ptr<Map> active_map) {
+    //walk through map tree setting all maps except "active_map" as not active.
+    //alternate idea is to create an "ActiveToken" class, create a unique ptr to one for each tree and pass it around via move (but get's tricky when trees are merged)
+    if(shared_from_this() == active_map){
+        active = true;
+        std::cout << "setting active map to: " << shared_from_this() << std::endl;
+    } else{
+        active = false;
+    }
+
+    for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+        (*it)->_setActive_(active_map);
+    }
+}
+
 std::shared_ptr<Map> Map::getRoot() {
     std::shared_ptr<Map> map_root = shared_from_this();
     while(map_root->getParentMap()){  //find root of map tree
@@ -477,25 +500,7 @@ void Map::setParentMap(std::shared_ptr<Map> parentMap) {
     parent_map = parentMap;
 }
 
-void Map::setActive(std::shared_ptr<Map> active_map) {
-    std::shared_ptr<Map> root = getRoot();
-    root->_setActive_(active_map);
 
-}
-
-void Map::_setActive_(std::shared_ptr<Map> active_map) {
-    //walk through map tree setting all maps except "active_map" as not active.
-    //alternate idea is to create an "ActiveToken" class, create a unique ptr to one for each tree and pass it around via move (but get's tricky when trees are merged)
-    if(shared_from_this() == active_map){
-        active = true;
-    } else{
-        active = false;
-    }
-
-    for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
-        (*it)->_setActive_(active_map);
-    }
-}
 
 
 } //namespace ORB_SLAM

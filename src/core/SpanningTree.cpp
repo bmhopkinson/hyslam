@@ -38,6 +38,10 @@ namespace HYSLAM {
 
     /// SPANNING TREE FUNCTIONS ///////////
 
+    SpanningTree::SpanningTree() {
+        next_parent.push_back(nullptr);
+    }
+
     bool SpanningTree::inTree(KeyFrame* pKF){
         return spanning_tree.count(pKF);
     }
@@ -49,6 +53,7 @@ namespace HYSLAM {
             {
                 std::unique_lock<std::mutex> lock(tree_mutex);
                 spanning_tree.insert({pKF, std::make_unique<SpanningTreeNode>(pKF)});
+                next_parent.push_back(pKF);
             }
             return 0;
         }
@@ -63,6 +68,7 @@ namespace HYSLAM {
                 std::unique_lock<std::mutex> lock(tree_mutex);
                 spanning_tree.insert({pKF_node, std::make_unique<SpanningTreeNode>(pKF_node)});
                 spanning_tree[pKF_node]->setParent(parent);
+                next_parent.push_back(pKF_node);
 
                 if( inTree(parent) ) { //KeyFrame 0 has no parent so this test is necessary
                     spanning_tree[parent]->addChild(pKF_node);
@@ -82,8 +88,13 @@ namespace HYSLAM {
                 spanning_tree[parent]->eraseChild(pKF);
             }
             spanning_tree.erase(pKF);
+            next_parent.remove(pKF);
         }
         return 0;
+    }
+
+    KeyFrame *SpanningTree::parentForNewKeyFrame() {
+        return next_parent.back();
     }
 
     KeyFrame* SpanningTree::getParent(KeyFrame* pKF){
@@ -120,6 +131,18 @@ namespace HYSLAM {
 
         return 0;
     }
+
+    bool SpanningTree::exists(KeyFrame *pKF) {
+        if(spanning_tree.count(pKF)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+
+
 /*
     void SpanningTree::validateSpanningTree(){
         int n_errors = 0;

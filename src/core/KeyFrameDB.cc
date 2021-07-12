@@ -41,19 +41,20 @@ void KeyFrameDB::add(KeyFrame *pKF)
     int res = covis_graph.addNode(pKF);
     if(res == -1){ std::cout << "rejected from covis graph, pKF: " << pKF->mnId <<std::endl;}
 
-     std::vector<KeyFrame*> parent = covis_graph.GetBestCovisibilityKeyFrames(pKF, 1);
-     if(!parent.empty()) {  //will be empty for keyframe 0
-         spanning_tree.addNode(pKF, parent[0]);
-     } else {
-        spanning_tree.addNode(pKF, nullptr);
-     }
+     KeyFrame* parent = spanning_tree.parentForNewKeyFrame();
+     spanning_tree.addNode(pKF, parent);
+  //   if(parent) {  //will be empty for keyframe 0
+  //       spanning_tree.addNode(pKF, parent);
+  //   } else {
+  //      spanning_tree.addNode(pKF, nullptr);
+  //   }
 
      place_recog.add(pKF);
 }
 
 void KeyFrameDB::erase(KeyFrame* pKF, std::string option)
 {
-    std::set<KeyFrame*> pKF_conn = covis_graph.GetConnectedKeyFrames(pKF);
+    std::set<KeyFrame*> pKF_conn = GetConnectedKeyFrames(pKF);
     std::set<KeyFrame*> difference;  // in other KeyFrameDBs - _erase_ takes care of erasing connections to KFs in this covis_graph
     std::set_difference(pKF_conn.begin(), pKF_conn.end(), KF_set.begin(), KF_set.end(), std::inserter(difference, difference.begin())); //finds KFs in pKF_conn that are NOT in KF_set
     _erase_(pKF, option);
@@ -63,27 +64,26 @@ void KeyFrameDB::erase(KeyFrame* pKF, std::string option)
 
 
 bool KeyFrameDB::_erase_(KeyFrame *pKF, std::string option) {
-    if(KF_set.count(pKF)) {
+    if(exists(pKF)) {
         if (option == "All") {
             std::unique_lock<std::mutex> lock(kfdb_mutex);
             //set bad and set mTcp which is an incremental motion between parent and KF
             pKF->mbBad = true;
-            KeyFrame *mpParent = spanning_tree.getParent(pKF);
+            //KeyFrame *mpParent = spanning_tree.getParent(pKF);
+            KeyFrame *mpParent = getSpanningTreeParent(pKF);
             if (mpParent) {
                 pKF->mTcp = pKF->GetPose() * mpParent->GetPoseInverse();  //would be good to eliminate the need to do this
             }
 
             //       std::cout << "updateSpanningTreeforKeyFrameRemoval" << std::endl;
             updateSpanningTreeforKeyFrameRemoval(pKF);
-            spanning_tree.eraseNode(pKF);
-            KF_set.erase(pKF);
+            eraseSpanningTreeNode(pKF);
+            _eraseKFDBset_(pKF);
 
-            //       std::cout << "covis_graph.eraseNode" << std::endl;
-
-            covis_graph.eraseNode(pKF);
+            _eraseCovisGraph_(pKF);
             //  place_recog.erase(pKF);  //for consistency w/ ORB_SLAM implementation - on the other hand i dont' see any point in keeping bad keyframes in the place recognition candiate list
         } else if (option == "Covis") {
-            covis_graph.eraseNode(pKF);
+            _eraseCovisGraph_(pKF);
         } else {
             std::cout << "KeyFrameDB::erase option: " << option << " does not exist" << std::endl;
         }
@@ -125,6 +125,20 @@ bool KeyFrameDB::_erase_connections_(KeyFrame *pKF, std::set<KeyFrame *> &pKF_co
 }
 
 
+bool KeyFrameDB::_eraseKFDBset_(KeyFrame *pKF) {
+    if(KF_set.count(pKF)) {
+        KF_set.erase(pKF);
+        return true;
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_eraseKFDBset_(pKF)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool KeyFrameDB::update(KeyFrame* pKF){
     //should make this handle reciprocal updates
     if(covis_graph.inGraph(pKF)){
@@ -142,13 +156,13 @@ bool KeyFrameDB::update(KeyFrame* pKF){
 
 bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
     // Update Spanning Tree - requires cooperation of spanning tree and covis graph so can't be done at a lower level (e.g. within spanning_tree);
-    // BH 2021/07/08 simplified this and now simply assign parent of keyframe being removed to current children  - if this works ok can be moved down into SpanningTree b/c doesn't require covisibility graph
-    KeyFrame* mpParent = spanning_tree.getParent(pKF);
-    std::set<KeyFrame*> children = spanning_tree.getChildren(pKF);
+    // BH 2021/07/08 simplified this and now simply assign parent of keyframe being removed to current children
+    KeyFrame* mpParent = getSpanningTreeParent(pKF);
+    std::set<KeyFrame*> children = getSpanningTreeChildren(pKF);
     std::set<KeyFrame*> sParentCandidates;
     if(mpParent) {
         for (std::set<KeyFrame *>::iterator sit =children.begin(); sit != children.end(); sit++) {
-            spanning_tree.changeParent(*sit, mpParent);
+            changeSpanningTreeParent(*sit, mpParent);
         }
     }
     return true;
@@ -310,17 +324,133 @@ void KeyFrameDB::validateSpanningTree(){
     spanning_tree.validateSpanningTree();
 }
 */
-std::set<KeyFrame*> KeyFrameDB::getSpanningTreeChildren(KeyFrame* pKF) {  // used in LoopClosing and Tracking
-    return spanning_tree.getChildren(pKF);
+std::set<KeyFrame *> KeyFrameDB::getSpanningTreeChildren(KeyFrame *pKF) {
+    std::set<KeyFrame *> children;
+    if(_getSpanningTreeChildren_(pKF, children)){
+        return children;
+    }
+    return std::set<KeyFrame *>();
+}
+
+ bool KeyFrameDB::_getSpanningTreeChildren_(KeyFrame* pKF,std::set<KeyFrame*> &children ) {  // used in LoopClosing and Tracking
+    if(spanning_tree.exists(pKF)) {
+        children = spanning_tree.getChildren(pKF);
+        return true;
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_getSpanningTreeChildren_(pKF, children)){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 KeyFrame* KeyFrameDB::getSpanningTreeParent(KeyFrame* pKF) {
-    return spanning_tree.getParent(pKF);
+    KeyFrame* parent  = nullptr;
+    if(_getSpanningTreeParent_(pKF, parent)){
+        return parent;
+    }
+    return nullptr;
+}
+
+bool KeyFrameDB::_getSpanningTreeParent_(KeyFrame *pKF_node, KeyFrame* &pKF_parent) {
+    if(spanning_tree.exists(pKF_node)) {
+        pKF_parent = spanning_tree.getParent(pKF_node);
+        return true;
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_getSpanningTreeParent_(pKF_node, pKF_parent)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool KeyFrameDB::changeSpanningTreeParent(KeyFrame *pKF_node, KeyFrame *pKF_newparent) {
+    int result;
+    if(_changeSpanningTreeParent_(pKF_node, pKF_newparent, result)) {
+        if(result ==0 ) {
+            return true;
+        } {
+            return false;
+        }
+    }
+    return false;
+
+}
+
+bool KeyFrameDB::_changeSpanningTreeParent_(KeyFrame *pKF_node, KeyFrame *pKF_newparent, int &result) {
+    if(spanning_tree.exists(pKF_node)) {
+        result = spanning_tree.changeParent(pKF_node, pKF_newparent);
+        return true; //indicates spanning tree with pKF_node has been found
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_changeSpanningTreeParent_(pKF_node, pKF_newparent, result)){
+                return true;
+            }
+        }
+    }
 }
 
 bool KeyFrameDB::isChild(KeyFrame* pKF_node, KeyFrame* pKF_query){
-    return spanning_tree.isChild(pKF_node, pKF_query);
+   bool result;
+   if(_isChild_(pKF_node, pKF_query, result)){
+       return result;
+   }
+   return false;
+}
 
+bool KeyFrameDB::_isChild_(KeyFrame *pKF_node, KeyFrame *pKF_query, bool &result) {
+    if(spanning_tree.exists(pKF_node)) {
+        result =  spanning_tree.isChild(pKF_node, pKF_query);
+        return true;
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_isChild_(pKF_node, pKF_query, result)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool KeyFrameDB::eraseSpanningTreeNode(KeyFrame *pKF) {
+    bool result;
+    if(_eraseSpanningTreeNode_(pKF, result)){
+        return result;
+    }
+    return false;
+}
+
+
+bool KeyFrameDB::_eraseSpanningTreeNode_(KeyFrame *pKF, bool &result) {
+    if(spanning_tree.exists(pKF)) {
+        result = spanning_tree.eraseNode(pKF);
+        return true; //indicates spanning tree containing pKF found
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_eraseSpanningTreeNode_(pKF, result)){
+                return true;
+            }
+        }
+    }
+    return false;  //not ideal - perhaps return an int and return -1 if pKF_node not found
+}
+
+bool KeyFrameDB::_eraseCovisGraph_(KeyFrame *pKF) {
+    if(covis_graph.inGraph(pKF)){
+        covis_graph.eraseNode(pKF);
+        return true;
+    } else {
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_eraseCovisGraph_(pKF)){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 std::vector<KeyFrame*> KeyFrameDB::DetectLoopCandidates(KeyFrame* pKF, float minScore) {
@@ -376,6 +506,7 @@ void KeyFrameDB::addChild(std::shared_ptr<KeyFrameDB> child) {
 void KeyFrameDB::removeChild(std::shared_ptr<KeyFrameDB> child) {
     sub_dbs.remove(child);
 }
+
 
 
 

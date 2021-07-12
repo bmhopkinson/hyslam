@@ -47,10 +47,13 @@ namespace HYSLAM{
 
     class SpanningTree{
     public:
+        SpanningTree();
         using SpanningTree_t = std::map< KeyFrame*, std::unique_ptr<SpanningTreeNode> >;
+        bool exists(KeyFrame* pKF);
         int addNode(KeyFrame* pKF);
         int addNode(KeyFrame* pKF_node, KeyFrame* parent);
         int eraseNode(KeyFrame* pKF);  //removes the parent's link to pKF and deletes pKF in spanning tree, but does not redistribute children b/c that requires collaboration w/ covis graph
+        KeyFrame* parentForNewKeyFrame();
         void clear() { spanning_tree.clear(); }
         KeyFrame* getParent(KeyFrame* pKF);
         std::set<KeyFrame*> getChildren(KeyFrame* pKF);
@@ -63,6 +66,7 @@ namespace HYSLAM{
         SpanningTree_t spanning_tree;
         bool inTree(KeyFrame* pKF);
         std::mutex tree_mutex;
+        std::list<KeyFrame*> next_parent;
     };
 
 } //close namespace

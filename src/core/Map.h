@@ -31,6 +31,10 @@
  *  have an idea of making this a recursive data structure so we can have submaps of finite size related to each other by rigid transforms
  *   would enable easier reinitialization when tracking is lost (simply create new submap), breaking up enormously large maps that take forever for global bundle adjustment, etc
  *
+ * The Map is recurvise (tree) and can hold submaps as children (which can themselves have submaps). Only one submap in the entire tree can be active at any time (setActive(), isActive). new keyframes and mappoints
+ *  are added to the active map. a submap can be "registered" with the parent map when it's position is determined sufficiently such that it's keyframes and mappoints should be available to the parent map (registerWithParentMap()).
+ *   mechanistically, once a map is registered with the parent the submap's local KeyFrameDB and MapPointDB are joined to the parent map's such that they are accessible from the parent's map calls to MapPointDB and KeyFrameDB functions.
+ *
  *   key functionality:
  *   AddKeyFrame(KeyFrame* pKF) - adds KeyFrame to KeyFrameDB and sets this map as the KeyFrame's Map
  *   EraseKeyFrame(KeyFrame* pKF) - erases KeyFrame from KeyFrameDB, doesn't delete it

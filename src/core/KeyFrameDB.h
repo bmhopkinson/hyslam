@@ -27,6 +27,9 @@
  *   SpanningTree
  *   PlaceRecognizer
  *
+ * KeyFrameDB is a recursive tree structure to allow sharing (or not) of information between submaps (see Map). function calls to the main db are implemented recursively to search any child KeyFrameDBs.
+ *   The component data structures (CovisibilityGraph, SpanningTree, PlaceRecognizer) are NOT recurvise data structures so managing these in the context of the recurvise structure of the KeyFrameDB requires some work.
+ *
  *   mostly just passes function calls on to these underlying objects.
  *   the only real work it does is reconfiguring the spanning tree when a keyframe is erased b/c doing so requires cooperation between CovisibilityGraph and SpanningTree
  *   working functions:
@@ -105,7 +108,9 @@ public:
    // void validateSpanningTree();
     std::set<KeyFrame*> getSpanningTreeChildren(KeyFrame* pKF);  // used in LoopClosing and Tracking
     KeyFrame* getSpanningTreeParent(KeyFrame* pKF);
+    bool changeSpanningTreeParent(KeyFrame* pKF_node, KeyFrame* pKF_newparent);
     bool isChild(KeyFrame* pKF_node, KeyFrame* pKF_query); //used in Optimizer
+    bool eraseSpanningTreeNode(KeyFrame* pKF);
 
    // Loop Detection
    std::vector<KeyFrame *> DetectLoopCandidates(KeyFrame* pKF, float minScore);
@@ -130,6 +135,16 @@ protected:
     //private implementations
     bool _erase_(KeyFrame* pKF, std::string option);
     bool _erase_connections_(KeyFrame* pKF, std::set<KeyFrame*> &pKF_conn);
+    bool _eraseKFDBset_(KeyFrame* pKF);
+
+    bool _getSpanningTreeChildren_(KeyFrame* pKF, std::set<KeyFrame*> &children);
+    bool _getSpanningTreeParent_(KeyFrame* pKF_node, KeyFrame* &pKF_parent);
+    bool _changeSpanningTreeParent_(KeyFrame *pKF_node, KeyFrame *pKF_newparent, int &result);
+    bool _isChild_(KeyFrame* pKF_node, KeyFrame* pKF_query, bool &result);
+    bool _eraseSpanningTreeNode_(KeyFrame* pKF, bool &result);
+
+    bool _eraseCovisGraph_(KeyFrame* pKF);
+
 };
 
 } //namespace ORB_SLAM

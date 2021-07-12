@@ -8,6 +8,8 @@
  * MapPointDB contains MapPointDBEntry for each LandMark
  * NOTE: might pull out a separate "AssociationsDB" - currently the "MapPointDB" does double duty as a true mappoint database and as an associations database
  *
+ * MappointDB is a recursive tree structure to allow sharing (or not) of information between submaps (see Map). function calls to the main db are implemented recursively to search any child MapPointDBs.
+ *
  * MapPointDBEntry:
  *    core data are:
  *      Pointer to LandMark itself

@@ -232,7 +232,7 @@ void Tracking::_Track_()
             for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                 KeyFrame *pKFnew = *it;
 
-                if(pKFnew->mnId > 0 && (pKFnew->mnId % 25 == 0)){
+                if(pKFnew->mnId > 0 && (pKFnew->mnId % 20 == 0)){
                     std::shared_ptr<Map> newmap = maps[cam_cur]->createSubMap(true);
                     newmap->registerWithParent();
                 }

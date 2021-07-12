@@ -283,7 +283,7 @@ float KeyFrame::featureSizeMetric(int idx){ //consider each feature to be a squa
 float KeyFrame::landMarkSizePixels(MapPoint* lm){
     int idx = hasAssociation(lm);
     if(idx >= 0){  //if already associated just use observed keypt size
-        std::cout <<"idx: " << idx <<  " ,using old size: " << views.keypt(idx).size << std::endl;
+        std::cout <<"keyframe idx: " << idx <<  " ,using old size: " << views.keypt(idx).size << std::endl;
         return views.keypt(idx).size;
     } else { //project it
         cv::Mat Pw = lm->GetWorldPos();
