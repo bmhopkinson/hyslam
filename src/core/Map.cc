@@ -119,16 +119,21 @@ bool Map::_eraseKeyFrame_(KeyFrame *pKF) {
     return false;
 }
 
+bool Map::isKFErasable(KeyFrame *pKF) {
+    bool erasable = true;
+    _isKFErasable_(pKF, erasable);
+    return erasable;
+}
+
 bool Map::_isKFErasable_(KeyFrame *pKF, bool &erasable) {
     //don't allow first keyframe added to each map to be erased. it's the reference point relative to other maps and origin of world frame for first map
     //return value is whether pKF has been found in a map and so searching can terminate.
-    if(keyframe_db_local->exists(pKF)){
-        if(pKF->mnId == firstKFid){
-            erasable = false;
-        } else {
-            erasable = true;
-        }
-        return true;
+    // need to work through all submaps to check (can't just find the submap in which pKF i sin the keyframe_db b/c that keyframe_db may be connected to other submap keyframedbs  might be
+    // best to push "isErasable" down to keyframe db )
+
+    if(pKF->mnId == firstKFid){
+        erasable = false;
+        return true;  //indicates there's no need to search further
     } else{
         for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
             if((*it)->_isKFErasable_(pKF, erasable)){
@@ -155,9 +160,7 @@ void Map::ClearKeyFrameProtection(KeyFrame* pKF){
 }
 
 void Map::SetBadKeyFrame(KeyFrame* pKF) {
-    bool erasable = false;
-    _isKFErasable_(pKF, erasable);
-    if(!erasable){ //don't delete the first keyframe in each submap
+    if(!isKFErasable(pKF)){ //don't delete the first keyframe in each submap
         return;
     } else if (pKF->isProtected()) {  //LoopClosing can protect a keyframe by setting mbNotErase, if set don't erase, but mark it to be erased later by setting mbToBeErased
         pKF->mbToBeErased = true;
@@ -259,13 +262,18 @@ bool Map::_eraseMapPoint_(MapPoint *pMP) {
 }
 
 int Map::replaceMapPoint(MapPoint* pMP_old, MapPoint* pMP_new){
-//    if(registered) {
-//        return mappoint_db->replace(pMP_old, pMP_new);
-//    }
-//    else {
-//        return mappoint_db_local->replace(pMP_old, pMP_new);
-//    }
-    return mappoint_db_local->replace(pMP_old, pMP_new);
+    int res = mappoint_db_local->replace(pMP_old, pMP_new);
+    if(res <0){ //did not succeed
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            int res2 = (*it)->replaceMapPoint(pMP_old, pMP_new);
+            if(res2 >=0){
+                return res2;
+            }
+        }
+    } else {
+        return res;
+    }
+    return -1; // failed
 }
 
 
@@ -278,12 +286,6 @@ void Map::SetReferenceMapPoints(const std::vector<MapPoint *> &vpMPs)
 long unsigned int Map::MapPointsInMap()
 {
     std::unique_lock<std::mutex> lock(mMutexMap);
-//    if(registered) {
-//        return mappoint_db->numMapPoints();
-//    }
-//    else {
-//        return mappoint_db_local->numMapPoints();
-//    }
     return mappoint_db_local->numMapPoints();
 }
 
@@ -304,12 +306,6 @@ void  Map::visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts
 std::vector<MapPoint*> Map::GetAllMapPoints()
 {
     std::unique_lock<std::mutex> lock(mMutexMap);
-//    if(registered) {
-//        return mappoint_db_global->getAllMapPoints();
-//    }
-//    else {
-//        return mappoint_db_local->getAllMapPoints();
-//    }
     return mappoint_db_local->getAllMapPoints();
 
 }

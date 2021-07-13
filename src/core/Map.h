@@ -95,6 +95,7 @@ public:
     bool EraseKeyFrame(KeyFrame* pKF);  //details on erasing KFs is complicated due to multithreading/loop closing - probably should rename these functions
     void ClearKeyFrameProtection(KeyFrame* pKF);   //used once loop closing is done w/ a keyframe to allow its removal, and to erase it if it was marked for removal during the loop closing attempt - this isn't the best - would be better to clearprotection directly on keyframe, add keyframes to be deleted to a queue for later deletion once protection is cleared
     void SetBadKeyFrame(KeyFrame* pKF);
+    bool isKFErasable(KeyFrame *pKF);
  //   void validateCovisiblityGraph();
     KeyFrameDB* getKeyFrameDB(){return keyframe_db_local.get();}
     long unsigned  KeyFramesInMap();
@@ -172,7 +173,7 @@ protected:
     //private KeyFrame functions
     bool _addKeyFrame_(KeyFrame* pKF);
     bool _eraseKeyFrame_(KeyFrame* pKF);
-    bool _isKFErasable_(KeyFrame* pKF, bool &erasble);
+    bool _isKFErasable_(KeyFrame* pKF, bool &erasable);
 
     //private mappointDB functions
     bool _addMapPoint_(MapPoint* pMP, KeyFrame* pKF_ref, int idx);
