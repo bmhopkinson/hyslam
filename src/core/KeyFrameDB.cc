@@ -469,15 +469,16 @@ std::vector<KeyFrame*> KeyFrameDB::DetectLoopCandidates(KeyFrame* pKF, float min
     return candidates;
 }
 
-std::vector<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
+std::set<KeyFrame*> KeyFrameDB::DetectRelocalizationCandidates(Frame *F)
 {
     //NOTE MAY INSTEAD WANT TO RETURN scores with candidates and screen further for highest scores as the place recognizer uses some relative scoring metrics
-    std::vector<KeyFrame*> candidates =  place_recog.detectRelocalizationCandidates(F);
+    std::vector<KeyFrame*> candidates_vec =  place_recog.detectRelocalizationCandidates(F);
+    std::set<KeyFrame*> candidates(candidates_vec.begin(), candidates_vec.end());
 
     for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
-        std::vector<KeyFrame*> candidates_addn = (*it)->DetectRelocalizationCandidates(F);
+        std::set<KeyFrame*> candidates_addn = (*it)->DetectRelocalizationCandidates(F);
         if(!candidates_addn.empty()){
-            candidates.insert(candidates.end(), candidates_addn.begin(), candidates_addn.end());
+            candidates.insert( candidates_addn.begin(), candidates_addn.end());
         }
     }
     return candidates;

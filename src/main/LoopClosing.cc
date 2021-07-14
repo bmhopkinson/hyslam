@@ -363,7 +363,7 @@ bool LoopClosing::ComputeSim3()
 
     // Retrieve MapPoints seen in Loop Keyframe and neighbors
    // vector<KeyFrame*> vpLoopConnectedKFs = mpMatchedKF->GetVectorCovisibleKeyFrames();
-    std::vector<KeyFrame*> vpLoopConnectedKFs = maps[curKF_cam]->getKeyFrameDB()->GetVectorCovisibleKeyFrames(mpMatchedKF);
+    std::vector<KeyFrame*> vpLoopConnectedKFs = maps[curKF_cam]->getVectorCovisibleKeyFrames(mpMatchedKF);
     vpLoopConnectedKFs.push_back(mpMatchedKF);
     mvpLoopMapPoints.clear();
     for(std::vector<KeyFrame*>::iterator vit=vpLoopConnectedKFs.begin(); vit!=vpLoopConnectedKFs.end(); vit++)
@@ -447,11 +447,11 @@ void LoopClosing::CorrectLoop()
 
     // Ensure current keyframe is updated
     //mpCurrentKF->UpdateConnections();
-    maps[curKF_cam]->getKeyFrameDB()->update(mpCurrentKF);
+    maps[curKF_cam]->update(mpCurrentKF);
 
     // Retrive keyframes connected to the current keyframe and compute corrected Sim3 pose by propagation
    // mvpCurrentConnectedKFs = mpCurrentKF->GetVectorCovisibleKeyFrames();
-    mvpCurrentConnectedKFs = maps[curKF_cam]->getKeyFrameDB()->GetVectorCovisibleKeyFrames(mpCurrentKF);
+    mvpCurrentConnectedKFs = maps[curKF_cam]->getVectorCovisibleKeyFrames(mpCurrentKF);
     mvpCurrentConnectedKFs.push_back(mpCurrentKF);
 
     KeyFrameAndPose CorrectedSim3, NonCorrectedSim3;
@@ -532,7 +532,7 @@ void LoopClosing::CorrectLoop()
 
             // Make sure connections are updated
            // pKFi->UpdateConnections();
-            maps[curKF_cam]->getKeyFrameDB()->update(pKFi);
+            maps[curKF_cam]->update(pKFi);
         }
 
         // Start Loop Fusion
@@ -571,14 +571,15 @@ void LoopClosing::CorrectLoop()
     {
         KeyFrame* pKFi = *vit;
        // vector<KeyFrame*> vpPreviousNeighbors = pKFi->GetVectorCovisibleKeyFrames();
-        std::vector<KeyFrame*> vpPreviousNeighbors = maps[curKF_cam]->getKeyFrameDB()->GetVectorCovisibleKeyFrames(pKFi);
+        std::vector<KeyFrame*> vpPreviousNeighbors = maps[curKF_cam]->getVectorCovisibleKeyFrames(pKFi);
 
         // Update connections. Detect new links.
        // pKFi->UpdateConnections();
-        maps[curKF_cam]->getKeyFrameDB()->update(pKFi);
+        maps[curKF_cam]->update(pKFi);
 
         //LoopConnections[pKFi]=pKFi->GetConnectedKeyFrames();
-        LoopConnections[pKFi] =   maps[curKF_cam]->getKeyFrameDB()->GetConnectedKeyFrames(pKFi);
+        std::vector<KeyFrame*> KFs_conn = maps[curKF_cam]->getVectorCovisibleKeyFrames(pKFi);
+        LoopConnections[pKFi] =   std::set<KeyFrame*>(KFs_conn.begin(), KFs_conn.end());
         for(std::vector<KeyFrame*>::iterator vit_prev=vpPreviousNeighbors.begin(), vend_prev=vpPreviousNeighbors.end(); vit_prev!=vend_prev; vit_prev++)
         {
             LoopConnections[pKFi].erase(*vit_prev);
@@ -728,7 +729,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
             {
                 KeyFrame* pKF = lpKFtoCheck.front();
                // const set<KeyFrame*> sChilds = pKF->GetChilds();
-                const std::set<KeyFrame*> sChilds = maps[curKF_cam]->getKeyFrameDB()->getSpanningTreeChildren(pKF);
+                const std::set<KeyFrame*> sChilds = maps[curKF_cam]->getSpanningTreeChildren(pKF);
                 cv::Mat Twc = pKF->GetPoseInverse();
                 for(std::set<KeyFrame*>::const_iterator sit=sChilds.begin();sit!=sChilds.end();sit++)
                 {

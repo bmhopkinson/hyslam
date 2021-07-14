@@ -498,7 +498,88 @@ void Map::setParentMap(std::shared_ptr<Map> parentMap) {
     parent_map = parentMap;
 }
 
+std::vector<KeyFrame *> Map::getVectorCovisibleKeyFrames(KeyFrame *pKF) {
+    if(keyframe_db_local->exists(pKF)){
+        return keyframe_db_local->GetVectorCovisibleKeyFrames(pKF);
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            std::vector<KeyFrame *> covisKFs = (*it)->getVectorCovisibleKeyFrames(pKF);
+            if(!covisKFs.empty()){
+                return covisKFs;
+            }
+        }
+    }
+    return std::vector<KeyFrame *>();
+}
 
+std::vector<KeyFrame *> Map::getBestCovisibilityKeyFrames(KeyFrame *pKF, const int &N) {
+    if(keyframe_db_local->exists(pKF)){
+        return keyframe_db_local->GetBestCovisibilityKeyFrames(pKF, N);
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            std::vector<KeyFrame *> covisKFs = (*it)->getBestCovisibilityKeyFrames(pKF, N);
+            if(!covisKFs.empty()){
+                return covisKFs;
+            }
+        }
+    }
+    return std::vector<KeyFrame *>();
+}
 
+bool Map::update(KeyFrame *pKF) {
+    if(keyframe_db_local->exists(pKF)){
+        return keyframe_db_local->update(pKF);
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->update(pKF)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+std::set<KeyFrame *> Map::getSpanningTreeChildren(KeyFrame *pKF) {
+    std::set<KeyFrame *> children;
+    _getSpanningTreeChildren_(pKF, children);
+    return children;
+}
+
+bool Map::_getSpanningTreeChildren_(KeyFrame *pKF, std::set<KeyFrame *> &children) {
+    if(keyframe_db_local->exists(pKF)){
+        children =  keyframe_db_local->getSpanningTreeChildren(pKF);
+        return true;
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->_getSpanningTreeChildren_(pKF, children)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+std::set<KeyFrame *> Map::detectRelocalizationCandidates(Frame *F) {
+    std::set<KeyFrame *> candidates = keyframe_db_local->DetectRelocalizationCandidates(F);
+    for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it) {
+        std::set<KeyFrame *> addn_candidates = (*it)->detectRelocalizationCandidates(F);
+        candidates.insert( addn_candidates.begin(), addn_candidates.end());
+    }
+    return candidates;
+}
+
+bool Map::update(MapPoint *pMP) {
+    if(mappoint_db_local->exists(pMP)) {
+        mappoint_db_local->updateEntry(pMP);
+        return true;
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->update(pMP)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 } //namespace ORB_SLAM

@@ -15,7 +15,8 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
     //  vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectRelocalizationCandidates(&mCurrentFrame);
-    std::vector<KeyFrame*> vpCandidateKFs = pMap->getKeyFrameDB()->DetectRelocalizationCandidates(&current_frame);
+    std::set<KeyFrame*> vpCandidateKFs_set = pMap->detectRelocalizationCandidates(&current_frame);
+    std::vector<KeyFrame*> vpCandidateKFs(vpCandidateKFs_set.begin(), vpCandidateKFs_set.end()); //shouldn't need to do this - rewrite below
     if(vpCandidateKFs.empty())
         return -1;
 
@@ -40,6 +41,9 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     vbDiscarded.resize(nKFs);
 
     int nCandidates=0;
+
+    //int i = 0;
+    //for(auto it  = vpCandidateKFs.begin(); it != vpCandidateKFs.end(); ++it, i++)
     for(int i=0; i<nKFs; i++)
     {
         KeyFrame* pKF = vpCandidateKFs[i];

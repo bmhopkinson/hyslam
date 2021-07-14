@@ -97,9 +97,16 @@ public:
     void SetBadKeyFrame(KeyFrame* pKF);
     bool isKFErasable(KeyFrame *pKF);
  //   void validateCovisiblityGraph();
-    KeyFrameDB* getKeyFrameDB(){return keyframe_db_local.get();}
+ //   KeyFrameDB* getKeyFrameDB(){return keyframe_db_local.get();}
     long unsigned  KeyFramesInMap();
     std::vector<KeyFrame*> GetAllKeyFrames();
+
+    //KeyFrameDB functions
+    bool update(KeyFrame* pKF);
+    std::set<KeyFrame*> getSpanningTreeChildren(KeyFrame* pKF);  // used in LoopClosing and Tracking
+    std::vector<KeyFrame* > getVectorCovisibleKeyFrames(KeyFrame* pKF); //used in LocalMapping, LocalBA, and LoopClosing
+    std::vector<KeyFrame*> getBestCovisibilityKeyFrames(KeyFrame* pKF, const int &N); //used in Tracking, KeyFrameDatabase, LocalMapping
+    std::set<KeyFrame*> detectRelocalizationCandidates(Frame* F);
     
     //mappointDB functions
     MapPointDB* getMapPointDB(){ return mappoint_db_local.get(); }
@@ -112,6 +119,7 @@ public:
     void visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts);
     std::vector<MapPoint*> GetAllMapPoints();
     std::vector<MapPoint*> GetReferenceMapPoints();
+    bool update(MapPoint* pMP);
 
     //Associations
     int addAssociation(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace);
@@ -174,6 +182,7 @@ protected:
     bool _addKeyFrame_(KeyFrame* pKF);
     bool _eraseKeyFrame_(KeyFrame* pKF);
     bool _isKFErasable_(KeyFrame* pKF, bool &erasable);
+    bool _getSpanningTreeChildren_(KeyFrame *pKF, std::set<KeyFrame *> &children);
 
     //private mappointDB functions
     bool _addMapPoint_(MapPoint* pMP, KeyFrame* pKF_ref, int idx);

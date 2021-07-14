@@ -115,7 +115,7 @@ public:
    std::vector<KeyFrame *> DetectLoopCandidates(KeyFrame* pKF, float minScore);
 
    // Relocalization
-   std::vector<KeyFrame*> DetectRelocalizationCandidates(Frame* F);
+   std::set<KeyFrame*> DetectRelocalizationCandidates(Frame* F);
 
 protected:
     std::set<KeyFrame*> KF_set;

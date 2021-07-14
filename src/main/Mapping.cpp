@@ -361,7 +361,7 @@ void Mapping::RunGlobalBA(){
          pRefKF = pRefKF->GetParent();
      }
     //vector<KeyFrame*> vpKFfixed = pRefKF->GetBestCovisibilityKeyFrames(4); // fix reference keyframe and 4 most covisible - this is to prevent loss of tracking upon return from GBA - ultimately may be better to deal with Tracking thread to handle this
-    std::vector<KeyFrame*> vpKFfixed =  maps[curKF_cam]->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pRefKF, 4);
+    std::vector<KeyFrame*> vpKFfixed =  maps[curKF_cam]->getBestCovisibilityKeyFrames(pRefKF, 4);
     vpKFfixed.push_back(pRefKF);
 
     bool mbStopGBA = false;

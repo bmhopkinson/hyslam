@@ -22,7 +22,7 @@ void KeyFrameCuller::run(){
     const Camera camera = pKF->getCamera();
     bool is_mono = camera.sensor == 0;
 
-    std::vector<KeyFrame*> vpLocalKeyFrames = pMap->getKeyFrameDB()->GetVectorCovisibleKeyFrames(pKF);
+    std::vector<KeyFrame*> vpLocalKeyFrames = pMap->getVectorCovisibleKeyFrames(pKF);
 
     for(std::vector<KeyFrame*>::iterator vit=vpLocalKeyFrames.begin(), vend=vpLocalKeyFrames.end(); vit!=vend; vit++)
     {

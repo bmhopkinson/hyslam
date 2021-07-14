@@ -26,7 +26,7 @@ void LandMarkFuser::run(){
         nn= params.N_neighborKFs_mono;
 
     //neighbors of focal KF will be used for fusing
-    const std::vector<KeyFrame*> vpNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, nn);
+    const std::vector<KeyFrame*> vpNeighKFs = pMap->getBestCovisibilityKeyFrames(pKF, nn);
     std::set<KeyFrame*> KF_fuse_targets;
     for(std::vector<KeyFrame*>::const_iterator vit=vpNeighKFs.begin(), vend=vpNeighKFs.end(); vit!=vend; vit++)
     {
@@ -36,7 +36,7 @@ void LandMarkFuser::run(){
         KF_fuse_targets.insert(pKFi);
 
         // include neighbors of neighbors
-        const std::vector<KeyFrame*> vpSecondNeighKFs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKFi, params.N_secondNeighbors);
+        const std::vector<KeyFrame*> vpSecondNeighKFs = pMap->getBestCovisibilityKeyFrames(pKFi, params.N_secondNeighbors);
         for(std::vector<KeyFrame*>::const_iterator vit2=vpSecondNeighKFs.begin(), vend2=vpSecondNeighKFs.end(); vit2!=vend2; vit2++)
         {
             KeyFrame* pKFi2 = *vit2;
@@ -88,7 +88,7 @@ void LandMarkFuser::run(){
     // std::cout <<"finished Fuse in SearchInNeighbors for KF:" << mpCurrentKeyFrame->mnId << std::endl;
 
     // Update connections in covisibility graph
-    pMap->getKeyFrameDB()->update(pKF);
+    pMap->update(pKF);
 
     *log << "fused_mpts: " << n_total_fused  <<"\t";
     has_finished = true;

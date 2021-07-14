@@ -142,7 +142,7 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
         KeyFrame* pKF = *itKF;
 
        // const vector<KeyFrame*> vNeighs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, 10);
-        const std::vector<KeyFrame*> vNeighs = pMap->getKeyFrameDB()->GetBestCovisibilityKeyFrames(pKF, params.N_neighbor_keyframes);
+        const std::vector<KeyFrame*> vNeighs = pMap->getBestCovisibilityKeyFrames(pKF, params.N_neighbor_keyframes);
 
         for(std::vector<KeyFrame*>::const_iterator itNeighKF=vNeighs.begin(), itEndNeighKF=vNeighs.end(); itNeighKF!=itEndNeighKF; itNeighKF++)
         {
@@ -156,6 +156,7 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
 
         //can probably eliminate inclusion of children and parents  - seems like overkill and shouldn't they be in the covis graph if they're useful
         //const set<KeyFrame*> spChilds = pKF->GetChilds();
+        /*
         const std::set<KeyFrame*> spChilds = pMap->getKeyFrameDB()->getSpanningTreeChildren(pKF);
         for(std::set<KeyFrame*>::const_iterator sit=spChilds.begin(), send=spChilds.end(); sit!=send; sit++)
         {
@@ -166,7 +167,7 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
                 break;
             }
         }
-
+        */
         KeyFrame* pParent = pKF->GetParent();
         if(pParent)
         {

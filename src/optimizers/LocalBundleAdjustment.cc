@@ -220,7 +220,7 @@ void LocalBundleAdjustment::Run(){
        //  std::cout << "retrieved vPoint" << std::endl;
         pMP->SetWorldPos(Converter::toCvMat(vPoint->estimate()));
      //     std::cout << "set world position" << std::endl;
-        pMap->getMapPointDB()->updateEntry(pMP);
+        pMap->update(pMP);
     }
 
     ClearLBAFlags(lLocalKeyFrames, lFixedKeyFrames, lLocalMapPoints);
@@ -237,7 +237,7 @@ std::list<KeyFrame*> LocalBundleAdjustment::FindLocalKFs(KeyFrame *pCentralKF){
     pCentralKF->mnBALocalForKF = pCentralKF->mnId;
 
     //const vector<KeyFrame*> vNeighKFs = pCentralKF->GetVectorCovisibleKeyFrames();
-    const std::vector<KeyFrame*> vNeighKFs = pMap->getKeyFrameDB()->GetVectorCovisibleKeyFrames(pCentralKF);
+    const std::vector<KeyFrame*> vNeighKFs = pMap->getVectorCovisibleKeyFrames(pCentralKF);
     for(int i=0, iend=vNeighKFs.size(); i<iend; i++)
     {
         KeyFrame* pKFi = vNeighKFs[i];

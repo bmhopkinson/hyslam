@@ -236,10 +236,10 @@ void Tracking::_Track_()
                     std::shared_ptr<Map> newmap = maps[cam_cur]->createSubMap(true);
                     newmap->registerWithParent();
                 }
-
+                
                 output_queue->push(pKFnew);
                 std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << " , from cam: " << cam_cur << std::endl;
-                maps[cam_cur]->getKeyFrameDB()->update(pKFnew);
+                maps[cam_cur]->update(pKFnew);
 
                 if( recent_init[cam_cur] > 0 ){
                     recent_init[cam_cur]--;

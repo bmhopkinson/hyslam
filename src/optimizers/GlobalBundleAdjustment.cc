@@ -138,7 +138,7 @@ void GlobalBundleAdjustment::RecoverOptimizedMapPoints( std::list<MapPoint*> lMa
         {
             pMPi->SetWorldPos(Converter::toCvMat(vPoint->estimate()));
            // pMPi->UpdateNormalAndDepth();
-            pMap->getMapPointDB()->updateEntry(pMPi);
+            pMap->update(pMPi);
         }
         else  //loop closing GBA
         {

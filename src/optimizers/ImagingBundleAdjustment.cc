@@ -248,7 +248,7 @@ void ImagingBundleAdjustment::AssignStrandedKeyFrames(){
 
     for(auto it = KFs_stranded.begin(); it != KFs_stranded.end(); ++it){
         KeyFrame* pKF = *it;
-        std::set<KeyFrame*> KFchildren = pMap->getKeyFrameDB()->getSpanningTreeChildren(pKF);
+        std::set<KeyFrame*> KFchildren = pMap->getSpanningTreeChildren(pKF);
         for(auto cit = KFchildren.begin(); cit != KFchildren.end(); ++cit){
             KeyFrame* KFchild = *cit;
             auto mit = KF_to_segment.find(KFchild);
@@ -476,7 +476,7 @@ void ImagingBundleAdjustment::RotatePosestoAlign(){
       MapPoint* mpt = *sit;
       mpt->applyTransform(Talign);
     //  mpt->UpdateNormalAndDepth();
-      pMap->getMapPointDB()->updateEntry(mpt);
+      pMap->update(mpt);
     }
 
   }
@@ -546,7 +546,7 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
           {
               if(!pMP->isBad())
               {
-                  pMap->getMapPointDB()->updateEntry(pMP);
+                  pMap->update(pMP);
 
               }
           }
@@ -554,7 +554,7 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 
       // Update connections in covisibility graph- this is done in LocalMapping after fusing - seems like it should be embeded in the fuse routine
      // std::cout << "about to update connections for KF: " << pKFi->mnId <<std::endl;
-      pMap->getKeyFrameDB()->update(pKFi);
+      pMap->update(pKFi);
 
 
     }

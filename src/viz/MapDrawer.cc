@@ -150,7 +150,7 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
             // Connectivity Graph
             if(draw_data.connectivity_graph) {
                 glColor4f(0.0f, 1.0f, 0.0f, 0.6f);
-                const std::vector<KeyFrame *> vCovKFs = mpMap->getKeyFrameDB()->GetCovisiblesByWeight(vpKFs[i], 100);  //segfault here
+                const std::vector<KeyFrame *> vCovKFs = mpMap->getBestCovisibilityKeyFrames(vpKFs[i], 4);  //segfault here
 
                 if (!vCovKFs.empty()) {
                     for (std::vector<KeyFrame *>::const_iterator vit = vCovKFs.begin(), vend = vCovKFs.end();
