@@ -118,6 +118,17 @@ public:
     int N_min_mpts_monoslam =100; //minimum number of mappoint for initialization of monocular slam (doesn't apply when monocular is accessory cam)
 };
 
+class StateReInitializeParameters{
+public:
+    StateReInitializeParameters();
+    StateReInitializeParameters(cv::FileNode state_data,cv::FileNode strategy_data);
+    MonoInitializerParameters mono_params;
+    StereoInitializerParameters stereo_params;
+    int max_frames_elapsed = 5;
+
+    int N_min_mpts_monoslam =100; //minimum number of mappoint for initialization of monocular slam (doesn't apply when monocular is accessory cam)
+};
+
 class StateRelocalizeParameters{
 public:
     StateRelocalizeParameters();

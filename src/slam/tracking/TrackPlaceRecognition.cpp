@@ -53,7 +53,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
         {
             std::map<size_t, MapPoint*> matches_bow;
             int nmatches = matcher->SearchByBoW(pKF,current_frame,matches_bow);
-          //  std::cout << "relocalize: trying KF: " << pKF->mnId << " nmatches: " << nmatches << std::endl;
+            std::cout << "relocalize: trying KF: " << pKF->mnId << " nmatches: " << nmatches << std::endl;
 
             std::vector<MapPoint*> vpMapPointMatches = std::vector<MapPoint*>(current_frame.N,static_cast<MapPoint*>(NULL));
             for(auto it = matches_bow.begin(); it != matches_bow.end(); ++it){
@@ -154,7 +154,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
                     int nadditional =matcher2->SearchByProjection(current_frame,vpCandidateKFs[i],sFound,params.match_radius_threshold_1,params.ORBdist_1);
                     if(nadditional+nGood>=params.N_min_matches_success)
                     {
-                      //  std::cout << "candidate KF has pose via PnP, trying second optimization : " << vpCandidateKFs[i]->mnId << std::endl;
+                        std::cout << "candidate KF has pose via PnP, trying second optimization : " << vpCandidateKFs[i]->mnId << std::endl;
                         nGood = Optimizer::PoseOptimization(&current_frame, optimizer_info);
 
                         // If many inliers but still not enough, search by projection again in a narrower window

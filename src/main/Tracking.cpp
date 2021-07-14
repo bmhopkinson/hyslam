@@ -198,9 +198,11 @@ void Tracking::_Track_()
     frame_buf.push_back(mLastFrame[cam_cur]); //should probably pass pointers here
     frame_buf.push_back(mLastFrame["SLAM"]);
     mCurrentFrame.mpReferenceKF = mpReferenceKF[cam_cur];
+  //  std::cout << "about to call initialPoseEstimate for cam" << cam_cur << ", frame: " << mCurrentFrame.mnId << std::endl;
     bool bOK = state[cam_cur]->initialPoseEstimation(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur].get(), trajectories);
 
     if(bOK){
+  //      std::cout << "about to call refinePoseEstimate for cam" << cam_cur << ", frame: " << mCurrentFrame.mnId << std::endl;
         bOK = state[cam_cur]->refinePoseEstimate(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur].get(), trajectories);
     }
     mCurrentFrame.setTracked(bOK); //indicated frame was successfully tracked  - would probably be better to fold initialPoseEstimate, refinePoseEstiamte into a single method and set this value after taht combined method
@@ -213,9 +215,12 @@ void Tracking::_Track_()
     }
 
     // If tracking was good, check if we insert a keyframe
+ //   std::cout << "tracking, finsihed setting ref keyframe, etc, is tracking ok: " << bOK << std::endl;
+
     std::vector<KeyFrame*> newKFs;
     if(bOK)
     {
+       // std::cout << "tracking, about to HandlePostTrackingSuccess()"  << std::endl;
         HandlePostTrackingSuccess();
         bool force = false;
         if( recent_init[cam_cur] > 0 ){
@@ -236,7 +241,7 @@ void Tracking::_Track_()
                     std::shared_ptr<Map> newmap = maps[cam_cur]->createSubMap(true);
                     newmap->registerWithParent();
                 }
-                
+
                 output_queue->push(pKFnew);
                 std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << " , from cam: " << cam_cur << std::endl;
                 maps[cam_cur]->update(pKFnew);
@@ -275,6 +280,7 @@ void Tracking::_Track_()
     }
 
     //set next state
+   // std::cout << "tracking about to set next state" << std::endl;
     eTrackingState next_state;
     TrackingState* pnext_track_state;
     if(mState[cam_cur] == eTrackingState::INITIALIZATION){
@@ -290,7 +296,20 @@ void Tracking::_Track_()
         }
     }
     else if(mState[cam_cur] == eTrackingState::NORMAL) {
-        if (bOK) {
+        if((mCurrentFrame.mnId % 100) == 0 && mCurrentFrame.mnId>200){
+            if (cam_cur == "SLAM") {
+                pnext_track_state = state_options[cam_cur]["RELOCALIZE"];
+                next_state = eTrackingState::RELOCALIZATION;
+                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO RELOCALIZE" << std::endl;
+
+                if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
+                    state["Imaging"]  = state_options["Imaging"]["NULL"];
+                    mState["Imaging"] = eTrackingState::NULL_STATE;
+                }
+
+            }
+        }
+        else if (bOK) {
             pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = eTrackingState::NORMAL;
         } else {
@@ -317,6 +336,7 @@ void Tracking::_Track_()
     }
     else if(mState[cam_cur] == eTrackingState::RELOCALIZATION){
         if(bOK){
+            //std::cout << "transitioning from relocation to normal tracking state" << std::endl;
             pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = eTrackingState::NORMAL;
 
@@ -325,7 +345,7 @@ void Tracking::_Track_()
                 cv::FileNode cam_states = config_data["Cameras"];
                 cv::FileNode state_config = config_data["States"];
                 StateInitializeParameters state_initialize_params(state_config[cam_states["Imaging"]["Initialize"].string()], config_data["Strategies"]);
-                pnext_track_state = new TrackingStateInitialize(optParams, cam_data["Imaging"], init_data["Imaging"],
+                state["Imaging"] = new TrackingStateInitialize(optParams, cam_data["Imaging"], init_data["Imaging"],
                                                                 state_initialize_params, ftracking, thread_status, feature_factory);
             }
         }

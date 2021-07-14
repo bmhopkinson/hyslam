@@ -107,6 +107,17 @@ StateInitializeParameters::StateInitializeParameters(cv::FileNode state_data,cv:
     N_min_mpts_monoslam = state_data["N_min_mpts_monoslam"];
 }
 
+StateReInitializeParameters::StateReInitializeParameters() {}
+
+StateReInitializeParameters::StateReInitializeParameters(cv::FileNode state_data, cv::FileNode strategy_data) {
+    cv::FileNode config_data_strategies =  strategy_data[ state_data["Strategies"]["ReInitialize"].string() ];
+
+    mono_params = MonoInitializerParameters(config_data_strategies["Mono"]);
+    stereo_params = StereoInitializerParameters(config_data_strategies["Stereo"]);
+
+    N_min_mpts_monoslam = state_data["N_min_mpts_monoslam"];
+}
+
 
 StateRelocalizeParameters::StateRelocalizeParameters(){}
 
@@ -312,6 +323,7 @@ void MonoInitialMatch::clear(){
     mvIniP3D.clear();
     mInitialFrame = Frame();
 }
+
 
 
 }
