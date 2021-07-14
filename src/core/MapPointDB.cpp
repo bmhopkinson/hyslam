@@ -349,7 +349,7 @@ namespace HYSLAM{
     long unsigned int MapPointDB::numMapPoints(){
         long unsigned int total = mappoint_db.size();
         for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it) {
-          total=+ (*it)->numMapPoints();
+          total+= (*it)->numMapPoints();
         }
         return total;
     }

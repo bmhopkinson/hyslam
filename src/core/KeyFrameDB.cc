@@ -520,6 +520,13 @@ std::set<KeyFrame *> KeyFrameDB::getAllKeyFrames() {
 
 }
 
+long unsigned int KeyFrameDB::getNumberOfKeyFrames() {
+    long unsigned int n_kfs = KF_set.size();
+    for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+        n_kfs+= (*it)->getNumberOfKeyFrames();
+    }
+    return n_kfs;
+}
 
 
 } //namespace ORB_SLAM

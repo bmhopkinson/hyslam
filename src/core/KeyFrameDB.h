@@ -86,9 +86,9 @@ public:
 
     bool updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF);
 
-    std::set<KeyFrame*> getAllKeyFrames();//{return KF_set;};
+    std::set<KeyFrame*> getAllKeyFrames();
 
-    long unsigned int getNumberOfKeyFrames(){return KF_set.size();};
+    long unsigned int getNumberOfKeyFrames();
 
     void clear();
 
@@ -97,7 +97,6 @@ public:
 
    //covisibility graph functions
   //  void validateCovisiblityGraph();
-    CovisibilityGraph& getCovisibilityGraph() {return covis_graph;}
     std::set<KeyFrame*> GetConnectedKeyFrames(KeyFrame* pKF); //used in LoopClosing and KeyFrameDatabase
     std::vector<KeyFrame* > GetVectorCovisibleKeyFrames(KeyFrame* pKF); //used in LocalMapping, LocalBA, and LoopClosing
     std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(KeyFrame* pKF, const int &N); //used in Tracking, KeyFrameDatabase, LocalMapping
