@@ -60,6 +60,7 @@ void LoopClosing::Run()
             // Detect loop candidates and check covisibility consistency
             if(DetectLoop())
             {
+                /*
                // Compute similarity transformation [sR|t]
                // In the stereo/RGBD case s=1
                if(ComputeSim3())
@@ -67,6 +68,7 @@ void LoopClosing::Run()
                    // Perform loop fusion and pose graph optimization
                    CorrectLoop();
                }
+                 */
             }
         }
 
@@ -99,6 +101,7 @@ bool LoopClosing::DetectLoop()
 {
 
     mpCurrentKF = input_queue->pop();
+    /*
     curKF_cam = mpCurrentKF->camera.camName;
     // Avoid that a keyframe can be erased while it is being process by this thread
     mpCurrentKF->setProtection();
@@ -224,6 +227,7 @@ bool LoopClosing::DetectLoop()
 
    // mpCurrentKF->SetErase();
     maps[curKF_cam]->ClearKeyFrameProtection(mpCurrentKF);
+     */
     return false;
 }
 

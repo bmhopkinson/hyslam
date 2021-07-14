@@ -377,6 +377,7 @@ int Map::eraseAssociation(KeyFrame* pKF,  MapPoint* pMP){
 }
 
 bool Map::_eraseAssociation_(KeyFrame *pKF, MapPoint *pMP) {
+   // std::cout << "ABOUT TO test exists in _eraseAssociation_ from: " << this << std::endl;
     if(mappoint_db_local->exists(pMP)){
         int res = mappoint_db_local->eraseObservation(pMP, pKF);
         if(res ==0){
@@ -386,6 +387,7 @@ bool Map::_eraseAssociation_(KeyFrame *pKF, MapPoint *pMP) {
     }
 
     else{
+   //     std::cout << "ABOUT TO CHECK SUBMAPS in _eraseAssociation_ from: " << this << std::endl;
         for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
             if((*it)->_eraseAssociation_(pKF, pMP) ){
                 return true;

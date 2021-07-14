@@ -277,6 +277,7 @@ std::vector<KeyFrame* > KeyFrameDB::GetVectorCovisibleKeyFrames(KeyFrame* pKF){
 
 std::vector<KeyFrame*> KeyFrameDB::GetBestCovisibilityKeyFrames(KeyFrame* pKF, const int &N){
     std::vector<KeyFrame* > pKF_conn;
+
     if(covis_graph.inGraph(pKF)) {
         return covis_graph.GetBestCovisibilityKeyFrames(pKF, N);
     } else {
@@ -382,22 +383,18 @@ bool KeyFrameDB::changeSpanningTreeParent(KeyFrame *pKF_node, KeyFrame *pKF_newp
 }
 
 bool KeyFrameDB::_changeSpanningTreeParent_(KeyFrame *pKF_node, KeyFrame *pKF_newparent, int &result) {
-    std::cout << "ABOUT TO test exists in changeSpanningTreeParent from: " << this << std::endl;
+
     if(spanning_tree.exists(pKF_node)) {
         result = spanning_tree.changeParent(pKF_node, pKF_newparent);
         return true; //indicates spanning tree with pKF_node has been found
     } else {
-        std::cout << "ABOUT TO CHECK SUBDBS in changeSpanningTreeParent from: " << this << std::endl;
-        if(!sub_dbs.empty()) {  // this shouldn't be necessary
-            for (std::list<std::shared_ptr<KeyFrameDB>>::iterator it = sub_dbs.begin(); it != sub_dbs.end(); ++it) {
-                //if(*it) {  //this shouldn't be necessary  -can't figure out why it's needed - NOW THIS LEAD TO INFINITE LOOP
-                if ((*it)->_changeSpanningTreeParent_(pKF_node, pKF_newparent, result)) {
-                    return true;
-                    //     }
-                }
+        for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+            if((*it)->_changeSpanningTreeParent_(pKF_node, pKF_newparent, result)){
+                return true;
             }
         }
     }
+    return false;
 }
 
 bool KeyFrameDB::isChild(KeyFrame* pKF_node, KeyFrame* pKF_query){

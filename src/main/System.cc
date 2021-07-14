@@ -147,6 +147,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     mptLocalMapping = new std::thread(&HYSLAM::Mapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch
+    // BH: as of 2021/07/14 Loop Closing is a dummy operation
     mpLoopCloser = new LoopClosing(maps, mpVocabulary, feature_factory.get() ,thread_status.get(), mSensor!=MONOCULAR);
     mpLoopCloser->setInputQueue( loopclosing_queue.get() );
     mptLoopClosing = new std::thread(&HYSLAM::LoopClosing::Run, mpLoopCloser);
