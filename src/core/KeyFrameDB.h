@@ -86,7 +86,7 @@ public:
 
     bool updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF);
 
-    std::set<KeyFrame*> getAllKeyFrames(){return KF_set;};
+    std::set<KeyFrame*> getAllKeyFrames();//{return KF_set;};
 
     long unsigned int getNumberOfKeyFrames(){return KF_set.size();};
 

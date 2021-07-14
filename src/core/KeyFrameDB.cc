@@ -510,6 +510,15 @@ void KeyFrameDB::removeChild(std::shared_ptr<KeyFrameDB> child) {
     sub_dbs.remove(child);
 }
 
+std::set<KeyFrame *> KeyFrameDB::getAllKeyFrames() {
+     std::set<KeyFrame *> all_keyframes = KF_set;
+     for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
+         std::set<KeyFrame *> addn_keyframes = (*it)->getAllKeyFrames();
+         all_keyframes.insert(addn_keyframes.begin(), addn_keyframes.end());
+     }
+     return all_keyframes;
+
+}
 
 
 
