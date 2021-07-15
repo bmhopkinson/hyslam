@@ -5,6 +5,7 @@
 #include <TrackingStateReInitialize.h>
 #include <StereoInitializer.h>
 #include <InitializerDataStructs.h>
+#include <GenUtils.h>
 
 namespace HYSLAM {
 TrackingStateReInitialize::TrackingStateReInitialize(HYSLAM::optInfo optimizer_info_, HYSLAM::Camera camera_,
@@ -36,10 +37,18 @@ bool TrackingStateReInitialize::initialPoseEstimation(Frame &current_frame, cons
         std::vector<MapPoint*> mpts;
         initializer->createMap(pKFinit, pKF2, mpts);
 
-        //TODO transform new map into global frame
+        TrajectoryElement last_tracked_frame = trajectories[camera.camName]->getLastTrackedElement();
+        cv::Mat pose_last_cw = last_tracked_frame.pose();
+
+        double t_elapsed = current_frame.mTimeStamp - last_tracked_frame.time_stamp;
+        cv::Mat Vint; //estimated motion since last tracked frame
+        GenUtils::ScaleVelocity(last_tracked_frame.Vcw, last_tracked_frame.dt_vel, t_elapsed, Vint);
+        cv::Mat pose_current_cw = Vint * pose_last_cw;  //curent pose estimate in world to camera convention
+        cv::Mat pose_inv = pose_current_cw.inv();
+        initializer->transformMapSE3(pose_inv);
 
         std::shared_ptr<Map> submap = pMap->createSubMap(true);
-        submap->registerWithParent();//consider registered right away 
+    //    submap->registerWithParent();//consider registered right away
         initializer->addToMap(submap.get());
 
         KFnew.push_back(pKFinit);
@@ -57,19 +66,27 @@ bool TrackingStateReInitialize::initialPoseEstimation(Frame &current_frame, cons
 bool TrackingStateReInitialize::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF,
                                                    Map *pMap,
                                                    std::map<std::string, std::unique_ptr<Trajectory>> &trajectories) {
-    return false;
+    return success;
 }
 
 void TrackingStateReInitialize::clear() {
-
+    success = false;
+    KFnew.clear();
+    initializer = std::make_unique<StereoInitializer>(params.stereo_params );
 }
 
 bool TrackingStateReInitialize::needNewKeyFrame(Frame &current_frame, Map *pMap, unsigned int last_keyframe_id,
                                                 bool force) {
-    return false;
+    return success;
 }
 
 std::vector<KeyFrame *> TrackingStateReInitialize::createNewKeyFrame(Frame &current_frame, Map *pMap) {
+    KeyFrame* pKFcur = initializer->getCurrentKF();
+    current_frame =initializer->getInitializedFrame();
 
+    current_frame.mpReferenceKF = pKFcur;
+    pMap->mvpKeyFrameOrigins.push_back(pKFcur);  //used in loop closing
+
+    return KFnew;
 }
 } //END namespace

@@ -20,6 +20,7 @@ enum class eTrackingState{
     INITIALIZATION,
     NORMAL,
     RELOCALIZATION,
+    REINITIALIZE,
     NULL_STATE
 };
 

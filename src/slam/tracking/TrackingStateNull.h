@@ -24,6 +24,7 @@ public:
 
     std::vector<KeyFrame *> newKeyFrame(Frame &current_frame, Map *pMap, unsigned int last_keyframe_id,
                                         bool force); //template method using needNewKeyFrame, createNewKeyFrame
+    void clear(){};
 
 private:
     bool needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force);

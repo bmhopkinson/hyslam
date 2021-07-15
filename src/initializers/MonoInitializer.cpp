@@ -247,6 +247,7 @@ int MonoInitializer::addToMap(Map* pMap){
   //  pKFsecond->setMap(pMap);
     std::cout << "adding to Map KeyFrame: " << pKFfirst->mnId <<std::endl;
     pMap->AddKeyFrame(pKFfirst);
+
     std::cout << "adding to Map KeyFrame: " << pKFsecond->mnId <<std::endl;
     pMap->AddKeyFrame(pKFsecond);
     
@@ -306,5 +307,24 @@ void MonoInitializer::clear(){
     Initializer::clear();
 
 }
+
+    int MonoInitializer::transformMapSE3(cv::Mat &Twc_SE3) {
+    //NOT TESTED YET !!!!!
+        cv::Mat KF1_pose_cw = pKFfirst->GetPose(); //in world to camera convention
+        KF1_pose_cw =  KF1_pose_cw * Twc_SE3.inv();
+        pKFfirst->SetPose(KF1_pose_cw);
+        first_frame.SetPose(KF1_pose_cw);
+
+        cv::Mat KF2_pose_cw = pKFsecond->GetPose(); //in world to camera convention
+        KF2_pose_cw =  KF2_pose_cw * Twc_SE3.inv();
+        pKFsecond->SetPose(KF2_pose_cw);
+        second_frame.SetPose(KF2_pose_cw);
+
+        for(auto it = mpts.begin(); it != mpts.end(); ++it){
+            MapPoint* pMP = *it;
+            pMP->applyTransform(Twc_SE3);
+        }
+        return 0;
+    }
 
 } //end namespace

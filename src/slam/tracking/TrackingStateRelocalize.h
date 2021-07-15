@@ -31,6 +31,7 @@ public:
                             MainThreadsStatus* thread_status_, FeatureFactory* factory);
     bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,   std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
     bool refinePoseEstimate( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
+    void clear(){};
 private:
     bool needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force);
     std::unique_ptr<TrackPlaceRecognition> track_place_recognition;

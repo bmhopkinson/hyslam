@@ -34,6 +34,7 @@ class StereoInitializer : public Initializer {
         int initialize(Frame &frame);
         int createMap( KeyFrame* &pKF1, KeyFrame* &pKF2, std::vector<MapPoint*> mappoints);
         int transformMap(Trajectory* trajectory, const Frame &F_ref, cv::Mat F_ref_T);
+        int transformMapSE3(cv::Mat &Twc_SE3);
         Frame getInitializedFrame();
         KeyFrame* getCurrentKF();
         int addToMap(Map* pMap);

@@ -83,6 +83,7 @@ public:
     TrajectoryElement back() const;
     std::vector<TrajectoryElement> getTrajectoryElements() const {return trajectory_elements;  } //shouldn't need this
     bool getLastVelocityValid() const;
+    TrajectoryElement getLastTrackedElement();
 
     g2o::Trajectory convertToG2O();
     int integrateVelocity(const double t_start, const double t_stop, cv::Mat &Vint) ; //Vint is motion between t_start and t_stop in world to camera convention

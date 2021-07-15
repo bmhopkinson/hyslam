@@ -98,5 +98,18 @@ void StereoInitializer::clear(){
 
 }
 
+int StereoInitializer::transformMapSE3(cv::Mat &Twc_SE3) {
+    cv::Mat KF_pose_cw = pKFinit->GetPose(); //in world to camera convention
+    KF_pose_cw =  KF_pose_cw * Twc_SE3.inv();
+    pKFinit->SetPose(KF_pose_cw);
+    frame_init.SetPose(KF_pose_cw);
+
+    for(auto it = mpts.begin(); it != mpts.end(); ++it){
+        MapPoint* pMP = *it;
+        pMP->applyTransform(Twc_SE3);
+    }
+    return 0;
+}
+
 
 } // end namespace

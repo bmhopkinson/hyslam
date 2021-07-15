@@ -391,6 +391,7 @@ void ImagingBundleAdjustment::ApplySimilarityTransforms(){ //KFs and mpts to whi
 //      std::cout << "mpt->mnId: " << mpt->mnId << std::endl;
       if(!mpt->Thorn_applied){
         mpt->applyTransform(Thorn);
+        mpt->flagTransformApplied();
         mpts_to_optimize.push_back(mpt);
         segment_mappts_valid.insert(mpt);
 

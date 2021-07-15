@@ -435,4 +435,13 @@ std::vector<g2o::Isometry3> Trajectory::_getPosesIsometry_(bool cam_to_world)
 
 }
 
+TrajectoryElement Trajectory::getLastTrackedElement() {
+    for(Trajectory_t::const_reverse_iterator it = trajectory_elements.rbegin(); it != trajectory_elements.rend(); it++) {
+        TrajectoryElement te = *it;
+        if(te.tracking_good){
+            return te;
+        }
+    }
+}
+
 }

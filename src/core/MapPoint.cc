@@ -75,7 +75,7 @@ int MapPoint::applyTransform(cv::Mat T){  //transfrom world position and normal 
   cv::Mat R = T.rowRange(0,3).colRange(0,3);
   mNormalVector = R * mNormalVector;  //validated this
 
-  Thorn_applied = true;
+ // Thorn_applied = true;
 
   return 0;
 }

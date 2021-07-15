@@ -63,7 +63,9 @@ public:
     void storeWorldPos();
     
     int applyTransform(cv::Mat T);
-    
+    void flagTransformApplied(){Thorn_applied = true;};
+    void unflagTranformApplied(){Thorn_applied = false;};
+
     KeyFrame* GetReferenceKeyFrame();
     void setReferenceKeyFrame(KeyFrame* pKF){ mpRefKF = pKF;  }
 
