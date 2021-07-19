@@ -55,7 +55,7 @@ void GlobalBundleAdjustment::Run(){
     //convert to list - probably should just swap all the BundleAdjustment functions to take vectors
     std::list<KeyFrame*> lAllKFs( vpAllKFs.begin(), vpAllKFs.end() );
     std::list<KeyFrame*> lFixedKFs( vpKFfix.begin(), vpKFfix.end() );
-    std::list<MapPoint*>  lAllMPs( vpAllMPs.begin(), vpAllMPs.end() );
+    std::list<MapPoint*> lAllMPs( vpAllMPs.begin(), vpAllMPs.end() );
 
 
     std::list<KeyFrame*> lVariableKFs;

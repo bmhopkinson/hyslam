@@ -106,7 +106,7 @@ int Trajectory::push_back(Frame &current_frame){
         if( current_frame.isTracked() && te_last.tracking_good )
         {
             cv::Mat Tcr; //transform between current frame and valid refKF
-            cv::Mat Tcw; //pose in world to camera convention
+        //    cv::Mat Tcw; //pose in world to camera convention
             KeyFrame* pRefKF;
             if(current_frame.mpReferenceKF->isBad()){
                 KeyFrame* pKF = current_frame.mpReferenceKF;
@@ -119,12 +119,13 @@ int Trajectory::push_back(Frame &current_frame){
                 }
                 pRefKF = pKF;
                 Trw = Trw*pKF->GetPose();
-                Tcw = Trw;
+              //  Tcw = Trw;
                 Tcr = current_frame.mTcw * Trw.inv();
             }
             else{
                 pRefKF = current_frame.mpReferenceKF;
                 Tcr = current_frame.mTcw*current_frame.mpReferenceKF->GetPoseInverse();
+            //    Tcw = current_frame.mTcw;
             }
             //velocity
 
@@ -133,9 +134,10 @@ int Trajectory::push_back(Frame &current_frame){
             double velocity_dt = current_frame.mTimeStamp - te_last.time_stamp;
 
             te.Tcr = Tcr.clone();
-            te.Tcw = Tcw.clone();
+            te.Tcw = current_frame.mTcw.clone();
             te.pRefKF = pRefKF;
             te.Vcw = velCur.clone();
+            //std::cout << "TE for frame: " << current_frame.fimgName << ", velocity: "  << te.Vcw << std::endl;
             te.dt_vel = velocity_dt;
         }
         else

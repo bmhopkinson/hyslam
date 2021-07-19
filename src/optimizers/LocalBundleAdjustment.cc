@@ -77,7 +77,8 @@ void LocalBundleAdjustment::Run(){
     while( lit != lLocalKeyFrames.end()) {
         KeyFrame *pKFi = *lit;
         //      std::cout << "local KF: "<< pKFi->mnId << std::endl;
-        if (pKFi->mnId == 0) {   //fix keyframe =0; not sure this is necessary but preserving behavior right now
+       // if (pKFi->mnId == 0) {   //fix keyframe =0; not sure this is necessary but preserving behavior right now
+       if(!pMap->isKFErasable(pKFi)){ //short cut for first map keyframe - refine this
             lFixedKeyFrames.push_back(pKFi);
             lit = lLocalKeyFrames.erase(lit);
         } else {

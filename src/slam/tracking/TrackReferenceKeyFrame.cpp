@@ -24,13 +24,13 @@ namespace HYSLAM{
         int nmatches = matcher->SearchByBoW(pKF,current_frame,matches_bow);
 
         if(nmatches< params.N_min_matches_BoW){
-       //     std::cout << "TrackReferenceKeyFrame failed b/c SearchByBoW < 15: only found: " << nmatches <<std::endl;
+            std::cout << "TrackReferenceKeyFrame failed b/c SearchByBoW < 15: only found: " << nmatches <<std::endl;
             return -1;
         }
 
       //  current_frame.associateLandMarkVector(vpMapPointMatches, true);
         int n_successfully_associated = current_frame.associateLandMarks(matches_bow, true);
-       // std::cout << "TrackRef, BoW lms associated succesfully: " << n_successfully_associated << std::endl;
+        std::cout << "TrackRef, BoW lms associated succesfully: " << n_successfully_associated << std::endl;
         current_frame.SetPose(last_frame.mTcw);
 
         Optimizer::PoseOptimization(&current_frame, optimizer_info);

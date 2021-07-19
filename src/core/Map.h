@@ -96,6 +96,7 @@ public:
     void ClearKeyFrameProtection(KeyFrame* pKF);   //used once loop closing is done w/ a keyframe to allow its removal, and to erase it if it was marked for removal during the loop closing attempt - this isn't the best - would be better to clearprotection directly on keyframe, add keyframes to be deleted to a queue for later deletion once protection is cleared
     void SetBadKeyFrame(KeyFrame* pKF);
     bool isKFErasable(KeyFrame *pKF);
+    bool setNonErasable(KeyFrame* pKF);
  //   void validateCovisiblityGraph();
  //   KeyFrameDB* getKeyFrameDB(){return keyframe_db_local.get();}
     long unsigned  KeyFramesInMap();
@@ -159,7 +160,8 @@ protected:
     std::vector<MapPoint*> mvpReferenceMapPoints;
 
     long unsigned int mnMaxKFid;
-    long unsigned int firstKFid = 0;
+    //long unsigned int firstKFid = 0;
+    std::set<KeyFrame*> KFs_nonerasable;
     bool firstKFadded = false;
 
     // Index related to a big change in the map (loop closure, global BA)

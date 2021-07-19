@@ -237,12 +237,12 @@ void Tracking::_Track_()
 
             for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                 KeyFrame *pKFnew = *it;
-
+/*
                 if(pKFnew->mnId > 0 && (pKFnew->mnId % 20 == 0)){
                     std::shared_ptr<Map> newmap = maps[cam_cur]->createSubMap(true);
                     newmap->registerWithParent();
                 }
-
+*/
                 output_queue->push(pKFnew);
                 std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << " , from cam: " << cam_cur << std::endl;
                 maps[cam_cur]->update(pKFnew);
@@ -297,11 +297,12 @@ void Tracking::_Track_()
         }
     }
     else if(mState[cam_cur] == eTrackingState::NORMAL) {
-        if((mCurrentFrame.mnId % 500) == 0 && mCurrentFrame.mnId>200){
+
+        if((mCurrentFrame.mnId % 300) == 0 && mCurrentFrame.mnId>200){
             if (cam_cur == "SLAM") {
                 pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
                 next_state = eTrackingState::REINITIALIZE;
-                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE" << std::endl;
+                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: frameid: " << mCurrentFrame.mnId << ", name:" << mCurrentFrame.fimgName <<  std::endl;
 
                 if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
                     state["Imaging"]  = state_options["Imaging"]["NULL"];
@@ -310,14 +311,19 @@ void Tracking::_Track_()
 
             }
         }
-        else if (bOK) {
+        else
+         if (bOK) {
             pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = eTrackingState::NORMAL;
         } else {
             if (cam_cur == "SLAM") {
-                pnext_track_state = state_options[cam_cur]["RELOCALIZE"];
-                next_state = eTrackingState::RELOCALIZATION;
-                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO RELOCALIZE" << std::endl;
+                pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
+                next_state = eTrackingState::REINITIALIZE;
+                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: frameid: " << mCurrentFrame.mnId << ", name:" << mCurrentFrame.fimgName <<  std::endl;
+
+               // pnext_track_state = state_options[cam_cur]["RELOCALIZE"];
+               // next_state = eTrackingState::RELOCALIZATION;
+               // std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO RELOCALIZE" << std::endl;
 
                 if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
                     state["Imaging"]  = state_options["Imaging"]["NULL"];

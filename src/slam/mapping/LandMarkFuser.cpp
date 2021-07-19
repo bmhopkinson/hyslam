@@ -112,7 +112,7 @@ int LandMarkFuser::fuse_mappoints(KeyFrame* pKFfuse,  std::map<std::size_t, MapP
                     int res = pMap->replaceMapPoint(lm_fuse, lm_current);
                     if(res != 0)
                     {
-                        std::cout << "couldn't fuse: " << lm_fuse->mnId << ", " << lm_current->mnId <<std::endl;
+                      //  std::cout << "couldn't fuse: " << lm_fuse->mnId << ", " << lm_current->mnId <<std::endl;
                     }
                     else{
                         n_success++;
@@ -122,7 +122,7 @@ int LandMarkFuser::fuse_mappoints(KeyFrame* pKFfuse,  std::map<std::size_t, MapP
                 else{
                     int res =  pMap->replaceMapPoint(lm_current, lm_fuse);
                     if(res != 0){
-                        std::cout << "couldn't fuse: " << lm_fuse->mnId << ", " << lm_current->mnId <<std::endl;
+                       // std::cout << "couldn't fuse: " << lm_fuse->mnId << ", " << lm_current->mnId <<std::endl;
                     }
                     else{
                         n_success++;

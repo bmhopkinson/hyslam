@@ -30,7 +30,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
         double delta_cur = current_frame.mTimeStamp - last_frame.mTimeStamp; //mVelocity is based on slam motion so need to reference time to that
       //  std::cout << "TrackMotionModel: dt " <<delta_cur << std::endl;
         TrajectoryElement te = slam_trajectory->back();
-        GenUtils::ScaleVelocity(te.Vcw, te.dt_vel, delta_cur,  Vcw);  //scale 'velocity' based on time difference between that used to calculate the velocity and time betwween mono init frame, properly accounts for going back in time
+        GenUtils::ScaleVelocity(te.Vcw, te.dt_vel, delta_cur,  Vcw);
         Tcw_cur =  Vcw * last_frame.mTcw;
      //   std::cout << "Velocity: " << Vcw << std::endl;
      //   std::cout << "pose estimate: " << Tcw_cur << std::endl;

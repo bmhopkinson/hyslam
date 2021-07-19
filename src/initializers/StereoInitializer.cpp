@@ -26,6 +26,7 @@ int StereoInitializer::createMap( KeyFrame* &pKF1, KeyFrame* &pKF2, std::vector<
     pKFinit = new KeyFrame(frame_init);
     pKFinit->SetRefQuat(frame_init.getSensorData());
     pKFinit->SetRefGPS(frame_init.getSensorData());
+    pKFinit->ComputeBoW();  //need to do this b/c typically will need to trackReferenceKeyFrame immediately after initializing
 
     // Create MapPoints and associate to Frame/KeyFrame
     const FeatureViews views = frame_init.getViews();

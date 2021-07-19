@@ -42,13 +42,20 @@ bool TrackingStateReInitialize::initialPoseEstimation(Frame &current_frame, cons
 
         double t_elapsed = current_frame.mTimeStamp - last_tracked_frame.time_stamp;
         cv::Mat Vint; //estimated motion since last tracked frame
+        std::cout << "last tracked frame id: "  << last_tracked_frame.name << " , velocity: " << last_tracked_frame.Vcw << std::endl;
+        std::cout << "dt_vel: " <<last_tracked_frame.dt_vel << std::endl;
+        std::cout << "t_elpased: " << t_elapsed << std::endl;
         GenUtils::ScaleVelocity(last_tracked_frame.Vcw, last_tracked_frame.dt_vel, t_elapsed, Vint);
         cv::Mat pose_current_cw = Vint * pose_last_cw;  //curent pose estimate in world to camera convention
         cv::Mat pose_inv = pose_current_cw.inv();
         initializer->transformMapSE3(pose_inv);
+        std::cout << "Last Tracked Frame Pose: " << pose_last_cw << std::endl;
+        std::cout << "Current Estimated Pose: " << pose_current_cw << std::endl;
+        std::cout << "scaled velocity"  << Vint << std::endl;
 
+      //  *(int*)0 = 0; //intentional segfault
         std::shared_ptr<Map> submap = pMap->createSubMap(true);
-    //    submap->registerWithParent();//consider registered right away
+        submap->registerWithParent();//consider registered right away
         initializer->addToMap(submap.get());
 
         KFnew.push_back(pKFinit);

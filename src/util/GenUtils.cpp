@@ -28,9 +28,18 @@ void GenUtils::ScaleVelocity(cv::Mat mVel, double vel_dt, double target_dt, cv::
     Eigen::Matrix<double,3,3> Rbase_E = Converter::toMatrix3d(Rbase);
     Eigen::Quaternion<double> qbase(Rbase_E);  //easiest to convert velocity to net rotation using quaternions
     double w_v = qbase.w();
-    double ang_v = 2*acos(w_v);
-    double ang_v_scaled = ang_v * scale;
-    double w = cos(ang_v_scaled/2);
+    double ang_v_scaled;
+    double w;
+    if(w_v>1.0000000000000){ //can get extremely small rotations and numerical problems result with w_v exceeding 1 and then everything goes haywire
+        w = 1.00000000000000000;
+        ang_v_scaled = 0.000000000000000000000000000;
+        //std::cout << "ScaleVelocity caught w_v >1.0 error" << std::endl;
+    } else {
+        double ang_v = 2*acos(w_v);
+        ang_v_scaled = ang_v * scale;
+        w = cos(ang_v_scaled/2);
+    }
+    //std::cout << std::fixed << std::setprecision(9) << "w_v: " << w_v << ", ang_v_scaled: " << ang_v_scaled << ", w: " << w << std::endl;
     Eigen::Vector3d axis;
     axis << qbase.x() , qbase.y() , qbase.z() ;
     axis.normalize();

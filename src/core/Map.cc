@@ -75,7 +75,8 @@ bool Map::_addKeyFrame_(KeyFrame *pKF) {
     if(isActive()) {
         std::unique_lock<std::mutex> lock(mMutexMap);
         if(!firstKFadded){
-            firstKFid = pKF->mnId;
+           // firstKFid = pKF->mnId;
+           KFs_nonerasable.insert(pKF);
             firstKFadded = true;
         }
         keyframe_db_local->add(pKF);
@@ -131,7 +132,7 @@ bool Map::_isKFErasable_(KeyFrame *pKF, bool &erasable) {
     // need to work through all submaps to check (can't just find the submap in which pKF i sin the keyframe_db b/c that keyframe_db may be connected to other submap keyframedbs  might be
     // best to push "isErasable" down to keyframe db )
 
-    if(pKF->mnId == firstKFid){
+    if(KFs_nonerasable.count(pKF)){
         erasable = false;
         return true;  //indicates there's no need to search further
     } else{
