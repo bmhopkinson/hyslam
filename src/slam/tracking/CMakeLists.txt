@@ -11,6 +11,7 @@ HYSLAM_ADD_SOURCES(
         TrackingStateInitialize.h   TrackingStateInitialize.cpp
         TrackingStateReInitialize.h   TrackingStateReInitialize.cpp
         TrackingStateNull.h TrackingStateNull.cpp
+        TrackingStateTransition.h TrackingStateTransition.cpp
 )
 
 

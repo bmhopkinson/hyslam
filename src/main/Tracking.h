@@ -159,6 +159,8 @@ protected:
     void _Track_();
     void SetupStates();
     bool inputAvailable();
+    void TransitionToNewState(std::map<std::string, eTrackingState> &mState, std::map<std::string, TrackingState*> &state,
+                              bool bOK, std::vector<KeyFrame*> newKFs);
 
     void UpdateLastFrame();
     KeyFrame* determineReferenceKeyFrame(Frame* pcurrent_frame);
