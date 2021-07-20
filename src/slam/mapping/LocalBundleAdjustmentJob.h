@@ -22,6 +22,7 @@ namespace HYSLAM{
     public:
         LocalBundleAdjustmentJob(KeyFrame *pKF_, Map *pMap_, g2o::Trajectory &trajectory_,optInfo optParams_, std::ofstream &log_);
         void run();
+        std::string name(){return "LocalBundleAdjustmentJob";};
 
     private:
         KeyFrame* pKF;

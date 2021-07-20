@@ -71,6 +71,12 @@
 namespace HYSLAM
 {
 
+struct Tse3Parent{  //relationship between submap and parent
+    KeyFrame* pKFref_parent = nullptr;
+    KeyFrame* pKFref_this = nullptr;
+    cv::Mat Tse3;  //estimated transform between pose of pKFref_parent and pKFref_this (i.e. pose_this = Tse3*pose_parent);
+
+};
 
 class Map : public std::enable_shared_from_this<Map>
 {
@@ -89,6 +95,9 @@ public:
     bool isActive() const;
     void setActive(); //set this map active - deactivates current active map
     void setActive(std::shared_ptr<Map> active_map);  //sets active_map as active - deactivates current active map
+    const Tse3Parent &getTse3Parent() const;
+    void setTse3Parent(const Tse3Parent &tse3Parent);
+    bool isLocalOrigin(KeyFrame* pKForg, Tse3Parent &tse3Parent_);  //is pKForg the local origin keyframe for any submap - if so return true and return relevant info in Tse3Parent;
 
     // KeyFrame functions
     void AddKeyFrame(KeyFrame* pKF);
@@ -171,7 +180,7 @@ protected:
 
     //multimap data
     std::vector<std::shared_ptr<Map>> sub_maps;
-    std::vector<cv::Mat> sub_map_Tse3; //relationship between parent map origin and submap origin
+    Tse3Parent tse3parent;
     std::shared_ptr<Map> parent_map = nullptr;
 
     bool registered = false;    //is this map registered to the parent or global map
@@ -179,6 +188,7 @@ protected:
 
     //private Map Functions
     void _setActive_(std::shared_ptr<Map> active_map);
+    bool _isLocalOrigin_(KeyFrame *pKForg, bool &is_origin, Tse3Parent &tse3Parent_);
 
     //private KeyFrame functions
     bool _addKeyFrame_(KeyFrame* pKF);

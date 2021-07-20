@@ -58,6 +58,12 @@ void GlobalBundleAdjustment::Run(){
     std::list<MapPoint*> lAllMPs( vpAllMPs.begin(), vpAllMPs.end() );
 
 
+    std::list<Tse3Parent> submap_tiepoints = FindSubmapTiepoints(lAllKFs);
+    std::set<KeyFrame*> allKFs_set(lAllKFs.begin(), lAllKFs.end());
+    std::list<KeyFrame*> submap_KFs = FindAdditionalParentSubmapKFs(submap_tiepoints, allKFs_set); //shouldn't be necessary but could imagine situtations where we're doing a GBA of a submap rather than the global map
+    lAllKFs.insert(lAllKFs.end(), submap_KFs.begin(), submap_KFs.end());
+
+
     std::list<KeyFrame*> lVariableKFs;
     for(std::list<KeyFrame*>::iterator lit = lAllKFs.begin(); lit != lAllKFs.end(); ++lit){
            KeyFrame* pKFi = *lit;
@@ -81,6 +87,9 @@ void GlobalBundleAdjustment::Run(){
     SetIMUEdges( lVariableKFs );         //IMU quaternion measurement constraint
     SetDepthEdges( lVariableKFs );      // add depth constraints
     SetGPSEdges( lVariableKFs ) ;  //add GPS constraints
+
+    SetSubMapOriginEdges(submap_tiepoints);
+
     bool trackEdges = false;
     bool bRobust = false;
     SetMapPointVerticesEdges(  lAllMPs, trackEdges, bRobust );
@@ -94,7 +103,30 @@ void GlobalBundleAdjustment::Run(){
 
 
 } //end Run()
+std::list<Tse3Parent> GlobalBundleAdjustment::FindSubmapTiepoints(const std::list<KeyFrame *> &KeyFrames) {
+    std::list<Tse3Parent> submap_tiepoints;
+    for(auto it = KeyFrames.begin(); it != KeyFrames.end(); ++it ){
+        KeyFrame* pKF = *it;
+        Tse3Parent tiepoint_data;
+        if(pMap->isLocalOrigin(pKF, tiepoint_data)){
+            submap_tiepoints.push_back(tiepoint_data);
+        }
+    }
+    return submap_tiepoints;
+}
 
+std::list<KeyFrame *> GlobalBundleAdjustment::FindAdditionalParentSubmapKFs(const std::list<Tse3Parent> &submap_tiepoints,
+                                                                           const std::set<KeyFrame *> &currentKFs) {
+    std::list<KeyFrame *> AddnKFs;
+    for(auto it  = submap_tiepoints.begin(); it != submap_tiepoints.end(); ++it){
+        KeyFrame* KFparent = (*it).pKFref_parent;
+        if(!currentKFs.count(KFparent)){
+            AddnKFs.push_back(KFparent);
+        }
+
+    }
+    return AddnKFs;
+}
 
 void GlobalBundleAdjustment::RecoverOptimizedKeyFrames( std::list<KeyFrame*> lKeyFrames)
 {

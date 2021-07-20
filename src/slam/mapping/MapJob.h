@@ -1,6 +1,7 @@
 #ifndef MAPJOB_H_
 #define MAPJOB_H_
 
+#include <string>
 /*
  * abstract base class for map jobs.
  * defines key functionality:
@@ -16,6 +17,7 @@ class MapJob{
 public:
     virtual ~MapJob(){};
     virtual void run() = 0;
+    virtual std::string name() = 0;
     virtual void abort(){abort_requested = true;}
     virtual bool stopped(){return has_stopped;}
     virtual bool finished(){return has_finished;}

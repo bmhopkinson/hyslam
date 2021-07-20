@@ -100,7 +100,7 @@ protected:
     bool Stop();
     bool stopRequested();
     bool interruptJobs();
-    void StopTracking();
+    bool StopTracking(int timeout_ms);
     bool clear_input_queue= false;
 
     void SetAcceptKeyFrames(bool flag);

@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <sys/stat.h>
+#include <thread>
 
 namespace HYSLAM{
 
@@ -121,6 +122,18 @@ int GenUtils::mkdirRecursive(const char* pathname, mode_t mode) {
     } while (searched != std::string::npos);
 
     return ret;
+}
+
+void GenUtils::pauseUntilReady(KeyFrame *pKF) {
+    bool paused = false;
+    while(!pKF->isReady()){
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
+       // std::cout << "!!!!!!!!!!!!!!!!paused for keyframe to be ready!!!!!!!!!!!!!!!!!!: " << pKF->mnId << std::endl;
+        paused = true;
+    }
+    if(paused){
+    //    std::cout <<"!!!!!!!!!!!!!!!!paused for keyframe to be ready!!!!!!!!!!!!!!!!!!: " << pKF->mnId << std::endl;
+    }
 }
 
 } //end namespace

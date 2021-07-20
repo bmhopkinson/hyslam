@@ -54,6 +54,8 @@ private:
     std::list<KeyFrame*> FindLocalKFs(KeyFrame *pCentralKF);  //should probably convert these returned lists to vectors for better correspondence with globalBa and i don't see any need for them to be lists
     std::list<MapPoint*>  FindLocalMapPoints(const std::list<KeyFrame*> &lLocalKeyFrames, KeyFrame *pCentralKF);
     std::list<KeyFrame*> FindFixedKFs( const std::list<MapPoint*> lLocalMapPoints, KeyFrame *pCentralKF);
+    std::list<Tse3Parent>  FindSubmapTiepoints(const std::list<KeyFrame*> &lLocalKeyFrames);
+    std::list<KeyFrame*>  FindAdditionalParentSubmapKFs(const std::list<Tse3Parent> &submap_tiepoints, const std::set<KeyFrame*> &currentKFs );
 
   void ClearLBAFlags(const std::list<KeyFrame*> &lLocalKeyFrames, const std::list<KeyFrame*> &lFixedKeyFrames, const std::list<MapPoint*> lLocalMapPoints);
 

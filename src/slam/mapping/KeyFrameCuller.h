@@ -27,6 +27,7 @@ namespace HYSLAM{
         KeyFrameCuller(KeyFrame *pKF_, Map *pMap_, KeyFrameCullerParameters params_,  std::ofstream &log_);
         ~KeyFrameCuller();
         void run();
+        std::string name(){return "KeyFrameCuller";};
 
     private:
         KeyFrameCullerParameters params;

@@ -31,6 +31,7 @@ class LandMarkFuser : public MapJob {
 public:
     LandMarkFuser(KeyFrame *pKF_, Map *pMap_, LandMarkFuserParameters params_, FeatureFactory* factory,  std::ofstream &log_);
     void run();
+    std::string name(){return "LandMarkFuser";};
 
 private:
     LandMarkFuserParameters params;

@@ -55,6 +55,8 @@ private:
   static int ncalls;
 
   //helper functions
+  std::list<Tse3Parent>  FindSubmapTiepoints(const std::list<KeyFrame*> &KeyFrames);
+  std::list<KeyFrame*>  FindAdditionalParentSubmapKFs(const std::list<Tse3Parent> &submap_tiepoints, const std::set<KeyFrame*> &currentKFs );
   void RecoverOptimizedKeyFrames( std::list<KeyFrame*> lKeyFrames);
   void RecoverOptimizedMapPoints(  std::list<MapPoint*>  lMapPoints);
 };

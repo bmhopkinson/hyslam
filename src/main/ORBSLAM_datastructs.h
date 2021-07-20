@@ -38,6 +38,7 @@ struct optInfo{
       double Info_TrajTime = 1;
       double Info_TrajTimeSE3 = 1;
       double Info_ImagingTcam = 1;
+      double Info_submap_tiepoint;
       bool realtime; // program is being run realtime
       int GBAinterval; //run global BA after this many local BAs
       int GBAtype = 0; //1 = periodic GBA, 2 = Loop Closure GBA

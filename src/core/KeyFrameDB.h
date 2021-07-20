@@ -80,7 +80,9 @@ public:
 
     void erase(KeyFrame* pKF, std::string option); //i'm sure there's a better way to do this
 
-    bool exists(KeyFrame *pKF);
+    bool exists(KeyFrame *pKF); //does pKF exist in this KeyFrameDB or any children
+
+    bool isOwned(KeyFrame *pKF); // is pKF owned by this KeyFrameDB - NOT searching in children.
 
     bool update(KeyFrame* pKF);
 

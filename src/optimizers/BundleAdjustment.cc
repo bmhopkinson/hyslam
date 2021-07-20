@@ -188,6 +188,30 @@ void BundleAdjustment::SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames ){
 
 }
 
+void BundleAdjustment::SetSubMapOriginEdges(const std::list<Tse3Parent> &submap_tiepoints) {
+    for(auto it = submap_tiepoints.begin(); it != submap_tiepoints.end(); ++it) {
+        Tse3Parent tiepoint = *it;
+        std::string vertex_name0 = "VertexSE3Expmap" + std::to_string(tiepoint.pKFref_parent->mnId);
+        std::string vertex_name1 = "VertexSE3Expmap" + std::to_string(tiepoint.pKFref_this->mnId);
+    //    std::cout << "setting submap tiepoint edge between: parent: "  << tiepoint.pKFref_parent->mnId << " vertexid: " << vertex_map[vertex_name0]<<
+     //   ", and child: " << tiepoint.pKFref_this->mnId<< " vertexid: "<< vertex_map[vertex_name1]<< std::endl;
+
+        g2o::EdgeSE3Expmap *eSE3 = new g2o::EdgeSE3Expmap();
+        eSE3->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex(vertex_map[vertex_name0]) ) );
+        eSE3->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex(vertex_map[vertex_name1]) ) );
+
+        eSE3->setMeasurement(Converter::toSE3Quat(tiepoint.Tse3));
+        //double inv_std_error = 10000;
+        if(optParams.Info_submap_tiepoint < 0.1){
+            std::cout << "Warning: optParams.Info_submap_tiepoint is low, <0.1" <<std::endl;
+        }
+        eSE3->setInformation(optParams.Info_submap_tiepoint * Eigen::Matrix<double, 6, 6>::Identity());  //Eigen::Matrix6d::Identity()
+        eSE3->setLevel(0);
+        optimizer->addEdge(eSE3);
+    }
+
+}
+
 void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMapPoints, bool trackEdges, bool bRobust ){
     const float thHuberMono = sqrt(5.991);
     const float thHuberStereo = sqrt(7.815);
@@ -466,6 +490,8 @@ bool BundleAdjustment::CheckForImagingCamera(const std::list<KeyFrame*> &lKeyFra
 
   return img_cam_exists;
 }
+
+
 
 
 } //end ORBSLAM2 namespace

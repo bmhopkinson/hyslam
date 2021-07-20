@@ -39,6 +39,7 @@ namespace HYSLAM {
         LandMarkTriangulator(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, LandMarkTriangulatorParameters params_,
                              FeatureFactory* factory, std::ofstream &log_ );
         void run();
+        std::string name(){return "LandMarkTriangulator";};
     private:
         LandMarkTriangulatorParameters params;
         Triangulator triangulator;

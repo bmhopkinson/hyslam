@@ -583,4 +583,57 @@ bool Map::update(MapPoint *pMP) {
     return false;
 }
 
+bool Map::setNonErasable(KeyFrame *pKF) {
+    if(keyframe_db_local->exists(pKF)){
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        if(!pKF->isBad()){
+            KFs_nonerasable.insert(pKF);
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->setNonErasable(pKF)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+const Tse3Parent &Map::getTse3Parent() const {
+    return tse3parent;
+}
+
+void Map::setTse3Parent(const Tse3Parent &tse3Parent) {
+    tse3parent = tse3Parent;
+}
+
+bool Map::isLocalOrigin(KeyFrame *pKForg, Tse3Parent &tse3Parent_) {
+    bool is_origin = false;
+    _isLocalOrigin_(pKForg, is_origin, tse3Parent_);
+    return is_origin;
+}
+
+bool Map::_isLocalOrigin_(KeyFrame *pKForg, bool &is_origin, Tse3Parent &tse3Parent_) {
+    if(keyframe_db_local->isOwned(pKForg)) {
+        if(pKForg == tse3parent.pKFref_this) {
+            tse3Parent_ = tse3parent;
+            is_origin = true;
+        } else {
+            is_origin = false;
+        }
+        return true;  //found relevant submap
+    } else {
+        for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+            if((*it)->_isLocalOrigin_(pKForg, is_origin, tse3Parent_)){
+                return true;
+            }
+        }
+    }
+    return false;
+    return false;
+}
+
 } //namespace ORB_SLAM

@@ -29,6 +29,7 @@ namespace HYSLAM {
     public:
         LandMarkCuller(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, LandMarkCullerParameters params_, std::ofstream &log_);
         void run();
+        std::string name(){return "LandMarkCuller";};
     private:
         LandMarkCullerParameters params;
         KeyFrame* pKF;

@@ -83,6 +83,7 @@ public:
   void SetIMUEdges( const std::list<KeyFrame*> &lKeyFrames );
   void SetDepthEdges( const std::list<KeyFrame*> &lKeyFrames );
   void SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames );
+  void SetSubMapOriginEdges(const std::list<Tse3Parent> &submap_tiepoints);
   void SetMapPointVerticesEdges( const std::list<MapPoint*> lMapPoints, bool trackEdges, bool bRobust );
   void SetImagingVertices(const std::list<KeyFrame*> &lKeyFrames);
   void SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames);

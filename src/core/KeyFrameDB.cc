@@ -499,6 +499,14 @@ bool KeyFrameDB::exists(KeyFrame *pKF) {
     return false;
 }
 
+bool KeyFrameDB::isOwned(KeyFrame *pKF) {
+    if(KF_set.count(pKF)){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 FeatureVocabulary *KeyFrameDB::getVocab() {
     return place_recog.getVocab();
 }
@@ -528,6 +536,8 @@ long unsigned int KeyFrameDB::getNumberOfKeyFrames() {
     }
     return n_kfs;
 }
+
+
 
 
 } //namespace ORB_SLAM

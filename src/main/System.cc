@@ -70,7 +70,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
        exit(-1);
     }
 
-    LoadSettings(strSettingsFile);
+   // LoadSettings(strSettingsFile);
     std::string feature_settings_file = fsSettings["Feature_Config"].string();
     std::cout <<"feature_settings_file: " << feature_settings_file << std::endl;
 
@@ -243,7 +243,9 @@ void System::RunImagingBundleAdjustment(){
     }
 
     g2o::Trajectory traj_g2o = mpTracker->trajectories["SLAM"]->convertToG2O();
-    ImagingBundleAdjustment imgBA(maps["Imaging"].get(), mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams );
+    optInfo optParams_tracking = mpTracker->optParams;
+    //ImagingBundleAdjustment imgBA(maps["Imaging"].get(), mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams );
+    ImagingBundleAdjustment imgBA(maps["Imaging"].get(), mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams_tracking );
     imgBA.Run();
 
     thread_status->mapping.setRelease(true);
@@ -911,6 +913,7 @@ bool System::TrackingNeedImages() { return mpTracker->GetCurrentTrackingState() 
 bool System::TrackingInitialized() { return (mpTracker->GetCurrentTrackingState() == eTrackingState::NORMAL) or (mpTracker->GetCurrentTrackingState() ==  eTrackingState::RELOCALIZATION); }
 double System::PercentObserved() { return mpTracker->PercentObserved(); }
 
+/*
 void System::LoadSettings(std::string settings_path) {
    // std::cout << "LoadSettings: settings_path " << settings_path << std::endl;
     cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
@@ -918,11 +921,13 @@ void System::LoadSettings(std::string settings_path) {
     optParams.Info_Depth = fSettings["Opt.Info_Depth"];
     optParams.Info_IMU   = fSettings["Opt.Info_IMU"];
     optParams.Info_GPS   = fSettings["Opt.Info_GPS"];
+    optParams.Info_submap_tiepoint = fSettings["Opt.Info_submap_tiepoint"];
     int temp = fSettings["Opt.realtime"];
     optParams.realtime = temp; //implicit cast to bool;
     optParams.GBAinterval = fSettings["Opt.GBAinterval"];
 
 }
+ */
 /*
 void System::LoadVocabulary(const std::string vocab_file, FeatureVocabulary* vocab){
     clock_t tStart = clock();

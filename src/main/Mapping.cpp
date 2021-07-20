@@ -64,7 +64,7 @@ void Mapping::Run()
         //WOULD LIKE TO ENABLE true flushing of queue THIS BUT REQUIRES MORE WORK - CURRENTLY ONCE KEYFRAMES are passed ot mapping they must at least initially be incorporated into the map b/c KF,Frame,mpt assocaitons have been made - can later be culled, but must initially be incorporated
         if(clear_input_queue){  //clears all EXCEPT most recent keyframe - trigerred if optional jobs keep getting interrupted or input queue is too long
             std::cout << "clearing mapping queue" << std::endl;
-            StopTracking();
+            StopTracking(200);
         }
 
         // Check if there are keyframes in the queue
@@ -77,10 +77,12 @@ void Mapping::Run()
                 std::thread job_thread(&MapJob::run, (*job).get());
                 job_thread.join();
             }
-
+        //    std::cout << "Mapping finished running mandatory jobs on KeyFrame"  << mpCurrentKeyFrame->mnId << std::endl;
             std::vector< std::unique_ptr<MapJob> > optional_jobs;
             SetupOptionalJobs(optional_jobs);
+         //   std::cout << "Mapping finished setting up optional jobs on KeyFrame"  << mpCurrentKeyFrame->mnId << std::endl;
             RunOptionalJobs(optional_jobs, false);
+         //   std::cout << "Mapping Finished Processing KeyFrame: " << mpCurrentKeyFrame->mnId << std::endl;
 
             if(!CheckNewKeyFrames() && !stopRequested())
             {
@@ -94,9 +96,8 @@ void Mapping::Run()
                   std::cout << "need GBA = true" << std::endl;
                }
 
-              if(bNeedGBA){
+              if(bNeedGBA && StopTracking(200)){
                   std::cout << "about to stop tracking for GBA" << std::endl;
-                  StopTracking();
 
                   if(!CheckNewKeyFrames() && !stopRequested()){
                       std::cout << "running Global Bundle Adjustement !!!" << std::endl;
@@ -167,6 +168,7 @@ void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandato
     {
         std::unique_lock<std::mutex> lock(mMutexNewKFs);
         mpCurrentKeyFrame = input_queue->pop();
+        std::cout << "Mapping starting to process KeyFrame: " << mpCurrentKeyFrame->mnId << std::endl;
         thread_status->mapping.setQueueLength(input_queue->size());
         curKF_cam = mpCurrentKeyFrame->camera.camName;
         nKFs_created++;
@@ -268,6 +270,7 @@ else {
             completed_jobs = false;
            break;
         } else {   //run job
+         //   std::cout << "Mapping running " << (*job)->name() << ", on KeyFrame: " << mpCurrentKeyFrame->mnId << std::endl;
             std::thread job_thread(&MapJob::run, (*job).get());
             job_thread.join();
         }
@@ -330,14 +333,24 @@ void Mapping::SetAcceptKeyFrames(bool flag)
 }
 
 
-void Mapping::StopTracking(){
+bool Mapping::StopTracking(int timeout_ms){
     thread_status->tracking.setStopRequested(true);
+    std::chrono::milliseconds timout(timeout_ms);
+
     // Wait until Tracking has effectively stopped
+    std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
     while(!thread_status->tracking.isStopped())
     {
         thread_status->tracking.setStopRequested(true); //someone else may have cleared the initial request - so keep putting it in
         usleep(1000);
+        std::chrono::steady_clock::time_point t_current = std::chrono::steady_clock::now();
+        std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_current-t_start);
+        if(t_elapsed > timout){ //abort attempt to stop Tracking
+            thread_status->tracking.setStopRequested(false);
+            return false;
+        }
     }
+    return true;
 }
 
 bool Mapping::interruptJobs()

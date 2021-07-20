@@ -81,6 +81,7 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
         if(!lm){
             continue;
         }
+        const FeatureDescriptor& lm_descriptor = lm->GetDescriptor();
         nn++;
 
         cv::Mat uv;

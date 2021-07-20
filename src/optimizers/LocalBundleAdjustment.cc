@@ -60,12 +60,19 @@ void LocalBundleAdjustment::Run(){
 	ncalls++;
     const double chi2_thresh_mono = 5.991;   //outlier thresholds
     const double chi2_thresh_stereo = 7.815;
- //   std::cout << "running localBA w centralKF" << pCentralKF->mnId << std::endl;
+ //  std::cout << "running localBA w centralKF" << pCentralKF->mnId << std::endl;
 
     //collect local keyframes and mappoints
     std::list<KeyFrame*> lLocalKeyFrames = FindLocalKFs( pCentralKF );
     std::list<MapPoint*>  lLocalMapPoints  = FindLocalMapPoints( lLocalKeyFrames, pCentralKF );
     std::list<KeyFrame*> lFixedKeyFrames = FindFixedKFs( lLocalMapPoints, pCentralKF);
+   // std::cout << "LBA: finished finding keyframes" << pCentralKF->mnId << std::endl;
+
+    std::list<Tse3Parent> submap_tiepoints = FindSubmapTiepoints(lLocalKeyFrames);
+    std::set<KeyFrame*> allKFs(lLocalKeyFrames.begin(), lLocalKeyFrames.end());
+    allKFs.insert(lFixedKeyFrames.begin(), lFixedKeyFrames.end());
+    std::list<KeyFrame*> submap_KFs = FindAdditionalParentSubmapKFs(submap_tiepoints, allKFs ); //find any tiepoint parent KFs that are not included in the optimization and add to fixed KFS
+    lFixedKeyFrames.insert(lFixedKeyFrames.end(), submap_KFs.begin(), submap_KFs.end());
 
     //check if there's imaging cam data in the local KeyFrames
     imaging_camera_exists = CheckForImagingCamera(lLocalKeyFrames);
@@ -77,8 +84,8 @@ void LocalBundleAdjustment::Run(){
     while( lit != lLocalKeyFrames.end()) {
         KeyFrame *pKFi = *lit;
         //      std::cout << "local KF: "<< pKFi->mnId << std::endl;
-       // if (pKFi->mnId == 0) {   //fix keyframe =0; not sure this is necessary but preserving behavior right now
-       if(!pMap->isKFErasable(pKFi)){ //short cut for first map keyframe - refine this
+        if (pKFi->mnId == 0) {   //fix keyframe =0; not sure this is necessary but preserving behavior right now
+     //  if(!pMap->isKFErasable(pKFi)){ //short cut for first map keyframe - refine this
             lFixedKeyFrames.push_back(pKFi);
             lit = lLocalKeyFrames.erase(lit);
         } else {
@@ -91,7 +98,7 @@ void LocalBundleAdjustment::Run(){
     //set optimizer KeyFrame vertices
     SetKeyFrameVertices( lLocalKeyFrames, false);      // Set Local KeyFrame vertices
     SetKeyFrameVertices( lFixedKeyFrames, true );       // Set Fixed KeyFrame vertices
-
+  //  std::cout << "LBA: finished setting keyframe vertices" << pCentralKF->mnId << std::endl;
     // set optimizer unary edges (sensor data -> keyframes)
     SetIMUEdges( lLocalKeyFrames );         //IMU quaternion measurement constraint
     SetDepthEdges( lLocalKeyFrames );      // add depth constraints
@@ -99,6 +106,9 @@ void LocalBundleAdjustment::Run(){
  //    std::cout << "set kf vertices and unary edges" << std::endl;
     // Set MapPoint vertices and edges
 
+
+    SetSubMapOriginEdges(submap_tiepoints);
+  //  std::cout << "LBA: finished setting accessory edges" << pCentralKF->mnId << std::endl;
     if(imaging_camera_exists){
       SetImagingVertices(lLocalKeyFrames);
       SetImagingEdges(lLocalKeyFrames);
@@ -118,6 +128,7 @@ void LocalBundleAdjustment::Run(){
    bool bRobust = true;
    SetMapPointVerticesEdges(  lLocalMapPoints, trackEdges, bRobust );
  //    std::cout << "set mappoint vertices and edges" << std::endl;
+   // std::cout << "LBA: finished setting mappoint edges" << pCentralKF->mnId << std::endl;
     //run optimization
     if(pbStopFlag)
         if(*pbStopFlag) {
@@ -128,7 +139,7 @@ void LocalBundleAdjustment::Run(){
     optimizer.initializeOptimization();
     optimizer.optimize(5);
 
- //   std::cout << "finished initial 5 optimizations" << std::endl;
+  //  std::cout << "finished initial 5 optimizations" << std::endl;
     bool bDoMore= true;
 
     if(pbStopFlag)
@@ -163,19 +174,16 @@ void LocalBundleAdjustment::Run(){
             continue;
         e->setRobustKernel(0);
     }
- //    std::cout << "removed outliers" << std::endl;
+   //  std::cout << "removed outliers" << std::endl;
     // Optimize again without the outliers
     optimizer.initializeOptimization(0);
     optimizer.optimize(10);
 
     }
-  //      std::cout << "finished 2nd round of optimization" << std::endl;
+   //    std::cout << "finished 2nd round of optimization" << std::endl;
     //find outliers after 2nd round of optimization and erase those observations
     std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
     std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
-
-    //lock map for removal of observations and update of  keyframe and points
-    std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
 
     for(std::vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
          OutlierMono outlier = *vit;
@@ -205,7 +213,7 @@ void LocalBundleAdjustment::Run(){
         g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(vertex_map[vertex_name] ));
         g2o::SE3Quat SE3quat = vSE3->estimate();
         pKFi->SetPose(Converter::toCvMat(SE3quat));
-   // std::cout << "set keyframe" << std::endl;
+   //std::cout << "set keyframe" << std::endl;
     }
 
     //Points
@@ -220,13 +228,13 @@ void LocalBundleAdjustment::Run(){
         g2o::VertexSBAPointXYZ* vPoint = static_cast<g2o::VertexSBAPointXYZ*>(optimizer.vertex(vertex_map[vertex_name] ) );
        //  std::cout << "retrieved vPoint" << std::endl;
         pMP->SetWorldPos(Converter::toCvMat(vPoint->estimate()));
-     //     std::cout << "set world position" << std::endl;
+        //std::cout << "set world position" << std::endl;
         pMap->update(pMP);
     }
 
     ClearLBAFlags(lLocalKeyFrames, lFixedKeyFrames, lLocalMapPoints);
 
-//    std::cout << "finished run local ba" << std::endl;
+   // std::cout << "finished run local ba" << pCentralKF->mnId << std::endl;
 
 }
 
@@ -304,6 +312,30 @@ std::list<KeyFrame*> LocalBundleAdjustment::FindFixedKFs( const std::list<MapPoi
 
 }
 
+std::list<Tse3Parent> LocalBundleAdjustment::FindSubmapTiepoints(const std::list<KeyFrame *> &lLocalKeyFrames) {
+   std::list<Tse3Parent> submap_tiepoints;
+   for(auto it = lLocalKeyFrames.begin(); it != lLocalKeyFrames.end(); ++it ){
+       KeyFrame* pKF = *it;
+       Tse3Parent tiepoint_data;
+       if(pMap->isLocalOrigin(pKF, tiepoint_data)){
+            submap_tiepoints.push_back(tiepoint_data);
+       }
+   }
+   return submap_tiepoints;
+}
+
+std::list<KeyFrame *> LocalBundleAdjustment::FindAdditionalParentSubmapKFs(const std::list<Tse3Parent> &submap_tiepoints,
+                                                                     const std::set<KeyFrame *> &currentKFs) {
+    std::list<KeyFrame *> AddnKFs;
+    for(auto it  = submap_tiepoints.begin(); it != submap_tiepoints.end(); ++it){
+        KeyFrame* KFparent = (*it).pKFref_parent;
+        if(!currentKFs.count(KFparent)){
+            AddnKFs.push_back(KFparent);
+        }
+
+    }
+    return AddnKFs;
+}
 
 
 void LocalBundleAdjustment::ClearLBAFlags(const std::list<KeyFrame*> &lLocalKeyFrames, const std::list<KeyFrame*> &lFixedKeyFrames, const std::list<MapPoint*> lLocalMapPoints){
@@ -328,6 +360,7 @@ void LocalBundleAdjustment::ClearLBAFlags(const std::list<KeyFrame*> &lLocalKeyF
     }
 
 }
+
 
 
 } // namespace HYSLAM

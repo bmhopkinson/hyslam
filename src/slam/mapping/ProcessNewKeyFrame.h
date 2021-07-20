@@ -22,6 +22,7 @@ namespace HYSLAM{
  public:
      ProcessNewKeyFrame(KeyFrame* pKF_, Map* pMap_, std::list<MapPoint*>* new_mpts_, ProcessNewKeyFrameParameters params_);
      void run();
+     std::string name(){return "ProcessNewKeyFrame";};
  private:
      ProcessNewKeyFrameParameters params;
      KeyFrame* pKF;

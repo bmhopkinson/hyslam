@@ -89,6 +89,7 @@ void Tracking::LoadSettings(std::string settings_path){
     int temp = fSettings["Opt.realtime"];
     optParams.realtime = temp; //implicit cast to bool;
     optParams.GBAinterval = fSettings["Opt.GBAinterval"];
+    optParams.Info_submap_tiepoint = fSettings["Opt.Info_submap_tiepoint"];
 
     //  try{  //imaging camera info
     if(fSettings["Opt.Info_TrajTime"].type() != cv::FileNode::NONE ){
@@ -432,8 +433,7 @@ int Tracking::HandlePostInit(KeyFrame* pKFcurrent,Map* pMap,std::string cam_name
     if(cam_name == "SLAM"){
         slam_ever_initialized = true;
         mvpLocalMapPoints=pMap->GetAllMapPoints();
-        std::cout << "initialized with " << mvpLocalMapPoints.size() << " new mpts" << std::endl;
-        pMap->SetReferenceMapPoints(mvpLocalMapPoints);
+        pMap->SetReferenceMapPoints(mvpLocalMapPoints);  //just for visualization - this is junk right now (2021/07/20)
         mpMapDrawer->SetCurrentCameraPose(pKFcurrent->GetPose());
     }
 

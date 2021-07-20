@@ -36,6 +36,7 @@ struct GenUtils{
     static cv::Mat SkewSymmetricMatrix(const cv::Mat &v);
     static bool PointHasPositiveDepth(cv::Mat ProjectionMatrix, cv::Mat point);
     static int mkdirRecursive(const char* pathname, mode_t mode);
+    static void pauseUntilReady(KeyFrame* pKF);
 };
 
 }

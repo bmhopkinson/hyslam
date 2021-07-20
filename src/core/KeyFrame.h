@@ -73,6 +73,8 @@ class KeyFrame
 {
 public:
     KeyFrame(Frame &F);//, Map* pMap_);//, KeyFrameDatabase* pKFDB);
+    bool isReady(){return ready;};
+    void setReady(){ready = true;};
 
     // Pose functions
     void SetPose(const cv::Mat &Tcw);
@@ -250,6 +252,7 @@ public:
 
     // The following variables need to be accessed trough a mutex to be thread safe.
 protected:
+    bool ready = false; //indicates KeyFrame has been processed by Mapping and is ready to be used
     // Calibration parameters - can't eliminate these from the header without impacting tracking performance (but program will compile w/out them - very mysterious!)
     float fx, fy, cx, cy, mbf;// invfx, invfy,  mb;
     cv::Mat mK;
