@@ -1,6 +1,8 @@
 #ifndef TRACKING_DATASTRUCTS_H_
 #define TRACKING_DATASTRUCTS_H_
 
+#include <TrackingState.h>
+
 #include <opencv2/opencv.hpp>
 #include "Frame.h"
 #include <InitializerDataStructs.h>
@@ -13,11 +15,14 @@
 
 namespace HYSLAM{
 
+    using TrackingStateOptions = std::map<std::string, std::map<std::string, std::shared_ptr<TrackingState> > > ;
+
 // Tracking states
 enum class eTrackingState{
     SYSTEM_NOT_READY,
     NO_IMAGES_YET,
     INITIALIZATION,
+    POSTINIT,
     NORMAL,
     RELOCALIZATION,
     REINITIALIZE,

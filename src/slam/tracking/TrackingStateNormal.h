@@ -46,8 +46,8 @@ public:
     bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
     void clear(){};
 
-private:
-    bool needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force);
+protected:
+    virtual bool needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force);
     std::unique_ptr<TrackMotionModel> track_motion_model;
     std::unique_ptr<TrackReferenceKeyFrame> track_reference_keyframe;
     std::unique_ptr<TrackLocalMap> track_local_map;

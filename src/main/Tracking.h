@@ -71,7 +71,6 @@
 #include <ORBSLAM_datastructs.h>
 #include <InterThread.h>
 #include "Frame.h"
-//#include "ORBVocab.h"
 #include "FeatureExtractor.h"
 #include <FeatureFactory.h>
 #include <MonoInitializer.h>
@@ -84,6 +83,7 @@
 #include <ThreadSafeQueue.h>
 
 #include <TrackingState.h>
+#include <TrackingStateTransition.h>
 
 #include <mutex>
 #include <string>
@@ -157,16 +157,16 @@ protected:
 
     // Main tracking function. It is independent of the input sensor.
     void _Track_();
-    void SetupStates();
+ //   void SetupStates();
     bool inputAvailable();
-    void TransitionToNewState(std::map<std::string, eTrackingState> &mState, std::map<std::string, TrackingState*> &state,
-                              bool bOK, std::vector<KeyFrame*> newKFs);
+ //   void TransitionToNewState(std::map<std::string, eTrackingState> &mState, std::map<std::string, std::shared_ptr<TrackingState> > &state,
+ //                             bool bOK);
 
     void UpdateLastFrame();
     KeyFrame* determineReferenceKeyFrame(Frame* pcurrent_frame);
 
     //Handlers
-    int HandlePostInit(KeyFrame* pKFcurrent, Map* pMap,std::string cam_name );
+    //int HandlePostInit(KeyFrame* pKFcurrent, Map* pMap,std::string cam_name );
     void HandlePostTrackingSuccess();
 
     //Dataloaders
@@ -177,8 +177,9 @@ protected:
  //   Mapping* mpLocalMapper;
 
     // state data
-    std::map<std::string, TrackingState*> state;  //camera to state map
-    std::map<std::string, std::map<std::string, TrackingState*> > state_options; //state name to state pointer map
+    std::unique_ptr<TrackingStateTransition> tracking_state_transition;
+    std::map<std::string, std::shared_ptr<TrackingState>> state;  //camera to state map
+    //TrackingStateOptions state_options; //state name to state pointer map by camera ie. state_options[cam_name][state_name] = shared_ptr<TrackingState>
 
     //BoW
     FeatureVocabulary* mpORBVocabulary;
