@@ -20,10 +20,6 @@
 
 
 #include <Tracking.h>
-
-#include <opencv2/core/core.hpp>
-
-
 #include "FrameDrawer.h"
 #include <MapPointDB.h>
 #include "Map.h"
@@ -31,10 +27,13 @@
 #include <TrackingStateTransitionReinit.h>
 #include <Tracking_datastructs.h>
 
+#include <opencv2/core/core.hpp>
+
 #include <fstream>
 #include <string>
 #include <chrono>
 #include <thread>
+#include <unistd.h>
 
 
 using namespace std;
@@ -42,10 +41,10 @@ using namespace std;
 namespace HYSLAM
 {
 
-Tracking::Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
+Tracking::Tracking(FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer,
                    std::map<std::string, std::shared_ptr<Map> > &_maps, std::map<std::string, Camera > cam_data_,
                    const std::string &strSettingPath, MainThreadsStatus* thread_status_, FeatureFactory* factory):
-            mpORBVocabulary(pVoc), mpSystem(pSys), mpViewer(NULL),
+            mpORBVocabulary(pVoc),
             mpFrameDrawers(pFrameDrawers), mpMapDrawer(pMapDrawer), maps(_maps) , cam_data(cam_data_), thread_status(thread_status_), feature_factory(factory)
 {
     //
@@ -92,28 +91,11 @@ void Tracking::LoadSettings(std::string settings_path){
         optParams.Info_ImagingTcam = fSettings["Opt.Info_ImagingTcam"];
     }
 
-    if(mSensor["SLAM"]==System::STEREO || mSensor["SLAM"]==System::RGBD)
-    {
-        stereoInitFeatures = (fSettings["StereoInitFeatures"].type() == cv::FileNode::NONE) ? 500 : fSettings["StereoInitFeatures"];
-        cout << endl << "Depth Threshold (Close/Far Points): " << cam_data["SLAM"].thDepth << endl;
-        cout << "Stereo Init Features: " << stereoInitFeatures << endl;
-    }
-
 }
 
 Tracking::~Tracking()
 {
     ftracking.close();
-}
-/*
-void Tracking::SetLocalMapper(Mapping *pLocalMapper)
-{
-    mpLocalMapper=pLocalMapper;
-}
-*/
-void Tracking::SetViewer(Viewer *pViewer)
-{
-    mpViewer=pViewer;
 }
 
 void Tracking::Run(){
@@ -178,9 +160,6 @@ void Tracking::_Track_()
 {
     ftracking << cam_cur<< "\t" << mCurrentFrame.mnId << "\t";
 
-    // ADDITION: Tracking state monitoring
-    nPoints = 0;
-    nObserved = 0;
     mLastProcessedState=mState[cam_cur];  //only used by viewer
 
     if(slam_ever_initialized) {

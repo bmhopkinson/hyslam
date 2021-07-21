@@ -132,7 +132,7 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
 
     //Initialize Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
-    mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawers, mpMapDrawer,
+    mpTracker = new Tracking(mpVocabulary, mpFrameDrawers, mpMapDrawer,
                              maps, cam_data, strSettingsFile, thread_status.get(), feature_factory.get() );
     mpTracker->setInputQueue(tracking_queue.get());
     mpTracker->setOutputQueue( mapping_queue.get() );
@@ -157,7 +157,6 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
     {
         mpViewer = new Viewer(this, mpFrameDrawers,mpMapDrawer,mpTracker,strSettingsFile);
         mptViewer = new std::thread(&Viewer::Run, mpViewer);
-        mpTracker->SetViewer(mpViewer);
     }
 
     //Set pointers between threads
@@ -911,7 +910,6 @@ bool System::TrackingLost() { return mpTracker->GetCurrentTrackingState() == eTr
 bool System::TrackingReady() { return (mpTracker->GetCurrentTrackingState() != eTrackingState::SYSTEM_NOT_READY); }
 bool System::TrackingNeedImages() { return mpTracker->GetCurrentTrackingState() ==  eTrackingState::NO_IMAGES_YET; }
 bool System::TrackingInitialized() { return (mpTracker->GetCurrentTrackingState() == eTrackingState::NORMAL) or (mpTracker->GetCurrentTrackingState() ==  eTrackingState::RELOCALIZATION); }
-double System::PercentObserved() { return mpTracker->PercentObserved(); }
 
 /*
 void System::LoadSettings(std::string settings_path) {

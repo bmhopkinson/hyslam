@@ -154,9 +154,6 @@ public:
     // Check if tracking is initialized
     bool TrackingInitialized();
 
-    // Get percentage of previously observed points compared to total in view
-    // Can be useful as an indicator of tracking quality after relocalization
-    double PercentObserved();
 
 private:
 

@@ -30,6 +30,7 @@
 #include <MapPointDB.h>
 #include "g2o/types/sba/Trajectory_g2o.h"
 #include <mutex>
+#include <unistd.h>
 
 namespace HYSLAM
 {

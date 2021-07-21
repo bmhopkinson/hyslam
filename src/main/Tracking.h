@@ -62,21 +62,19 @@
  *
  */
 
-#include "Viewer.h"
-#include "FrameDrawer.h"
-#include "Map.h"
+#include <Frame.h>
+#include <Map.h>
+#include <Trajectory.h>
+#include <Camera.h>
+#include <SensorData.h>
 #include <ORBSLAM_datastructs.h>
 #include <Initializer.h>
 #include <InterThread.h>
-#include "Frame.h"
-#include "FeatureExtractor.h"
+#include <FeatureVocabulary.h>
 #include <FeatureFactory.h>
-#include "MapDrawer.h"
-#include "System.h"
-#include "Tracking_datastructs.h"
-#include "Trajectory.h"
-#include <Camera.h>
-#include <SensorData.h>
+#include <FrameDrawer.h>
+#include <MapDrawer.h>
+#include <Tracking_datastructs.h>
 #include <ThreadSafeQueue.h>
 #include <TrackingState.h>
 #include <TrackingStateTransition.h>
@@ -94,20 +92,20 @@
 namespace HYSLAM
 {
 
+    class FrameDrawer;
+
 class Tracking
 {
 //
 public:
 
-    Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, std::shared_ptr<Map> > &_maps,
+    Tracking( FeatureVocabulary* pVoc, std::map<std::string, FrameDrawer*> pFrameDrawers, MapDrawer* pMapDrawer, std::map<std::string, std::shared_ptr<Map> > &_maps,
              std::map<std::string, Camera > cam_data_, const std::string &strSettingPath, MainThreadsStatus* thread_status_, FeatureFactory* factory);
     ~Tracking();
 
     void Run();
     cv::Mat track(ImageFeatureData &track_data);
 
- //   void SetLocalMapper(Mapping* pLocalMapper);
-    void SetViewer(Viewer* pViewer);
     void setInputQueue(ThreadSafeQueue<ImageFeatureData>* input_queue_){input_queue = input_queue_;}
     void setOutputQueue(ThreadSafeQueue<KeyFrame*>* output_queue_){output_queue = output_queue_;}
     eTrackingState GetCurrentTrackingState() {return mState["SLAM"];};
@@ -133,11 +131,6 @@ public:
     // Current Frame
     Frame mCurrentFrame;
     cv::Mat mImGray;
-
-    // ADDITION: Tracking state monitoring
-    int nPoints = 0;
-    int nObserved = 0;
-    double PercentObserved() { return (nPoints > 0) ? static_cast<double>(nObserved)/static_cast<double>(nPoints) : 0; }
 
     // Initialization Variables (Monocular)
     std::map< std::string, InitializerData> init_data;
@@ -176,18 +169,12 @@ protected:
     FeatureFactory* feature_factory;
 
     // Initalization
-    int stereoInitFeatures;
     bool slam_ever_initialized = false;
 
     //Local Map
     std::map<std::string, KeyFrame*> mpReferenceKF;
- //   std::vector<MapPoint*> mvpLocalMapPoints;
-
-    // System
-    System* mpSystem;
 
     //Drawers
-    Viewer* mpViewer;
     std::map<std::string, FrameDrawer*> mpFrameDrawers;
     MapDrawer* mpMapDrawer;
 
