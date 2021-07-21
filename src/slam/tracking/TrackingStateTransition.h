@@ -21,6 +21,8 @@
 
 namespace HYSLAM {
 
+using TrackingStateOptions = std::map<std::string, std::map<std::string, std::shared_ptr<TrackingState> > > ;
+
 class TrackingStateTransition {
 public:
     //TrackingStateTransition(TrackingStateOptions state_options_);

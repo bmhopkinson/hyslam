@@ -79,6 +79,7 @@ void TrackingStateTransitionReinit::setInitialState(std::map<std::string, eTrack
 void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, eTrackingState> &mState, std::map<std::string,
         std::shared_ptr<TrackingState> > &state, bool bOK, std::string cam_cur)
 {
+    n_call++;
     eTrackingState next_state = mState[cam_cur]; //assume we stay in the same state
     std::shared_ptr<TrackingState> pnext_track_state = state[cam_cur];
 
@@ -99,11 +100,11 @@ void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, e
     }
     else if(mState[cam_cur] == eTrackingState::NORMAL) {
 /*
-        if((mCurrentFrame.mnId % 300) == 0 && mCurrentFrame.mnId>200){
+        if((n_call % 300) == 0 && n_call>200){
             if (cam_cur == "SLAM") {
                 pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
                 next_state = eTrackingState::REINITIALIZE;
-                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: frameid: " << mCurrentFrame.mnId << ", name:" << mCurrentFrame.fimgName <<  std::endl;
+                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: n_calls: " << n_call <<  std::endl;
 
                 if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
                     state["Imaging"]  = state_options["Imaging"]["NULL"];
@@ -112,7 +113,7 @@ void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, e
 
             }
         }
-        */
+*/
         //   else
         //    if (bOK) {
         //        pnext_track_state = state_options[cam_cur]["NORMAL"];

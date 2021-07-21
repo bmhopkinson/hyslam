@@ -62,18 +62,15 @@
  *
  */
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
-
 #include "Viewer.h"
 #include "FrameDrawer.h"
 #include "Map.h"
 #include <ORBSLAM_datastructs.h>
+#include <Initializer.h>
 #include <InterThread.h>
 #include "Frame.h"
 #include "FeatureExtractor.h"
 #include <FeatureFactory.h>
-#include <MonoInitializer.h>
 #include "MapDrawer.h"
 #include "System.h"
 #include "Tracking_datastructs.h"
@@ -81,9 +78,11 @@
 #include <Camera.h>
 #include <SensorData.h>
 #include <ThreadSafeQueue.h>
-
 #include <TrackingState.h>
 #include <TrackingStateTransition.h>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include <mutex>
 #include <string>
@@ -142,7 +141,6 @@ public:
 
     // Initialization Variables (Monocular)
     std::map< std::string, InitializerData> init_data;
-    std::map< std::string, int> recent_init;
 
     // Lists used to recover the full camera trajectory at the end of the execution.
     // Basically we store the reference keyframe for each frame and its relative transformation
@@ -157,29 +155,21 @@ protected:
 
     // Main tracking function. It is independent of the input sensor.
     void _Track_();
- //   void SetupStates();
     bool inputAvailable();
- //   void TransitionToNewState(std::map<std::string, eTrackingState> &mState, std::map<std::string, std::shared_ptr<TrackingState> > &state,
- //                             bool bOK);
 
     void UpdateLastFrame();
     KeyFrame* determineReferenceKeyFrame(Frame* pcurrent_frame);
 
     //Handlers
-    //int HandlePostInit(KeyFrame* pKFcurrent, Map* pMap,std::string cam_name );
     void HandlePostTrackingSuccess();
 
     //Dataloaders
     void LoadSettings(std::string settings_path);
     cv::FileStorage config_data;
 
-    //Other Thread Pointers
- //   Mapping* mpLocalMapper;
-
     // state data
     std::unique_ptr<TrackingStateTransition> tracking_state_transition;
     std::map<std::string, std::shared_ptr<TrackingState>> state;  //camera to state map
-    //TrackingStateOptions state_options; //state name to state pointer map by camera ie. state_options[cam_name][state_name] = shared_ptr<TrackingState>
 
     //BoW
     FeatureVocabulary* mpORBVocabulary;
@@ -191,7 +181,7 @@ protected:
 
     //Local Map
     std::map<std::string, KeyFrame*> mpReferenceKF;
-    std::vector<MapPoint*> mvpLocalMapPoints;
+ //   std::vector<MapPoint*> mvpLocalMapPoints;
 
     // System
     System* mpSystem;

@@ -15,7 +15,7 @@
 
 namespace HYSLAM{
 
-    using TrackingStateOptions = std::map<std::string, std::map<std::string, std::shared_ptr<TrackingState> > > ;
+
 
 // Tracking states
 enum class eTrackingState{

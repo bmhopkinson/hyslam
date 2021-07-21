@@ -23,25 +23,16 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <Stereomatcher.h>
+
 #include "FrameDrawer.h"
 #include <MapPointDB.h>
 #include "Map.h"
-#include <StereoInitializer.h>
 #include "ORBSLAM_datastructs.h"
-#include <TrackPlaceRecognition.h>
-#include <TrackingStateNormal.h>
-#include <TrackingStateRelocalize.h>
-#include <TrackingStateInitialize.h>
-#include <TrackingStatePostInitialization.h>
-#include <TrackingStateReInitialize.h>
-#include <TrackingStateNull.h>
 #include <TrackingStateTransitionReinit.h>
 #include <Tracking_datastructs.h>
 
 #include <fstream>
 #include <string>
-#include <mutex>
 #include <chrono>
 #include <thread>
 
@@ -67,8 +58,6 @@ Tracking::Tracking(System* pSys, FeatureVocabulary* pVoc, std::map<std::string, 
     LoadSettings(strSettingPath);
     tracking_state_transition = std::make_unique<TrackingStateTransitionReinit>(config_data, cam_data, optParams, init_data, ftracking, thread_status, feature_factory);
     tracking_state_transition->setInitialState(mState, state);
-
-  //  SetupStates();
 
 }
 
@@ -230,11 +219,6 @@ void Tracking::_Track_()
        // std::cout << "tracking, about to HandlePostTrackingSuccess()"  << std::endl;
         HandlePostTrackingSuccess();
         bool force = false;
-        if( recent_init[cam_cur] > 0 ){
-            force = true;
-        //    std::cout << "forcing new keyframe due to recent initialization for this and more frames: " <<  recent_init[cam_cur] << std::endl;
-        }
-
         thread_status->mapping.setStoppable(false);
         newKFs = state[cam_cur]->newKeyFrame(mCurrentFrame, maps[cam_cur].get(), mnLastKeyFrameId, force);
         if (!newKFs.empty()) { // KeyFrame(s) created
@@ -243,19 +227,11 @@ void Tracking::_Track_()
 
             for(auto it = newKFs.begin(); it != newKFs.end(); ++it) {
                 KeyFrame *pKFnew = *it;
-/*
-                if(pKFnew->mnId > 0 && (pKFnew->mnId % 20 == 0)){
-                    std::shared_ptr<Map> newmap = maps[cam_cur]->createSubMap(true);
-                    newmap->registerWithParent();
-                }
-*/
+
                 output_queue->push(pKFnew);
                 std::cout << "Tracking pushed KF:  "<< pKFnew->mnId << " , from cam: " << cam_cur << std::endl;
                 maps[cam_cur]->update(pKFnew);
 
-       //         if( recent_init[cam_cur] > 0 ){
-       //             recent_init[cam_cur]--;
-        //        }
             }
 
             mpReferenceKF[cam_cur] = newKFs.back();
@@ -301,65 +277,7 @@ void Tracking::_Track_()
 
     mLastFrame[cam_cur] = Frame(mCurrentFrame);
 }
-/*
-void Tracking::SetupStates(){
-  //  std::map<std::string, TrackingState*> state_options;
- // cv::FileStorage config_data(config_file, cv::FileStorage::READ);
- cv::FileNode cam_states = config_data["Cameras"];
- cv::FileNode state_config = config_data["States"];
- cv::FileNode strategy_config = config_data["Strategies"];
 
-  for(auto it = cam_data.begin(); it != cam_data.end(); ++it) {
-      std::string cam_name = it->first;
-      Camera cam = it->second;
-      //Initialization
-      StateInitializeParameters state_initialize_params(state_config[cam_states[cam_name]["Initialize"].string()],
-                                                        strategy_config);
-      state_options[cam_name]["INITIALIZATION"] = std::make_shared<TrackingStateInitialize>(optParams, cam, init_data[cam.camName], state_initialize_params,
-                                                       ftracking, thread_status, feature_factory);
-      mState[cam_name] = eTrackingState::INITIALIZATION;
-      state[cam_name] = state_options[cam_name]["INITIALIZATION"];
-
-      //Normal
-      StateNormalParameters state_normal_params(state_config[cam_states[cam_name]["Normal"].string()], strategy_config);
-      state_options[cam_name]["NORMAL"] = std::make_shared<TrackingStateNormal>(optParams, state_normal_params,
-                                                                  ftracking, thread_status, feature_factory);
-    //post initialization - same as normal but force keyframe creation
-      state_options[cam_name]["POSTINIT"] = std::make_shared<TrackingStatePostInitialization>(optParams, state_normal_params,
-                                                                  ftracking, thread_status, feature_factory);
-
-      //Relocalize
-      StateRelocalizeParameters state_relocalize_params(state_config[cam_states[cam_name]["Relocalize"].string()],
-                                                        strategy_config);
-      state_options[cam_name]["RELOCALIZE"] = std::make_shared<TrackingStateRelocalize>(optParams, state_relocalize_params,
-                                                                          ftracking, thread_status, feature_factory);
-
-      StateReInitializeParameters state_reinitialize_params(state_config[cam_states[cam_name]["ReInitialize"].string()],
-                                                            strategy_config);
-      state_options[cam_name]["REINITIALIZE"] = std::make_shared<TrackingStateReInitialize>(optParams, cam, init_data[cam.camName],
-                                                                             state_reinitialize_params,  ftracking, thread_status, feature_factory);
-
-      //Null
-      state_options[cam_name]["NULL"] = std::make_shared<TrackingStateNull>(ftracking, thread_status);
-  }
-
-    tracking_state_transition = std::make_unique<TrackingStateTransitionReinit>(state_options);
-}
- */
-/*
-int Tracking::HandlePostInit(KeyFrame* pKFcurrent,Map* pMap,std::string cam_name ){
-   // if(cam_name == "SLAM"){
-      //  slam_ever_initialized = true;
-     //   mvpLocalMapPoints=pMap->GetAllMapPoints();
-     //   pMap->SetReferenceMapPoints(mvpLocalMapPoints);  //just for visualization - this is junk right now (2021/07/20)
-     //   mpMapDrawer->SetCurrentCameraPose(pKFcurrent->GetPose());
-   // }
-
-   // recent_init[cam_name] = 5; // will rapidly insert 5 more keyframes
-    std::cout << "finished postinitialization: on KF " << pKFcurrent->mnId <<std::endl;
-    return 0;
-}
-*/
 void Tracking::UpdateLastFrame()
 {
     // Update pose according to reference keyframe whose position may be changed by local mapping/loop closing
@@ -479,7 +397,6 @@ void Tracking::InitializeDataStructures(std::string cam_name){
   trajectories[cam_name] = std::make_unique<Trajectory>();
   mState.insert(std::make_pair(cam_name, eTrackingState::NO_IMAGES_YET) );
   init_data.insert(std::make_pair( cam_name, InitializerData() ) );
-  recent_init.insert(std::make_pair(cam_name, 0 ) );
   mLastFrame.insert(std::make_pair(cam_name, Frame() ) );
 
 }
@@ -509,92 +426,5 @@ void Tracking::HandlePostTrackingSuccess(){
 
 }
 
-//void Tracking::TransitionToNewState(std::map<std::string, eTrackingState> &mState, std::map<std::string, std::shared_ptr<TrackingState> > &state, bool bOK) {
-//    eTrackingState next_state = mState[cam_cur]; //assume we stay in the same state
-//    std::shared_ptr<TrackingState> pnext_track_state = state[cam_cur];
-//
-//    if(mState[cam_cur] == eTrackingState::INITIALIZATION){
-//        if(bOK){
-//            state[cam_cur]->clear();  //be sure to clear initializer!
-//            next_state = eTrackingState::POSTINIT;
-//            pnext_track_state = state_options[cam_cur]["POSTINIT"];
-//            recent_init[cam_cur] = 5;
-//        }
-//    } else if (mState[cam_cur] == eTrackingState::POSTINIT){
-//         if( recent_init[cam_cur] > 0 ){
-//             recent_init[cam_cur]--;
-//         } else{
-//             next_state = eTrackingState::NORMAL;
-//             pnext_track_state = state_options[cam_cur]["NORMAL"];
-//         }
-//    }
-//    else if(mState[cam_cur] == eTrackingState::NORMAL) {
-///*
-//        if((mCurrentFrame.mnId % 300) == 0 && mCurrentFrame.mnId>200){
-//            if (cam_cur == "SLAM") {
-//                pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
-//                next_state = eTrackingState::REINITIALIZE;
-//                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: frameid: " << mCurrentFrame.mnId << ", name:" << mCurrentFrame.fimgName <<  std::endl;
-//
-//                if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
-//                    state["Imaging"]  = state_options["Imaging"]["NULL"];
-//                    mState["Imaging"] = eTrackingState::NULL_STATE;
-//                }
-//
-//            }
-//        }
-//        */
-//     //   else
-//    //    if (bOK) {
-//    //        pnext_track_state = state_options[cam_cur]["NORMAL"];
-//    //        next_state = eTrackingState::NORMAL;
-//    //    } else {
-//      //  else
-//        if (!bOK){
-//            if (cam_cur == "SLAM") {
-//                pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
-//                next_state = eTrackingState::REINITIALIZE;
-//                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: frameid: " << mCurrentFrame.mnId << ", name:" << mCurrentFrame.fimgName <<  std::endl;
-//
-//                if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
-//                    state["Imaging"]  = state_options["Imaging"]["NULL"];
-//                    mState["Imaging"] = eTrackingState::NULL_STATE;
-//                }
-//
-//            } else {
-//                next_state = eTrackingState::INITIALIZATION;
-//                pnext_track_state = state_options[cam_cur]["INITIALIZATION"];
-//
-//            }
-//        }
-//    }
-//    else if(mState[cam_cur] == eTrackingState::RELOCALIZATION){
-//        if(bOK){
-//            //std::cout << "transitioning from relocation to normal tracking state" << std::endl;
-//            pnext_track_state = state_options[cam_cur]["NORMAL"];
-//            next_state = eTrackingState::NORMAL;
-//
-//            if(cam_cur == "SLAM" && state.find("Imaging") != state.end()){ //if the SLAM camera was localized and there's an imaging camera, can allow imaging to start operating again
-//                mState["Imaging"] = eTrackingState::INITIALIZATION;
-//                state["Imaging"] = state_options["Imaging"]["INITIALIZATION"];
-//            }
-//        }
-//    } else if(mState[cam_cur] == eTrackingState::REINITIALIZE) {
-//        if (bOK) {
-//          //  HandlePostInit(newKFs.back(), maps[cam_cur].get(),  cam_cur);
-//            next_state = eTrackingState::POSTINIT;
-//            pnext_track_state = state_options[cam_cur]["POSTINIT"];
-//            recent_init[cam_cur] = 5;
-//            state_options[cam_cur]["REINITIALIZE"]->clear();
-//
-//            if (cam_cur == "SLAM" && state.find("Imaging") != state.end()) { //if the SLAM camera was localized and there's an imaging camera, can allow imaging to start operating again
-//                mState["Imaging"] = eTrackingState::INITIALIZATION;
-//                state["Imaging"] = state_options["Imaging"]["INITIALIZATION"];
-//            }
-//        }
-//    }
-//    mState[cam_cur] = next_state;
-//    state[cam_cur] = pnext_track_state;
-//}
 
 } //namespace ORB_SLAM

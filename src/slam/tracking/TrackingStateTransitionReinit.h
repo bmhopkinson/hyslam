@@ -26,6 +26,7 @@ protected:
                              std::ofstream &log, MainThreadsStatus* thread_status_, FeatureFactory* factory);
     std::map< std::string, int> recent_init;
     std::map<std::string, Camera > camera_data;
+    int n_call = 0;
 };
 
 }
