@@ -37,8 +37,13 @@ bool TrackingStateInitialize::initialPoseEstimation( Frame &current_frame, const
 
         if((camera.sensor == 0) && camera.camName != "SLAM"){
             initializer->transformMap(trajectories.at("SLAM").get(), last_slamframe, camera.Tcam);
+            std::shared_ptr<Map> submap = pMap->createSubMap(true);
+           // submap->registerWithParent();//temporary for vizualization and testing
+            initializer->addToMap(submap.get());
+
+        } else {
+            initializer->addToMap(pMap);
         }
-        initializer->addToMap(pMap);
 
         if((camera.sensor == 0)  && camera.camName == "SLAM") {
             HandlePostMonoInitSLAM(pKFinit, pKF2, pMap,trajectories.at("SLAM").get() );

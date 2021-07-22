@@ -331,17 +331,15 @@ namespace HYSLAM{
         return false;
     }
 
-    std::vector<MapPoint*> MapPointDB::getAllMapPoints() {
-        std::vector<MapPoint*> all_mps;
-        all_mps.reserve(mappoint_db.size());
+    std::set<MapPoint*> MapPointDB::getAllMapPoints() {
+        std::set<MapPoint*> all_mps;
         for(auto it = mappoint_db.begin(); it != mappoint_db.end(); ++it){
-            all_mps.push_back(it->first);
+            all_mps.insert(it->first);
         }
 
         for(auto it = sub_dbs.begin(); it != sub_dbs.end(); ++it){
-            std::vector<MapPoint*> all_sub = (*it)->getAllMapPoints();
-            all_mps.reserve(all_mps.size() + std::distance(all_sub.begin(), all_sub.end()));
-            all_mps.insert(all_mps.end(),all_sub.begin(), all_sub.end() );
+            std::set<MapPoint*> all_sub = (*it)->getAllMapPoints();
+            all_mps.insert(all_sub.begin(), all_sub.end() );
         }
         return all_mps;
     }

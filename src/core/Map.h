@@ -90,6 +90,7 @@ public:
     std::shared_ptr<Map> createSubMap(bool set_active);
     std::shared_ptr<Map> getParentMap() const;
     void setParentMap(std::shared_ptr<Map> parentMap);
+    std::vector<std::shared_ptr<Map>> getSubmaps(){return sub_maps;};
     void registerWithParent();
     std::shared_ptr<Map> getRoot();
     bool isActive() const;
@@ -110,6 +111,7 @@ public:
  //   KeyFrameDB* getKeyFrameDB(){return keyframe_db_local.get();}
     long unsigned  KeyFramesInMap();
     std::vector<KeyFrame*> GetAllKeyFrames();
+    std::vector<KeyFrame*> getAllKeyFramesIncludeSubmaps();
 
     //KeyFrameDB functions
     bool update(KeyFrame* pKF);
@@ -128,6 +130,7 @@ public:
     long unsigned int MapPointsInMap();
     void visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts);
     std::vector<MapPoint*> GetAllMapPoints();
+    std::vector<MapPoint*> getAllMapPointsIncludeSubmaps();
     std::vector<MapPoint*> GetReferenceMapPoints();
     bool update(MapPoint* pMP);
 
@@ -195,10 +198,12 @@ protected:
     bool _eraseKeyFrame_(KeyFrame* pKF);
     bool _isKFErasable_(KeyFrame* pKF, bool &erasable);
     bool _getSpanningTreeChildren_(KeyFrame *pKF, std::set<KeyFrame *> &children);
+    std::set<KeyFrame *> _getAllKeyFramesIncludeSubmaps_();
 
     //private mappointDB functions
     bool _addMapPoint_(MapPoint* pMP, KeyFrame* pKF_ref, int idx);
     bool _eraseMapPoint_(MapPoint* pMP);
+    std::set<MapPoint *> _getAllMapPointsIncludeSubmaps_();
 
     bool _addAssociation_(KeyFrame* pKF, int idx, MapPoint* pMP, bool replace);
     bool _eraseAssociation_(KeyFrame* pKF,  MapPoint* pMP);

@@ -205,6 +205,22 @@ std::vector<KeyFrame*> Map::GetAllKeyFrames()
     return std::vector<KeyFrame*>(all_kfs.begin(), all_kfs.end());
 }
 
+std::vector<KeyFrame *> Map::getAllKeyFramesIncludeSubmaps() {
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    std::set<KeyFrame*> all_kfs = _getAllKeyFramesIncludeSubmaps_();
+
+    return std::vector<KeyFrame*>(all_kfs.begin(), all_kfs.end());
+}
+
+std::set<KeyFrame *> Map::_getAllKeyFramesIncludeSubmaps_(){
+    std::set<KeyFrame*> all_kfs =keyframe_db_local->getAllKeyFrames();
+
+    for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+        std::set<KeyFrame*> submap_kfs = (*it)->_getAllKeyFramesIncludeSubmaps_();
+        all_kfs.insert(submap_kfs.begin(), submap_kfs.end());
+    }
+    return all_kfs;
+}
 void Map::AddMapPoint(MapPoint *pMP,KeyFrame* pKF_ref, int idx)
 {
     pKF_ref->associateLandMark(idx, pMP, true);
@@ -307,8 +323,25 @@ void  Map::visibleMapPoints(KeyFrame* pKFi, std::vector<MapPoint*> &visible_mpts
 std::vector<MapPoint*> Map::GetAllMapPoints()
 {
     std::unique_lock<std::mutex> lock(mMutexMap);
-    return mappoint_db_local->getAllMapPoints();
+    std::set<MapPoint*> all_mpts = mappoint_db_local->getAllMapPoints();
+    return std::vector<MapPoint*>(all_mpts.begin(), all_mpts.end());
 
+}
+
+std::vector<MapPoint *> Map::getAllMapPointsIncludeSubmaps() {
+    std::set<MapPoint *> all_mpts = _getAllMapPointsIncludeSubmaps_();
+    return std::vector<MapPoint *>(all_mpts.begin(), all_mpts.end());
+}
+
+std::set<MapPoint *> Map::_getAllMapPointsIncludeSubmaps_() {
+    std::unique_lock<std::mutex> lock(mMutexMap);
+    std::set<MapPoint *> all_mpts = mappoint_db_local->getAllMapPoints();
+
+    for(auto it = sub_maps.begin(); it != sub_maps.end(); ++it){
+        std::set<MapPoint *> submap_mpts = (*it)->_getAllMapPointsIncludeSubmaps_();
+        all_mpts.insert(submap_mpts.begin(), submap_mpts.end());
+    }
+    return all_mpts;
 }
 
 std::vector<MapPoint*> Map::GetReferenceMapPoints()
@@ -420,8 +453,8 @@ void Map::clear()
         (*it)->clear();
     }
 
-    std::vector<MapPoint*> mpts_all = mappoint_db_local->getAllMapPoints();
-    for(std::vector<MapPoint*>::iterator sit=mpts_all.begin(), send=mpts_all.end(); sit!=send; sit++) {
+    std::set<MapPoint*> mpts_all = mappoint_db_local->getAllMapPoints();
+    for(std::set<MapPoint*>::iterator sit=mpts_all.begin(), send=mpts_all.end(); sit!=send; sit++) {
         delete *sit;
     }
 
@@ -633,7 +666,9 @@ bool Map::_isLocalOrigin_(KeyFrame *pKForg, bool &is_origin, Tse3Parent &tse3Par
         }
     }
     return false;
-    return false;
 }
+
+
+
 
 } //namespace ORB_SLAM

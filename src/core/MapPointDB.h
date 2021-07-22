@@ -126,7 +126,7 @@ namespace HYSLAM{
     public:
         using MapPointDB_t = std::map< MapPoint*, std::unique_ptr<MapPointDBEntry> >;
         bool inDB(MapPoint* pMP);
-        std::vector<MapPoint*> getAllMapPoints();
+        std::set<MapPoint*> getAllMapPoints();
         long unsigned int numMapPoints();
         int addEntry(MapPoint* pMP, KeyFrame* pKF_ref, int idx);
         int eraseEntry(MapPoint* pMP);  //does the work of SetBadFlag

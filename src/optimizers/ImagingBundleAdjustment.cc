@@ -59,7 +59,7 @@ ImagingBundleAdjustment::ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_tr
 
 void ImagingBundleAdjustment::Run(){
   //find continuous segements of tracked Images
-  FindTrackedSegments();
+ // FindTrackedSegments();
 
   //determine horn transforms between  continous tracked segments and slam cam positions
   DetermineSimilarityTransforms();
@@ -276,223 +276,215 @@ void ImagingBundleAdjustment::AssignStrandedKeyFrames(){
 }
 
 void ImagingBundleAdjustment::DetermineSimilarityTransforms(){
+    std::cout << "DetermineSimilarityTransforms()"  << std::endl;
+    std::vector<std::shared_ptr<Map>> submaps = pMap->getSubmaps();
+    for(auto it = submaps.begin(); it != submaps.end(); ++it){
+        std::shared_ptr<Map> submap = *it;
+        std::vector<KeyFrame*> kfs_submap = submap->GetAllKeyFrames();
 
-  for(TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit){
-    Segment* seg = &(*vit);
-    std::set<KeyFrame*> seg_kfs = seg->key_frames;
+        cv::Mat P1; //new coords
+        cv::Mat P2; //old coords
+        int nKF = 0;
+        for(auto it2 = kfs_submap.begin(); it2 != kfs_submap.end(); ++it2){
+            KeyFrame* pKFi = *it2;
 
-    cv::Mat P1; //new coords
-    cv::Mat P2; //old coords
-    int nKF = 0;
-    for(std::set<KeyFrame*>::iterator sit = seg_kfs.begin(); sit != seg_kfs.end(); ++sit){
-      KeyFrame* pKFi = *sit;
+            cv::Mat Tslam_i =  Converter::Iso3tocvMat( trajectory.poseAtTime(pKFi->mTimeStamp) ); //in camera to world convention
+            Tslam_i = Tslam_i * pKFi->camera.Tcam; //transform from slam cam position to this cam's estimate position
+            cv::Mat t_slam_cv(1,3, CV_32F);
+            t_slam_cv.at<float>(0,0) = Tslam_i.at<float>(0,3);
+            t_slam_cv.at<float>(0,1) = Tslam_i.at<float>(1,3);
+            t_slam_cv.at<float>(0,2) = Tslam_i.at<float>(2,3);
+            P1.push_back(t_slam_cv.clone());
+            cv::Mat p_img = pKFi->GetCameraCenter().t();
+            P2.push_back(p_img);
 
-//      Isometry3 p_slam =  trajectory.poseAtTime(pKFi->mTimeStamp); //in camera to world convention
-//      Eigen::Matrix<double, 3, 1> t_slam = p_slam.translation();
-      cv::Mat Tslam_i =  Converter::Iso3tocvMat( trajectory.poseAtTime(pKFi->mTimeStamp) ); //in camera to world convention
-      Tslam_i = Tslam_i * pKFi->camera.Tcam; //transform from slam cam position to this cam's estimate position
-      cv::Mat t_slam_cv(1,3, CV_32F);
-      t_slam_cv.at<float>(0,0) = Tslam_i.at<float>(0,3);
-      t_slam_cv.at<float>(0,1) = Tslam_i.at<float>(1,3);
-      t_slam_cv.at<float>(0,2) = Tslam_i.at<float>(2,3);
-      P1.push_back(t_slam_cv.clone());
-      cv::Mat p_img = pKFi->GetCameraCenter().t();
-      P2.push_back(p_img);
-
-      nKF++;
-    }
-
-    if(nKF>4){
-        cv::Mat P1_t = P1.t();
-        cv::Mat P2_t = P2.t();
-        bool FixScale = 0; //fixed scale = 1; variable scale = 0
-        cv::Mat Rhorn; //rotation matrix computed by ComputeSim3_Horn
-        cv::Mat Thorn = ComputeSim3_Horn( P1_t, P2_t, FixScale, Rhorn);
-
-        bool validSim3 = 1;
-        for(int i = 0; i < Thorn.cols; i++){    //ensure sim3 is valid - with few data points it may not be//this test should be done in ComputeSim3_Horn function
-          for(int j = 0; j < Thorn.rows; j++){
-             if(isnan(Thorn.at<float>(i,j))){
-                  validSim3 = 0;
-             }
-          }
+            nKF++;
         }
 
-        if(validSim3){
-          seg->Tsim = Thorn.clone();
-          seg->Rsim = Rhorn.clone();
-        //transforms.push_back( std::make_pair(Thorn.clone(), Rhorn.clone()) );
+        if(nKF>4){
+            cv::Mat P1_t = P1.t();
+            cv::Mat P2_t = P2.t();
+            bool FixScale = 0; //fixed scale = 1; variable scale = 0
+            cv::Mat Rhorn; //rotation matrix computed by ComputeSim3_Horn
+            cv::Mat Thorn = ComputeSim3_Horn( P1_t, P2_t, FixScale, Rhorn);
+
+            bool validSim3 = 1;
+            for(int i = 0; i < Thorn.cols; i++){    //ensure sim3 is valid - with few data points it may not be//this test should be done in ComputeSim3_Horn function
+                for(int j = 0; j < Thorn.rows; j++){
+                    if(isnan(Thorn.at<float>(i,j))){
+                        validSim3 = 0;
+                    }
+                }
+            }
+
+            if(validSim3){
+                SubmapData submap_datum;
+                submap_datum.Tsim = Thorn.clone();
+                submap_datum.Rsim = Rhorn.clone();
+                submap_data[submap] = submap_datum;
+                //transforms.push_back( std::make_pair(Thorn.clone(), Rhorn.clone()) );
+            } else {
+                SubmapData submap_datum;
+                cv::Mat emptyMat;
+                submap_datum.Tsim = emptyMat.clone();
+                submap_datum.Rsim = emptyMat.clone();
+                submap_data[submap] = submap_datum;
+            }
+
         } else {
-          cv::Mat emptyMat;
-          //transforms.push_back( std::make_pair(emptyMat.clone(), emptyMat.clone()) );
-          seg->Tsim = emptyMat.clone();
-          seg->Rsim = emptyMat.clone();
+            SubmapData submap_datum;
+            cv::Mat emptyMat;
+            submap_datum.Tsim = emptyMat.clone();
+            submap_datum.Rsim = emptyMat.clone();
+            submap_data[submap] = submap_datum;
         }
-
-    } else {
-      cv::Mat emptyMat;
-      //transforms.push_back( std::make_pair(emptyMat.clone(), emptyMat.clone()) );
-      seg->Tsim = emptyMat.clone();
-      seg->Rsim = emptyMat.clone();
-
-    }
 
   } //end for loop
 
 }
 
 void ImagingBundleAdjustment::ApplySimilarityTransforms(){ //KFs and mpts to which similarity is succesfully applied will be added to optimization lists
-  for(TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit){
-    Segment* seg = &(*vit);
-    std::set<KeyFrame*> seg_kfs = seg->key_frames;
-    cv::Mat Thorn =  seg->Tsim;
-    cv::Mat Rhorn =  seg->Rsim;
+    std::cout << "ApplySimilarityTransforms()"  <<std::endl;
+    std::vector<std::shared_ptr<Map>> submaps = pMap->getSubmaps();
+    for(auto it = submaps.begin(); it != submaps.end(); ++it) {
+        std::shared_ptr<Map> submap = *it;
+        std::vector<KeyFrame *> kfs_submap = submap->GetAllKeyFrames();
+        std::vector<MapPoint *> mpts_submap = submap->GetAllMapPoints();
 
-    if(Thorn.empty()){
-      continue;
-    }
+        SubmapData submap_datum = submap_data[submap];
+        cv::Mat Thorn = submap_datum.Tsim;
+        cv::Mat Rhorn = submap_datum.Rsim;
 
-    std::set<MapPoint*> segment_mappts_all;
-    std::set<MapPoint*> segment_mappts_valid;
-    for(std::set<KeyFrame*>::iterator sit = seg_kfs.begin(); sit != seg_kfs.end(); ++sit){
-      KeyFrame* pKFi = *sit;
-      if(pKFi->Thorn_applied)
-      { continue; }
+        if (Thorn.empty()) {
+            continue;
+        }
 
-      pKFi->storePose();
+        for (std::vector<KeyFrame *>::iterator sit = kfs_submap.begin(); sit != kfs_submap.end(); ++sit) {
+            KeyFrame *pKFi = *sit;
+            if (pKFi->Thorn_applied) { continue; }
 
-      //apply similarity transform to poses - gets a little complicated b/c rotatation must remain a pure rotation
-      cv::Mat R_old = pKFi->GetRotation();
-      cv::Mat R_new = R_old*Rhorn.inv();
-      cv::Mat Ow_old = pKFi->GetCameraCenter();
-      Ow_old.push_back(cv::Mat::ones(1,1,CV_32F)); //make homogeneous
-      cv::Mat Ow_new = Thorn * Ow_old;
-      cv::Mat t_cw_new = R_new * (-1*Ow_new.rowRange(0,3));
-      cv::Mat Tcw_new = cv::Mat::eye(4,4,CV_32F);
-      t_cw_new.copyTo( Tcw_new.rowRange(0,3).col(3) );
-      R_new.copyTo( Tcw_new.rowRange(0,3).colRange(0,3) );
+            pKFi->storePose();
 
-      pKFi->SetPose(Tcw_new);
-      pKFi->Thorn_applied = true;
-      KFs_to_optimize.push_back(pKFi);
+            //apply similarity transform to poses - gets a little complicated b/c rotatation must remain a pure rotation
+            cv::Mat R_old = pKFi->GetRotation();
+            cv::Mat R_new = R_old * Rhorn.inv();
+            cv::Mat Ow_old = pKFi->GetCameraCenter();
+            Ow_old.push_back(cv::Mat::ones(1, 1, CV_32F)); //make homogeneous
+            cv::Mat Ow_new = Thorn * Ow_old;
+            cv::Mat t_cw_new = R_new * (-1 * Ow_new.rowRange(0, 3));
+            cv::Mat Tcw_new = cv::Mat::eye(4, 4, CV_32F);
+            t_cw_new.copyTo(Tcw_new.rowRange(0, 3).col(3));
+            R_new.copyTo(Tcw_new.rowRange(0, 3).colRange(0, 3));
 
-      //now collect mappoints
-      std::set<MapPoint*> vpMPs = pKFi->GetMapPoints();
-      for(std::set<MapPoint*>::iterator mpit = vpMPs.begin(); mpit != vpMPs.end(); ++mpit){
-        segment_mappts_all.insert(*mpit);
-    //    std::cout << "(*mpit)->mnId: " << (*mpit)->mnId << std::endl;
-      }
+            pKFi->SetPose(Tcw_new);
+            pKFi->Thorn_applied = true;
+            KFs_to_optimize.push_back(pKFi);
 
-    } //end for loop on keyframes in segment
+        } //end for loop on keyframes in segment
 
-    //tranfrom  map points - make sure transformation is only applied once per mappoint, but that all relevant map points are transfered
-    for(std::set<MapPoint*>::iterator mpit = segment_mappts_all.begin(); mpit != segment_mappts_all.end(); ++mpit){
-      MapPoint* mpt = *mpit;
+
+        for (auto mpit = mpts_submap.begin(); mpit != mpts_submap.end(); ++mpit) {
+            MapPoint *mpt = *mpit;
 //      std::cout << "mpt->mnId: " << mpt->mnId << std::endl;
-      if(!mpt->Thorn_applied){
-        mpt->applyTransform(Thorn);
-        mpt->flagTransformApplied();
-        mpts_to_optimize.push_back(mpt);
-        segment_mappts_valid.insert(mpt);
-
-      }
-    }
-    seg->map_points = segment_mappts_valid;
-
-  } //end for loop on segments
+            if (!mpt->Thorn_applied) {
+                mpt->applyTransform(Thorn);
+                mpt->flagTransformApplied();
+                mpts_to_optimize.push_back(mpt);
+            }
+        }
+    }//end loop on submaps
 
 }
 
 void ImagingBundleAdjustment::RotatePosestoAlign(){
+    std::cout << "RotatePosesToAlign()"  << std::endl;
   //first clear all Thorn_applied flags for key_frames, mappts have been exclusively assigned to segments so shouldn't be an issue
-  for(TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit){
-    Segment* seg = &(*vit);
-    std::set<KeyFrame*> seg_kfs = seg->key_frames;
-    for(std::set<KeyFrame*>::iterator sit = seg_kfs.begin(); sit != seg_kfs.end(); ++sit){
-      KeyFrame* pKFi = *sit;
-      pKFi->Thorn_applied = false;
-    }
-  }
-
-  //calculate rotations
-  int  i = 0;
-  for(TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit){
-    Segment* seg = &(*vit);
-    std::set<KeyFrame*> seg_kfs = seg->key_frames;
-    std::vector<cv::Mat> Tslam;
-    std::vector<cv::Mat> Tseg;
-    std::string Tslam_fname = "./data/Tslam_data_"+std::to_string(i) + ".txt";
-    std::string Tseg_fname  = "./data/Tseg_data_" +std::to_string(i) + ".txt";
-    std::ofstream Tslam_file;
-    std::ofstream Tseg_file;
-    Tslam_file.open(Tslam_fname.c_str());
-    Tseg_file.open(Tseg_fname.c_str());
-    int j = 0;
-
-    if(seg->Tsim.empty()){ //couldnt' determine valid transform previously so skip here again
-      continue;
+    for(auto it = KFs_to_optimize.begin(); it != KFs_to_optimize.end(); ++it){
+        (*it)->Thorn_applied = false;
     }
 
-    for(std::set<KeyFrame*>::iterator sit = seg_kfs.begin(); sit != seg_kfs.end(); ++sit){
-      KeyFrame* pKFi = *sit;
-      cv::Mat Tslam_i =  Converter::Iso3tocvMat( trajectory.poseAtTime(pKFi->mTimeStamp) ); //in camera to world convetion
-      Tslam_i = Tslam_i * pKFi->camera.Tcam; //transform from slam cam position to this cam's estimate position
-      Tslam_i = Tslam_i.inv();
-      Tslam.push_back( Tslam_i.clone() );
-      Tseg.push_back( pKFi->GetPose() );  //in world to camera convention
+    //calculate rotations
+    int  i = 0;
+    std::vector<std::shared_ptr<Map>> submaps = pMap->getSubmaps();
+    for(auto it = submaps.begin(); it != submaps.end(); ++it) {
+        std::shared_ptr<Map> submap = *it;
+        std::vector<KeyFrame *> kfs_submap = submap->GetAllKeyFrames();
+        std::vector<MapPoint *> mpts_submap = submap->GetAllMapPoints();
+        SubmapData submap_datum = submap_data[submap];
 
-      Tslam_file << j << "\n" << Tslam_i << std::endl;
-      Tseg_file << j << "\n" << pKFi->GetPose() << std::endl;
-      j++;
+        std::vector<cv::Mat> Tslam;
+        std::vector<cv::Mat> Tseg;
+        std::string Tslam_fname = "./data/Tslam_data_"+std::to_string(i) + ".txt";
+        std::string Tseg_fname  = "./data/Tseg_data_" +std::to_string(i) + ".txt";
+        std::ofstream Tslam_file;
+        std::ofstream Tseg_file;
+        Tslam_file.open(Tslam_fname.c_str());
+        Tseg_file.open(Tseg_fname.c_str());
+        int j = 0;
+
+        if(submap_datum.Tsim.empty()){ //couldnt' determine valid transform previously so skip here again
+            continue;
+        }
+
+        for(auto sit = kfs_submap.begin(); sit != kfs_submap.end(); ++sit){
+            KeyFrame* pKFi = *sit;
+            cv::Mat Tslam_i =  Converter::Iso3tocvMat( trajectory.poseAtTime(pKFi->mTimeStamp) ); //in camera to world convetion
+            Tslam_i = Tslam_i * pKFi->camera.Tcam; //transform from slam cam position to this cam's estimate position
+            Tslam_i = Tslam_i.inv();
+            Tslam.push_back( Tslam_i.clone() );
+            Tseg.push_back( pKFi->GetPose() );  //in world to camera convention
+
+            Tslam_file << j << "\n" << Tslam_i << std::endl;
+            Tseg_file << j << "\n" << pKFi->GetPose() << std::endl;
+            j++;
+
+        }
+        Tslam_file.close();
+        Tseg_file.close();
+        i++;
+
+        cv::Mat Talign = PoseAlignmentTransform(Tslam, Tseg);
+        submap_datum.Talign = Talign.clone();
+        cv::Mat Talign_inv = Talign.inv();
+        submap_data[submap] = submap_datum;
+
+
+        //apply rotation
+        for(auto sit = kfs_submap.begin(); sit != kfs_submap.end(); ++sit){
+            KeyFrame* pKFi = *sit;
+            if(pKFi->Thorn_applied)
+            { continue; }
+
+            cv::Mat Tcw_old = pKFi->GetPose();
+            cv::Mat Tcw_new = Tcw_old*Talign_inv;
+
+            pKFi->SetPose(Tcw_new);
+            pKFi->Thorn_applied = true;
+
+        }
+
+        for(auto sit = mpts_submap.begin(); sit != mpts_submap.end(); ++sit){
+            MapPoint* mpt = *sit;
+            mpt->applyTransform(Talign);
+            pMap->update(mpt);
+        }
 
     }
-    Tslam_file.close();
-    Tseg_file.close();
-    i++;
-
-    cv::Mat Talign = PoseAlignmentTransform(Tslam, Tseg);
-    seg->Talign = Talign.clone();
-    cv::Mat Talign_inv = Talign.inv();
-
-    //apply rotation
-    for(std::set<KeyFrame*>::iterator sit = seg_kfs.begin(); sit != seg_kfs.end(); ++sit){
-      KeyFrame* pKFi = *sit;
-      if(pKFi->Thorn_applied)
-      { continue; }
-
-      cv::Mat Tcw_old = pKFi->GetPose();
-      cv::Mat Tcw_new = Tcw_old*Talign_inv;
-
-//      cv::Mat Tcw_cur = pKFi->GetPose();
-//      cv::Mat Tcw_new = Tcw_cur;
-//      R_new.copyTo( Tcw_new.rowRange(0,3).colRange(0,3) );
-
-      pKFi->SetPose(Tcw_new);
-      pKFi->Thorn_applied = true;
-
-    }
-
-    std::set<MapPoint*> map_points = seg->map_points;
-    for(std::set<MapPoint*>::iterator sit = map_points.begin(); sit != map_points.end(); ++sit){
-      MapPoint* mpt = *sit;
-      mpt->applyTransform(Talign);
-    //  mpt->UpdateNormalAndDepth();
-      pMap->update(mpt);
-    }
-
-  }
-
 }
 
 void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 //attempt to fuse any visible untracked mappoints into keyframes - especially hoping to get inter-segment viewing of mappoints
-  //std::cout << "FindAdditionalMapPointMatches" << std::endl;
-  for(TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit){
+    std::cout << "FindAdditionalMapPointMatches" << std::endl;
 
-    Segment* seg = &(*vit);
-    std::set<KeyFrame*> seg_kfs = seg->key_frames;
-    for(std::set<KeyFrame*>::iterator sit = seg_kfs.begin(); sit != seg_kfs.end(); ++sit){
-      KeyFrame* pKFi = *sit;
+  //all submaps have been transformed into a common reference frame and "registered" so make this official:
+    std::vector<std::shared_ptr<Map>> submaps = pMap->getSubmaps();
+    for(auto it = submaps.begin(); it != submaps.end(); ++it) {
+        (*it)->registerWithParent();
+    }
+
+    std::vector<KeyFrame*> all_kfs = pMap->GetAllKeyFrames();
+    for(auto it = all_kfs.begin(); it != all_kfs.end(); ++it){
+      KeyFrame* pKFi = *it;
       std::vector<MapPoint*> visible_mpts, fuse_candidates;
       pMap->visibleMapPoints(pKFi, visible_mpts);
 
@@ -559,8 +551,6 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 
 
     }
-  }
-
 }
 
 }

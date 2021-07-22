@@ -212,13 +212,14 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const
 
 void System::RunImagingBundleAdjustment(){
     //stop LocalMapping and LoopClosing
+    std::cout << "Checking to see if the imaging camera exists and was used" << std::endl;
     bool has_imaging_cam = false;
     for(auto it = maps.begin(); it != maps.end(); ++it){
         std::string cam_name = it->first;
         if(cam_name == "Imaging") {
             //there is an imaging camera, but was it used
             Map* pMap = it->second.get();
-            std::vector<KeyFrame*> vKFs = pMap->GetAllKeyFrames();
+            std::vector<KeyFrame*> vKFs = pMap->getAllKeyFramesIncludeSubmaps();
             if(vKFs.size() >1) {  //need at least 2 keyframes for bundle adjustment
                 has_imaging_cam = true;
                 break;

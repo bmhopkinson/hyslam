@@ -47,7 +47,7 @@ void MapDrawer::DrawMapPoints()
   for(std::map<std::string, std::shared_ptr<Map>>::const_iterator mit= maps.begin(); mit != maps.end(); ++mit){
     std::string cam_name = (*mit).first;
     std::shared_ptr<Map> mpMap = (*mit).second;
-    const std::vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
+    const std::vector<MapPoint*> &vpMPs = mpMap->getAllMapPointsIncludeSubmaps();
     const std::vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints();
 
     std::set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
@@ -95,7 +95,7 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
       std::string cam_name = (*mit).first;
       std::shared_ptr<Map> mpMap = (*mit).second;
 
-      const std::vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+      const std::vector<KeyFrame*> vpKFs = mpMap->getAllKeyFramesIncludeSubmaps();
 
       if(draw_data.KFs)
       {
