@@ -39,32 +39,33 @@ FeatureExtractorSettings SURFFactory::getFeatureExtractorSettings(){
     return extractor_settings;
 }
 
-void SURFFactory::LoadSettings(std::string settings_path, FeatureExtractorSettings &extractor_settings_, FeatureMatcherSettings &matcher_settings_){
+void SURFFactory::LoadSettings(std::string settings_path, std::string type)
+{
     cv::FileStorage fSettings(settings_path, cv::FileStorage::READ);
 
-    cv::FileNode extract = fSettings["SURF"]["Extractor"];
-    extractor_settings_.nFeatures = extract["N_Features"];
-    extractor_settings_.nLevels = extract["N_Levels"];
-    extractor_settings_.init_threshold = extract["threshold_init"];
-    extractor_settings_.min_threshold = extract["threshold_min"];
-    extractor_settings_.N_CELLS = extract["N_Cells"];
+    cv::FileNode extract = fSettings["SURF"][type]["Extractor"];
+    extractor_settings.nFeatures = extract["N_Features"];
+    extractor_settings.nLevels = extract["N_Levels"];
+    extractor_settings.init_threshold = extract["threshold_init"];
+    extractor_settings.min_threshold = extract["threshold_min"];
+    extractor_settings.N_CELLS = extract["N_Cells"];
 
-    cv::FileNode match = fSettings["SURF"]["Matcher"];
-    matcher_settings_.TH_HIGH = match["threshold_high"];
-    matcher_settings_.TH_LOW  = match["threshold_low"];
+    cv::FileNode match = fSettings["SURF"][type]["Matcher"];
+    matcher_settings.TH_HIGH = match["threshold_high"];
+    matcher_settings.TH_LOW  = match["threshold_low"];
 
 
-    vocab_path = fSettings["SURF"]["Vocabulary"].string();
+    vocab_path = fSettings["SURF"][type]["Vocabulary"].string();
 
     std::cout << std::endl  << "SURF Extractor Parameters: " << std::endl;
-    std::cout << "- Number of Features: " << extractor_settings_.nFeatures << std::endl;
-    std::cout << "- Scale Levels: " << extractor_settings_.nLevels << std::endl;
-    std::cout << "- Scale Factor: " << extractor_settings_.fScaleFactor << std::endl;
-    std::cout << "- Initial Extractor Threshold: " << extractor_settings_.init_threshold << std::endl;
-    std::cout << "- Minimum Extractor Threshold: " << extractor_settings_.min_threshold << std::endl;
+    std::cout << "- Number of Features: " << extractor_settings.nFeatures << std::endl;
+    std::cout << "- Scale Levels: " << extractor_settings.nLevels << std::endl;
+    std::cout << "- Scale Factor: " << extractor_settings.fScaleFactor << std::endl;
+    std::cout << "- Initial Extractor Threshold: " << extractor_settings.init_threshold << std::endl;
+    std::cout << "- Minimum Extractor Threshold: " << extractor_settings.min_threshold << std::endl;
 
-    std::cout << "matching threshold HIGH: " << matcher_settings_.TH_HIGH << std::endl;
-    std::cout << "matching threshold LOW: " << matcher_settings_.TH_LOW<< std::endl;
+    std::cout << "matching threshold HIGH: " << matcher_settings.TH_HIGH << std::endl;
+    std::cout << "matching threshold LOW: " << matcher_settings.TH_LOW<< std::endl;
     fSettings.release();
 
 }
