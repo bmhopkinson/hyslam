@@ -18,31 +18,7 @@
 
 namespace HYSLAM
 {
-
-
-Segment::Segment(){}
-
-Segment::Segment(const Segment &seg){
-  key_frames = seg.key_frames;
-  map_points = seg.map_points;
-  Tsim = seg.Tsim.clone();
-  Rsim = seg.Rsim.clone(); // deep copy all cv::Mat
-  Talign = seg.Talign.clone();
-}
-
-Segment& Segment::operator=(const Segment &seg){
-  if(this == &seg)  //check for self assignment
-    return *this;
-
-  key_frames = seg.key_frames;
-  map_points = seg.map_points;
-  Tsim = seg.Tsim.clone();
-  Rsim = seg.Rsim.clone(); // deep copy all cv::Mat
-  Talign = seg.Talign.clone();
-
-  return *this;
-
-}
+    
 
 ImagingBundleAdjustment::ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_trajectory_, g2o::Trajectory &slam_trajectory_, FeatureFactory* factory, optInfo optParams_)
     : img_trajectory(img_trajectory_), feature_factory(factory),  BundleAdjustment( pMap_, slam_trajectory_, optParams_){
@@ -58,13 +34,11 @@ ImagingBundleAdjustment::ImagingBundleAdjustment(Map* pMap_,  Trajectory* img_tr
 }
 
 void ImagingBundleAdjustment::Run(){
-  //find continuous segements of tracked Images
- // FindTrackedSegments();
 
-  //determine horn transforms between  continous tracked segments and slam cam positions
+  //determine horn transforms between  submaps using  slam cam positions
   DetermineSimilarityTransforms();
 
-  // apply horn transform to mappoints (careful not to apply more than once) and poses
+  // apply horn transform to keyframes  and mappoints (careful not to apply more than once)
   ApplySimilarityTransforms();
   std::cout << "applied similarity transforms" << std::endl;
   std::this_thread::sleep_for( std::chrono::seconds(5) );
@@ -72,7 +46,7 @@ void ImagingBundleAdjustment::Run(){
   RotatePosestoAlign();
   std::cout << "rotated poses" << std::endl;
   std::this_thread::sleep_for( std::chrono::seconds(5) );
-  FindAdditionalMapPointMatches(); // THIS ISN'T WORKING RIGHT NOW !!!!!!!!!!!!!!!!!!!!!!!
+  FindAdditionalMapPointMatches();
 
   //eventually: handle untracked frames
 
@@ -176,104 +150,6 @@ void ImagingBundleAdjustment::Run(){
 
 }
 
-
-void ImagingBundleAdjustment::FindTrackedSegments(){
-  //std::vector<TrajectoryElement> traj_elements = img_trajectory.getTrajectoryElements();
-
-  //for(std::vector<TrajectoryElement>::iterator vit = traj_elements.begin(); vit != traj_elements.end(); ++vit){
-  for(auto vit = img_trajectory->begin(); vit != img_trajectory->end(); ++vit){
-    std::set<KeyFrame*>  segment_kfs;  //in full trajectory KFs are repeated many times as references for individual frames
-    TrajectoryElement te_cur = *vit;
-    while(te_cur.tracking_good){
-        segment_kfs.insert(te_cur.pRefKF);
-
-        if(vit + 1 == img_trajectory->end()){
-          break;
-        } else {
-          ++vit;
-          te_cur = *vit;
-          //std::cout << "te_cur.time_stamp: " <<te_cur.time_stamp << endl;
-        }
-
-    }
-
-    if(!segment_kfs.empty()){
-      Segment tracked_segment;
-      tracked_segment.key_frames = segment_kfs;
-      segments.push_back(tracked_segment);
-      //std::cout << "new segment " << endl;
-    }
-  }//end for loop
-
-  AssignStrandedKeyFrames();
-
-}
-
-void ImagingBundleAdjustment::AssignStrandedKeyFrames(){
-    std::map<KeyFrame*, int> KF_to_segment;
-    std::set<KeyFrame*> KFs_in_segments;
-    int i = 0;
-    for( TrackedSegments::iterator vit= segments.begin(); vit != segments.end(); ++vit, ++i) {
-        Segment *seg = &(*vit);
-        std::set<KeyFrame *> seg_kfs = seg->key_frames;
-        for(auto kfit = seg_kfs.begin(); kfit != seg_kfs.end(); ++kfit){
-            KF_to_segment[*kfit] = i;  //it's conceivable that KFs are in multiple segments and so only last will be recorded here, but that should be ok
-            KFs_in_segments.insert(*kfit);
-        }
-    }
-
-    std::vector<KeyFrame*> KFs_in_map_temp = pMap->GetAllKeyFrames();
-    std::set<KeyFrame*> KFs_in_map(KFs_in_map_temp.begin(), KFs_in_map_temp.end());
-
-    std::set<KeyFrame*> KFs_stranded;
-    std::set_difference(KFs_in_map.begin(), KFs_in_map.end(), KFs_in_segments.begin(), KFs_in_segments.end(),
-                        std::inserter(KFs_stranded, KFs_stranded.end())  );
-
-    //try to place stranded frames into segments
-    //first use parent in spanning tree, if not try children
-    for(auto it = KFs_stranded.begin(); it != KFs_stranded.end(); ++it) {
-        KeyFrame *pKF = *it;
-        KeyFrame *KFparent = pKF->GetParent();
-        if (KFparent) {
-            auto mit = KF_to_segment.find(KFparent);
-            if (mit != KF_to_segment.end()) {
-                int idx_seg = mit->second;
-                segments[idx_seg].key_frames.insert(pKF);
-               // std::cout << "based on parent, found a segment for KF" << pKF->mnId << " in segment: " << idx_seg
-                 //         << ", based on parent KF: " << KFparent->mnId << std::endl;
-                it = KFs_stranded.erase(it);
-            }
-        }
-    }
-
-    for(auto it = KFs_stranded.begin(); it != KFs_stranded.end(); ++it){
-        KeyFrame* pKF = *it;
-        std::set<KeyFrame*> KFchildren = pMap->getSpanningTreeChildren(pKF);
-        for(auto cit = KFchildren.begin(); cit != KFchildren.end(); ++cit){
-            KeyFrame* KFchild = *cit;
-            auto mit = KF_to_segment.find(KFchild);
-            if(mit != KF_to_segment.end()){
-                int idx_seg = mit->second;
-                segments[idx_seg].key_frames.insert(pKF);
-               // std::cout << "based on child, found a segment for KF"  << pKF->mnId << " in segment: "  << idx_seg << ", based on child KF: " << KFchild->mnId << std::endl;
-                it = KFs_stranded.erase(it);
-                break;
-            }
-        }
-    }
-
-   // std::cout << "unable to assign: " << KFs_stranded.size() << " stranded KeyFrames" << std::endl;
-    //set unassigned keyframes "bad" e.g. erase them
-
-    for(auto it = KFs_stranded.begin(); it != KFs_stranded.end(); ++it) {
-        KeyFrame *pKF = *it;
-      //  std::cout << "about to set KF bad: " << pKF->mnId << std::endl;
-        pMap->SetBadKeyFrame(pKF);
-    }
-
-// std::cout << "finished setting stranded KeyFrames as bad   " << std::endl;
-
-}
 
 void ImagingBundleAdjustment::DetermineSimilarityTransforms(){
     std::cout << "DetermineSimilarityTransforms()"  << std::endl;

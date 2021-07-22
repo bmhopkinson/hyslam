@@ -55,21 +55,6 @@
 namespace HYSLAM
 {
 
-
-class Segment {
-  public:
-    Segment();
-    Segment(const Segment &seg);
-    Segment& operator=(const Segment &seg);
-    std::set<KeyFrame*> key_frames;
-    std::set<MapPoint*> map_points;
-    cv::Mat Tsim; //similarity transform to align segment with slam poses, computed by Horn 1987 currently
-    cv::Mat Rsim; // rotation matrix associated with the above similarity
-    cv::Mat Talign; //Transform to align pose vectors - Tsim is often not sufficient b/c segments are often nearly linear or planar
-};
-
-typedef std::vector< Segment > TrackedSegments;
-
 class ImagingBundleAdjustment : public BundleAdjustment{
 
     class SubmapData{
@@ -84,7 +69,6 @@ public:
 
 private:
   Trajectory* img_trajectory;
-  TrackedSegments segments;
   const double chi2_thresh_mono = 5.991;   //outlier thresholds
   const double chi2_thresh_stereo = 7.815;
   FeatureFactory* feature_factory;
@@ -93,9 +77,6 @@ private:
   std::list<MapPoint*> mpts_to_optimize;
   std::map<std::shared_ptr<Map>, SubmapData> submap_data;
 
-
-  void FindTrackedSegments();
-  void AssignStrandedKeyFrames();
   void DetermineSimilarityTransforms();
   void ApplySimilarityTransforms();
   void RotatePosestoAlign();
