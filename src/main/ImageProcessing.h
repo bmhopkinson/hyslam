@@ -47,10 +47,19 @@
 #include <opencv2/core/core.hpp>
 #include <string>
 #include <map>
+#include <memory>
 
 namespace HYSLAM {
 
 class ImageProcessing {
+
+    class Extractors{
+        public:
+        std::shared_ptr<FeatureExtractor> extractor_left;
+        std::shared_ptr<FeatureExtractor> extractor_right;
+        std::shared_ptr<FeatureExtractor> extractor_init;
+    };
+
 public:
     ImageProcessing(FeatureFactory* factory_, const std::string &strSettingPath, std::map<std::string, Camera> cam_data_);
     void ProcessMonoImage(const cv::Mat &im, const Imgdata img_data, const SensorData &sensor_data, eTrackingState tracking_state);
@@ -64,8 +73,7 @@ private:
 
     ThreadSafeQueue<ImageFeatureData>* output_queue;
 
-    FeatureExtractor* extractor_left, *extractor_right;
-    FeatureExtractor* extractor_init;
+    std::map<std::string, Extractors> extractors;
 
     std::string cam_cur;  //current camera
     std::map<std::string, Camera> cam_data;

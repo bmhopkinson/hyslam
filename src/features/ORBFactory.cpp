@@ -11,7 +11,7 @@
 namespace HYSLAM {
 
 ORBFactory::ORBFactory() {
-    // set default extractor settings;
+    // set default extractor and matcher settings;
     extractor_settings.nFeatures = 1000;
     extractor_settings.fScaleFactor = 1.2;
     extractor_settings.nLevels = 8;
@@ -19,6 +19,8 @@ ORBFactory::ORBFactory() {
     extractor_settings.init_threshold = 20;
     extractor_settings.min_threshold = 4;
 
+    matcher_settings.TH_HIGH = 100.0;
+    matcher_settings.TH_LOW  = 50.0;
 
 }
 
@@ -31,14 +33,14 @@ ORBFactory::ORBFactory(std::string settings_path_) : settings_path(settings_path
 //    return getExtractor(extractor_settings);
 //}
 
-FeatureExtractor *ORBFactory::getExtractor(std::string type) {
+std::shared_ptr<FeatureExtractor> ORBFactory::getExtractor(std::string type) {
     LoadSettings(settings_path, type);
     return getExtractor(extractor_settings);
 }
 
-FeatureExtractor* ORBFactory::getExtractor(FeatureExtractorSettings settings){
+std::shared_ptr<FeatureExtractor> ORBFactory::getExtractor(FeatureExtractorSettings settings){
     std::shared_ptr<DescriptorDistance> dist_func = std::make_shared<ORBDistance>();
-    return new ORBExtractor(std::make_unique<ORBFinder>(20.0, true), dist_func, settings);
+    return std::make_shared<ORBExtractor>(std::make_unique<ORBFinder>(20.0, true), dist_func, settings);
 }
 
 //FeatureVocabulary* ORBFactory::getVocabulary(std::string file_name){
@@ -47,7 +49,7 @@ FeatureExtractor* ORBFactory::getExtractor(FeatureExtractorSettings settings){
 
 FeatureVocabulary* ORBFactory::getVocabulary(std::string type){
     LoadSettings(settings_path, type);
-    return getVocabulary(vocab_path);
+    return new ORBVocabulary(vocab_path);
 }
 
 std::shared_ptr<DescriptorDistance> ORBFactory::getDistanceFunc(){

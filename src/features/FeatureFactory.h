@@ -20,11 +20,9 @@ namespace HYSLAM {
 
 class FeatureFactory {
 public:
-   // virtual FeatureExtractor* getExtractor() = 0;  //convert to unique_ptr
-    virtual FeatureExtractor* getExtractor(std::string type) =0;
-    virtual FeatureExtractor* getExtractor(FeatureExtractorSettings settings) = 0;  //convert to unique_ptr
+    virtual std::shared_ptr<FeatureExtractor> getExtractor(std::string type) =0;
+    virtual std::shared_ptr<FeatureExtractor> getExtractor(FeatureExtractorSettings settings) = 0;  //convert to unique_ptr
     virtual FeatureVocabulary* getVocabulary(std::string type) =0 ;
-  //  virtual FeatureVocabulary* getVocabulary() =0 ;
     virtual std::shared_ptr<DescriptorDistance> getDistanceFunc() = 0;
     virtual FeatureExtractorSettings getFeatureExtractorSettings() = 0;
     std::unique_ptr<FeatureMatcher> getFeatureMatcher();

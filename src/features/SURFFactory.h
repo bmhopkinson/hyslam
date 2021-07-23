@@ -15,9 +15,10 @@ namespace HYSLAM {
 
 class SURFFactory : public FeatureFactory {
 public:
-    SURFFactory(std::string settings_path);
-    FeatureExtractor* getExtractor(std::string type);
-    FeatureExtractor* getExtractor(FeatureExtractorSettings settings_);  //specify desired extractor settings. convert return type to unique_ptr
+    SURFFactory();
+    SURFFactory(std::string settings_path_);
+    std::shared_ptr<FeatureExtractor> getExtractor(std::string type);
+    std::shared_ptr<FeatureExtractor> getExtractor(FeatureExtractorSettings settings_);  //specify desired extractor settings. convert return type to unique_ptr
     FeatureVocabulary* getVocabulary(std::string type);
     std::shared_ptr<DescriptorDistance> getDistanceFunc();
     FeatureExtractorSettings getFeatureExtractorSettings();

@@ -10,25 +10,36 @@
 
 namespace HYSLAM {
 
-SURFFactory::SURFFactory(std::string settings_path){
-    LoadSettings(settings_path, extractor_settings, matcher_settings);
+SURFFactory::SURFFactory() {    //default values for extractor and matcher
+
+    extractor_settings.nFeatures = 1000;
+    extractor_settings.nLevels = 5;
+    extractor_settings.init_threshold = 600;
+    extractor_settings.min_threshold = 400;
+    extractor_settings.N_CELLS = 2;
+
+    matcher_settings.TH_HIGH = 1.5;
+    matcher_settings.TH_LOW  = 0.75;
+
 }
 
-FeatureExtractor* SURFFactory::getExtractor(){
+SURFFactory::SURFFactory(std::string settings_path_) : settings_path(settings_path_){
+    LoadSettings(settings_path, "SLAM");
+}
+
+std::shared_ptr<FeatureExtractor> SURFFactory::getExtractor(std::string type){
+    LoadSettings(settings_path, type);
     return getExtractor(extractor_settings);
 }
 
-FeatureExtractor* SURFFactory::getExtractor(FeatureExtractorSettings settings){
+std::shared_ptr<FeatureExtractor> SURFFactory::getExtractor(FeatureExtractorSettings settings){
     std::shared_ptr<DescriptorDistance> dist_func = std::make_shared<SURFDistance>();
-    return new SURFExtractor(std::make_unique<SURFFinder>(settings), dist_func, settings);
+    return std::make_shared<SURFExtractor>(std::make_unique<SURFFinder>(settings), dist_func, settings);
 }
 
-FeatureVocabulary* SURFFactory::getVocabulary(std::string file_name){
-    return new SURFVocabulary(file_name);
-}
-
-FeatureVocabulary* SURFFactory::getVocabulary(){
-    return getVocabulary(vocab_path);
+FeatureVocabulary* SURFFactory::getVocabulary(std::string type){
+    LoadSettings(settings_path, type);
+    return new SURFVocabulary(vocab_path);
 }
 
 std::shared_ptr<DescriptorDistance> SURFFactory::getDistanceFunc(){
@@ -69,5 +80,7 @@ void SURFFactory::LoadSettings(std::string settings_path, std::string type)
     fSettings.release();
 
 }
+
+
 
 }

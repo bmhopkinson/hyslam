@@ -20,11 +20,9 @@ class ORBFactory : public FeatureFactory {
 public:
     ORBFactory();
     ORBFactory(std::string settings_path_);
-   // FeatureExtractor* getExtractor(); //uses current feature extractor settings
-    FeatureExtractor* getExtractor(std::string type);
-    FeatureExtractor* getExtractor(FeatureExtractorSettings settings_);  //specify desired extractor settings. convert return type to unique_ptr
+    std::shared_ptr<FeatureExtractor> getExtractor(std::string type);
+    std::shared_ptr<FeatureExtractor> getExtractor(FeatureExtractorSettings settings_);  //specify desired extractor settings. convert return type to unique_ptr
     FeatureVocabulary* getVocabulary(std::string type);
- //   FeatureVocabulary* getVocabulary(); //default
     std::shared_ptr<DescriptorDistance> getDistanceFunc();
     FeatureExtractorSettings getFeatureExtractorSettings();
 

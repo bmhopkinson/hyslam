@@ -50,7 +50,7 @@ bool has_suffix(const std::string &str, const std::string &suffix) {
 namespace HYSLAM
 {
 
-System::System(const std::string &strVocFile, const std::string &strSettingsFile, const eSensor sensor,
+System::System( const std::string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false)
 {
     std::cout << "Input sensor was set to: ";
@@ -83,9 +83,8 @@ System::System(const std::string &strVocFile, const std::string &strSettingsFile
         std::cout << "FEATURE TYPE NOT RECOGNIZED"  << std::endl;
         exit(-1);
     }
-    mpVocabulary = feature_factory->getVocabulary();
+    mpVocabulary = feature_factory->getVocabulary("SLAM");
 
-    //mpVocabulary = feature_factory->getVocabulary(strVocFile);
 
     //Load Camera data and create per camera data structures
     cv::FileNode cameras = fsSettings["Cameras"];

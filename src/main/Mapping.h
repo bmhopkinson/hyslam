@@ -123,7 +123,7 @@ protected:
 
     int interrupt_threshold = 1;
     int N_optional_jobs_stopped = 0;
-    int max_optional_jobs_stopped = 3;
+    int max_optional_jobs_stopped = 2;
     FeatureFactory* feature_factory;
 
     long unsigned int nKFs_created = 0; // used for determining when to do global BA

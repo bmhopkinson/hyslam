@@ -24,14 +24,17 @@ ImageProcessing::ImageProcessing(FeatureFactory* factory_, const std::string &st
    // FeatureExtractorSettings feature_extractor_settings;
    // LoadSettings(strSettingPath, feature_extractor_settings, feature_settings);
 
+    //setup extractors for various camears
+    for(auto it = cam_data.begin(); it != cam_data.end(); ++it){
+        std::string cam_name = (*it).first;
+        extractors[cam_name] = Extractors();
+        extractors[cam_name].extractor_left = factory->getExtractor(cam_name);
+        extractors[cam_name].extractor_right = factory->getExtractor(cam_name);
 
-    extractor_left = factory->getExtractor();
-    extractor_right = factory->getExtractor();
-
-    FeatureExtractorSettings feature_extractor_settings_init = factory->getFeatureExtractorSettings();
-    feature_extractor_settings_init.nFeatures = 3 * feature_extractor_settings_init.nFeatures;
-    extractor_init = factory->getExtractor(feature_extractor_settings_init );
-
+        FeatureExtractorSettings feature_extractor_settings_init = factory->getFeatureExtractorSettings();
+        feature_extractor_settings_init.nFeatures = 3 * feature_extractor_settings_init.nFeatures;
+        extractors[cam_name].extractor_init = factory->getExtractor(feature_extractor_settings_init );
+    }
 }
 
 
@@ -42,12 +45,12 @@ void ImageProcessing::ProcessMonoImage(const cv::Mat &im, const Imgdata img_data
 
     std::vector<cv::KeyPoint> mvKeys;
     std::vector<FeatureDescriptor> mDescriptors;
-    FeatureExtractor* extractor;
+    std::shared_ptr<FeatureExtractor> extractor;
     if(tracking_state==eTrackingState::INITIALIZATION || tracking_state==eTrackingState::NO_IMAGES_YET){
-        extractor = extractor_init;
+        extractor = extractors[cam_cur].extractor_init;
     }
     else {
-        extractor = extractor_left;
+        extractor = extractors[cam_cur].extractor_left;
     }
     (*extractor)(mImGray      , cv::Mat(), mvKeys     ,  mDescriptors );
     FeatureExtractorSettings orb_params;// = setFeatureExtractorSettings(extractor);
@@ -76,8 +79,8 @@ void ImageProcessing::ProcessStereoImage(const cv::Mat &imRectLeft, const cv::Ma
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
     std::vector<FeatureDescriptor> mDescriptors;
     std::vector<FeatureDescriptor> mDescriptorsRight;
-    std::thread orb_thread(FeatureUtil::extractFeatures, extractor_left, std::ref(mImGray), std::ref(mvKeys), std::ref(mDescriptors) );
-    (*extractor_right)(imGrayRight, cv::Mat(), mvKeysRight, mDescriptorsRight );
+    std::thread orb_thread(FeatureUtil::extractFeatures, extractors[cam_cur].extractor_left.get(), std::ref(mImGray), std::ref(mvKeys), std::ref(mDescriptors) );
+    (*extractors[cam_cur].extractor_right)(imGrayRight, cv::Mat(), mvKeysRight, mDescriptorsRight );
     orb_thread.join();
     FeatureExtractorSettings orb_params;// = setFeatureExtractorSettings(mpORBextractorLeft);
 
