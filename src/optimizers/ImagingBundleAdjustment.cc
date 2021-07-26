@@ -290,12 +290,19 @@ void ImagingBundleAdjustment::RotatePosestoAlign(){
 
         std::vector<cv::Mat> Tslam;
         std::vector<cv::Mat> Tseg;
-        std::string Tslam_fname = "./data/Tslam_data_"+std::to_string(i) + ".txt";
+        std::string Tslam_fname =  "./data/Tslam_data_" + std::to_string(i) + ".txt";
+        std::string Timgslam_fname = "./data/Timgslam_data_" + std::to_string(i) + ".txt";
         std::string Tseg_fname  = "./data/Tseg_data_" +std::to_string(i) + ".txt";
         std::ofstream Tslam_file;
+        std::ofstream Timgslam_file;
         std::ofstream Tseg_file;
         Tslam_file.open(Tslam_fname.c_str());
+        Timgslam_file.open(Timgslam_fname.c_str());
         Tseg_file.open(Tseg_fname.c_str());
+
+        Timgslam_file << "SlamToImg Transform: " << "\n" << (*kfs_submap.begin())->camera.Tcam << std::endl;
+        Tseg_file  << "SlamToImg Transform: " << "\n" << (*kfs_submap.begin())->camera.Tcam << std::endl;
+
         int j = 0;
 
         if(submap_datum.Tsim.empty()){ //couldnt' determine valid transform previously so skip here again
@@ -305,17 +312,20 @@ void ImagingBundleAdjustment::RotatePosestoAlign(){
         for(auto sit = kfs_submap.begin(); sit != kfs_submap.end(); ++sit){
             KeyFrame* pKFi = *sit;
             cv::Mat Tslam_i =  Converter::Iso3tocvMat( trajectory.poseAtTime(pKFi->mTimeStamp) ); //in camera to world convetion
+            Tslam_file << j << "\n" << Tslam_i << std::endl;
+
             Tslam_i = Tslam_i * pKFi->camera.Tcam; //transform from slam cam position to this cam's estimate position
             Tslam_i = Tslam_i.inv();
             Tslam.push_back( Tslam_i.clone() );
-            Tseg.push_back( pKFi->GetPose() );  //in world to camera convention
+            Tseg.push_back( pKFi->GetPose() );  //in  world to camera convention
 
-            Tslam_file << j << "\n" << Tslam_i << std::endl;
-            Tseg_file << j << "\n" << pKFi->GetPose() << std::endl;
+            Timgslam_file << j << "\n" << Tslam_i.inv() << std::endl;
+            Tseg_file << j << "\n" << pKFi->GetPoseInverse() << std::endl;
             j++;
 
         }
         Tslam_file.close();
+        Timgslam_file.close();
         Tseg_file.close();
         i++;
 

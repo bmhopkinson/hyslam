@@ -142,16 +142,20 @@ cv::Mat ComputeSim3_Horn(cv::Mat &P1, cv::Mat &P2, bool FixScale, cv::Mat &R)
 }
 
 cv::Mat PoseAlignmentTransform(std::vector<cv::Mat> &T1, std::vector<cv::Mat> &T2){
-  //determine a rotation that best aligns poses (in world to camera convention) whose camera centers have previously been
-  // aligned by a similarity transform using ComputeSim3_Horn
-  // determines rotation to transform T2 so that they align with T1;
-  cv::Mat P1 = PosePoints(T1);
-  cv::Mat P2 = PosePoints(T2);
-  bool FixScale = true;
-  cv::Mat R;
-  cv::Mat Thorn = ComputeSim3_Horn(P1, P2, FixScale, R);
+    //determine a rotation that best aligns poses (in world to camera convention) whose camera centers have previously been
+    // aligned by a similarity transform using ComputeSim3_Horn
+    // determines rotation to transform T2 so that they align with T1;
+    cv::Mat P1 = PosePoints(T1);
+    cv::Mat P2 = PosePoints(T2);
+    bool FixScale = true;
+    cv::Mat R;
+    cv::Mat Thorn = ComputeSim3_Horn(P1, P2, FixScale, R);
 
-  return Thorn.clone();
+
+  //  cv::Mat Trotonly = cv::Mat::eye(4,4,R.type());
+ //   R.copyTo(Trotonly.rowRange(0,3).colRange(0,3));
+
+    return Thorn.clone();
 
 }
 

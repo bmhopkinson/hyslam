@@ -44,6 +44,9 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
     }
     bool success = nmatches > params.thresh_init;
     (*pftracking) << success << "\t";
+    if(!success){
+        n_frames_tracked_consecutively = 0;
+    }
 
 
     std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
@@ -75,7 +78,21 @@ bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBu
   //  }
 
     (*pftracking) <<  mnMatchesInliers << "\t";
-    return mnMatchesInliers > params.thresh_refine;
+
+    bool success = mnMatchesInliers > params.thresh_refine;
+    if(success){
+        n_frames_tracked_consecutively++;
+    } else {
+        n_frames_tracked_consecutively = 0;
+    }
+
+    if(params.reset_interval >0 && n_frames_tracked_consecutively > params.reset_interval ){ //check whether to restart tracking by artificially forcing tracking loss
+        success = false;
+        n_frames_tracked_consecutively = 0;
+        std::cout <<"FORCING TRACKING LOSS" <<std::endl;
+    }
+
+    return success;
 }
 
 bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsigned int last_keyframe_id, bool force){
@@ -169,5 +186,9 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsi
     (*pftracking) << insertKF << "\t";
     return insertKF;
 }
+
+    void TrackingStateNormal::clear() {
+        n_frames_tracked_consecutively = 0;
+    }
 
 }

@@ -82,6 +82,7 @@ StateNormalParameters::StateNormalParameters(cv::FileNode state_data,cv::FileNod
 
     thresh_init = state_data["thresh_init"]; //number of tracked points initially needed
     thresh_refine = state_data["thresh_refine"];
+    reset_interval= state_data["reset_interval"];
 
     N_tracked_target = state_data["N_tracked_target"];
     N_tracked_variance = state_data["N_tracked_variance"];

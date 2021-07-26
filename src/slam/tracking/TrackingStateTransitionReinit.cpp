@@ -121,6 +121,7 @@ void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, e
         //    } else {
         //  else
         if (!bOK){
+            state_options[cam_cur]["NORMAL"]->clear();
             if (cam_cur == "SLAM") {
                 pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
                 next_state = eTrackingState::REINITIALIZE;

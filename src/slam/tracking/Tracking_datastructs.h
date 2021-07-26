@@ -102,6 +102,7 @@ public:
 
     int thresh_init = 10; //number of tracked points initially needed
     int thresh_refine = 30; //number of tracked points required after refinement for success
+    int reset_interval = -1; // frequency with which to initiate a tracking reset by reporting tracking lost; if <=0 don't reset
 
     //keyframe insertion logic parameters
     int N_tracked_target = 200;

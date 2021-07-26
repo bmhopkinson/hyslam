@@ -44,13 +44,15 @@ public:
                         MainThreadsStatus* thread_status_, FeatureFactory* factory);
     bool initialPoseEstimation( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
     bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
-    void clear(){};
+    void clear();
 
 protected:
     virtual bool needNewKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force);
     std::unique_ptr<TrackMotionModel> track_motion_model;
     std::unique_ptr<TrackReferenceKeyFrame> track_reference_keyframe;
     std::unique_ptr<TrackLocalMap> track_local_map;
+
+    int n_frames_tracked_consecutively = 0;
 
     StateNormalParameters params;
     int thresh_init;
