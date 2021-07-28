@@ -26,17 +26,17 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
     if(!trajectories.at(camera.camName)->getLastVelocityValid())
     {
       // std::cout << "trying to track with reference keyframe w/ no valid velocity: pKF->mnId" << pKF->mnId << "\tnmatches: ";
-        nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );
+      nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at(camera.camName).get() );
       //  std::cout << nmatches << std::endl;
     }
     else     //track with motion model - default when tracking is going smoothly
     {
      //  std::cout << "trying to track with motion model: " << std::endl;
-         nmatches = track_motion_model->track(current_frame, frames, pKF, pMap,trajectories.at("SLAM").get() );
+     nmatches = track_motion_model->track(current_frame, frames, pKF, pMap,trajectories.at(camera.camName).get() );
 
         if(nmatches < params.thresh_init){
      //       std::cout << "tracking with motion model failed...will need to track with reference key frame." << std::endl;
-            nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );
+     nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at(camera.camName).get() );
             (*pftracking) << "RefKF" << "\t";
         } else {
             (*pftracking) << "MoMo" << "\t";

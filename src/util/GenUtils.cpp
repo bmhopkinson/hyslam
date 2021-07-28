@@ -147,7 +147,7 @@ void GenUtils::sparsifyMap(Map *pMap, double overlap_criterion) {
     KeyFrame* pKFtarget = *(++it);
 
     while(it != allKFs.end()){
-        
+
         std::vector<MapPoint*> lms_cur = pKFcur->getAssociatedLandMarks();
         int nvis = 0;
         for(auto it2 = lms_cur.begin(); it2 != lms_cur.end(); ++it2){

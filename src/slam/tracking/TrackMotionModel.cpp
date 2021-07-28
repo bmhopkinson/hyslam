@@ -26,7 +26,7 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
 
     cv::Mat Vcw;
     cv::Mat Tcw_cur;
-    if(camera.camName == "SLAM"){
+ //   if(camera.camName == "SLAM"){
         double delta_cur = current_frame.mTimeStamp - last_frame.mTimeStamp; //mVelocity is based on slam motion so need to reference time to that
       //  std::cout << "TrackMotionModel: dt " <<delta_cur << std::endl;
         TrajectoryElement te = slam_trajectory->back();
@@ -35,18 +35,18 @@ int TrackMotionModel::track(Frame &current_frame, const FrameBuffer &frames, Key
      //   std::cout << "Velocity: " << Vcw << std::endl;
      //   std::cout << "pose estimate: " << Tcw_cur << std::endl;
 
-    } else {  //THIS FAILS IF SLAM CAM HAS LOST TRACKING
-        if(slam_trajectory->integrateVelocity( last_slamframe.mTimeStamp, last_frame.mTimeStamp, Vcw) == 0){
-            cv::Mat Tcw_slam = Vcw*last_slamframe.mTcw;  //inferred position of SLAM camera at current frame
-            Tcw_cur = camera.Tcam.inv() * Tcw_slam; //convert from position of SLAM camera to current camera
-
-        }
-        else {
-            std::cout << "could not integrate velocity between: " << last_slamframe.mTimeStamp << " and " << last_frame.mTimeStamp << std::endl;
-            return false;
-        }
-
-    }
+//    } else {  //THIS FAILS IF SLAM CAM HAS LOST TRACKING
+//        if(slam_trajectory->integrateVelocity( last_slamframe.mTimeStamp, last_frame.mTimeStamp, Vcw) == 0){
+//            cv::Mat Tcw_slam = Vcw*last_slamframe.mTcw;  //inferred position of SLAM camera at current frame
+//            Tcw_cur = camera.Tcam.inv() * Tcw_slam; //convert from position of SLAM camera to current camera
+//
+//        }
+//        else {
+//            std::cout << "could not integrate velocity between: " << last_slamframe.mTimeStamp << " and " << last_frame.mTimeStamp << std::endl;
+//            return false;
+//        }
+//
+//    }
 
     current_frame.SetPose(Tcw_cur);
 
