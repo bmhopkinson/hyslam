@@ -410,6 +410,7 @@ void BundleAdjustment::SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames){
       et->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex( vertex_map[vertex_name]) ) );
       g2o::Vector1d t_est = g2o::Vector1d(pKFi->mTimeStamp);
       et->setMeasurement(t_est);
+     // std::cout << "optParams.Info_TrajTime: " << optParams.Info_TrajTime << std::endl;
       et->setInformation(optParams.Info_TrajTime*g2o::Matrix1d::Identity() );
       et->setLevel(0);
       optimizer->addEdge(et);
@@ -424,6 +425,7 @@ void BundleAdjustment::SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames){
       e_traj->setVertex(2, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex( vertex_map[vertex_name_2]) ) );
 
       e_traj->setInformation(optParams.Info_TrajTimeSE3*g2o::Matrix7d::Identity() );
+      //  std::cout << "optParams.Info_TrajTimeSE3: " << optParams.Info_TrajTimeSE3 << std::endl;
       e_traj->setLevel(0);
       optimizer->addEdge(e_traj);
 

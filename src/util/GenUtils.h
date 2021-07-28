@@ -26,6 +26,7 @@
 #include <KeyFrame.h>
 #include <opencv2/opencv.hpp>
 #include <sys/stat.h>
+#include <Map.h>
 
 namespace HYSLAM{
 
@@ -37,6 +38,7 @@ struct GenUtils{
     static bool PointHasPositiveDepth(cv::Mat ProjectionMatrix, cv::Mat point);
     static int mkdirRecursive(const char* pathname, mode_t mode);
     static void pauseUntilReady(KeyFrame* pKF);
+    static void sparsifyMap(Map* pMap, double overlap_criterion);
 };
 
 }

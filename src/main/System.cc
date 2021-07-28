@@ -247,6 +247,9 @@ void System::RunImagingBundleAdjustment(){
     ImagingBundleAdjustment imgBA(maps["Imaging"].get(), mpTracker->trajectories["Imaging"].get(), traj_g2o, feature_factory.get(), optParams_tracking );
     imgBA.Run();
 
+    double overlap_criterion = 0.90;
+    GenUtils::sparsifyMap(maps["Imaging"].get(), overlap_criterion);
+
     thread_status->mapping.setRelease(true);
 }
 

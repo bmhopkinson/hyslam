@@ -136,4 +136,37 @@ void GenUtils::pauseUntilReady(KeyFrame *pKF) {
     }
 }
 
+void GenUtils::sparsifyMap(Map *pMap, double overlap_criterion) {
+// should make this more general - currently considers successive keyframes and determines if 'overlap_criterion' fraction of landmarks matched in KF1 are visible in KF2. if so KF2 is culled.
+// repeat until a KF is not culled then move on to next KF
+    std::vector<KeyFrame*> allKFs =  pMap->getAllKeyFramesIncludeSubmaps();
+    sort(allKFs.begin(), allKFs.end(), KeyFrame::lId);
+
+    auto it = allKFs.begin();
+    KeyFrame* pKFcur = *it;
+    KeyFrame* pKFtarget = *(++it);
+
+    while(it != allKFs.end()){
+        
+        std::vector<MapPoint*> lms_cur = pKFcur->getAssociatedLandMarks();
+        int nvis = 0;
+        for(auto it2 = lms_cur.begin(); it2 != lms_cur.end(); ++it2){
+            if(pKFtarget->isLandMarkVisible(*it2)){
+                ++nvis;
+            }
+        }
+
+        double frac_visible = static_cast<double>(nvis)/static_cast<double>(lms_cur.size());
+        if(frac_visible > overlap_criterion){
+            pMap->SetBadKeyFrame(pKFtarget);
+
+            pKFtarget = *(++it);
+        } else {
+            pKFcur = pKFtarget;
+            pKFtarget= *(++it);
+        }
+    }
+
+}
+
 } //end namespace

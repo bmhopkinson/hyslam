@@ -45,8 +45,15 @@ void ImagingBundleAdjustment::Run(){
 
   RotatePosestoAlign();
   std::cout << "rotated poses" << std::endl;
+
+//all submaps have been transformed into a common reference frame and "registered" so make this official:
+  std::vector<std::shared_ptr<Map>> submaps = pMap->getSubmaps();
+  for(auto it = submaps.begin(); it != submaps.end(); ++it) {
+    (*it)->registerWithParent();
+  }
+
   std::this_thread::sleep_for( std::chrono::seconds(5) );
-  FindAdditionalMapPointMatches();
+ // FindAdditionalMapPointMatches();  //this really needs to be BVH accelerated and should be done after an initial g2o optimization round
 
   //eventually: handle untracked frames
 
@@ -361,12 +368,6 @@ void ImagingBundleAdjustment::RotatePosestoAlign(){
 void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 //attempt to fuse any visible untracked mappoints into keyframes - especially hoping to get inter-segment viewing of mappoints
     std::cout << "FindAdditionalMapPointMatches" << std::endl;
-
-  //all submaps have been transformed into a common reference frame and "registered" so make this official:
-    std::vector<std::shared_ptr<Map>> submaps = pMap->getSubmaps();
-    for(auto it = submaps.begin(); it != submaps.end(); ++it) {
-        (*it)->registerWithParent();
-    }
 
     std::vector<KeyFrame*> all_kfs = pMap->GetAllKeyFrames();
     for(auto it = all_kfs.begin(); it != all_kfs.end(); ++it){
