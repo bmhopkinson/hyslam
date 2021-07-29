@@ -82,7 +82,7 @@ private:
   void RotatePosestoAlign();
   void FindAdditionalMapPointMatches();
   g2o::SparseOptimizer optimizer; //should probably just create this in constructor and std::move to base BundleAdjustment
-
+  void ExportBAResultsForDebugging();
 
 };
 } //namespace HYSLAM

@@ -59,6 +59,7 @@ private:
   std::list<KeyFrame*>  FindAdditionalParentSubmapKFs(const std::list<Tse3Parent> &submap_tiepoints, const std::set<KeyFrame*> &currentKFs );
   void RecoverOptimizedKeyFrames( std::list<KeyFrame*> lKeyFrames);
   void RecoverOptimizedMapPoints(  std::list<MapPoint*>  lMapPoints);
+
 };
 
 } //end ORB_SLAM2 namespace

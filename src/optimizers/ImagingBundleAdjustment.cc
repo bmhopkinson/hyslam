@@ -8,6 +8,7 @@
 #include "g2o/core/optimization_algorithm_levenberg.h"
 #include "g2o/solvers/eigen/linear_solver_eigen.h"
 #include "g2o/types/slam3d/vertex_se3.h"
+#include "g2o/types/sba/sba_accessory_cam.h"
 
 #include <Eigen/Core>
 #include <iostream>
@@ -118,6 +119,8 @@ void ImagingBundleAdjustment::Run(){
   optimizer.optimize(10);   
    std::cout << "finished second optimization" << std::endl;
 
+   ExportBAResultsForDebugging();//DO this before setting new KF poses and landmark positions so we can compare before and after optimization
+
   // Recover optimized data
   //Keyframes
   for(std::list<KeyFrame*>::iterator lit=KFs_to_optimize.begin(), lend=KFs_to_optimize.end(); lit!=lend; lit++)
@@ -152,6 +155,7 @@ void ImagingBundleAdjustment::Run(){
      //     std::cout << "set world position" << std::endl;
     //    pMP->UpdateNormalAndDepth();
   }
+
 
 
 
@@ -438,6 +442,51 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
 
 
     }
+}
+
+void ImagingBundleAdjustment::ExportBAResultsForDebugging() {
+
+    std::string outfile_fname =  "./ImagingBA_results.txt";
+    std::ofstream outfile;
+    outfile.open(outfile_fname.c_str());
+
+    std::string Tcam_vertex_name = "VertexSE3_Tcam";
+    g2o::VertexSE3* Tcam_vert = static_cast<g2o::VertexSE3*>(optimizer.vertex(vertex_map[Tcam_vertex_name] ));
+    cv::Mat Tcam_opt = Converter::Iso3tocvMat(Tcam_vert->estimate());
+    Tcam_opt = Tcam_opt.inv();
+    KeyFrame* pKFany = *(KFs_to_optimize.begin());
+
+    outfile << "Tcam_original_estimate: " <<pKFany->camera.Tcam << std::endl;
+    outfile << "Tcam_optimized_estimate: " << Tcam_opt << std::endl;
+
+    //Keyframes
+    for(std::list<KeyFrame*>::iterator lit=KFs_to_optimize.begin(), lend=KFs_to_optimize.end(); lit!=lend; lit++)
+    {
+        KeyFrame* pKFi = *lit;
+        outfile << "KeyFrame " << pKFi->mnId << std::endl;
+
+        //time (=slam based pose) info
+        double timestamp =pKFi->mTimeStamp;
+        std::string vertex_name_time = "VertexTrajectoryTime" + std::to_string(pKFi->mnId);
+        g2o::VertexTrajectoryTime* vt = static_cast<g2o::VertexTrajectoryTime*>(optimizer.vertex( vertex_map[vertex_name_time]) );
+        g2o::Vector1d time_est = vt->estimate();
+        outfile << "timestamp: " << timestamp << ", time_est: "  << time_est << std::endl;
+
+        cv::Mat Tslam =  Converter::Iso3tocvMat( trajectory.poseAtTime(pKFi->mTimeStamp) ); //in camera to world convention
+        cv::Mat T_imgfromslam = Tslam * Tcam_opt; //transform from slam cam position to this cam's estimate position
+
+        std::string vertex_name_SE3 = "VertexSE3Expmap" + std::to_string(pKFi->mnId);
+        g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(vertex_map[vertex_name_SE3] ));
+        g2o::SE3Quat SE3quat = vSE3->estimate();
+        cv::Mat pose_opt = Converter::toCvMat(SE3quat);
+
+        outfile << "pose original: " << pKFi->GetPose() << std::endl;
+        outfile << "pose slam_est: " << T_imgfromslam.inv() << std::endl;
+        outfile << "pose optimized: " << pose_opt << std::endl;
+        // std::cout << "set keyframe" << std::endl;
+    }
+
+    outfile.close();
 }
 
 }
