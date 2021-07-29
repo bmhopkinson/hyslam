@@ -1,5 +1,5 @@
 %YAML:1.0
-Interrupt_if_NWaiting: 2
+Interrupt_if_NWaiting: 3
 Jobs: 
     ProcessNewKF: none
 
@@ -16,7 +16,7 @@ Jobs:
         match_nnratio: 0.6
         N_neighborKFs_mono: 15
         N_neighborKFs_stereo: 10
-        ratio_factor: 1.5
+        ratio_factor: 1.8
         min_baseline_depth_ratio: 0.010
         error_factor_mono: 5.5
         error_factor_stereo: 7.80

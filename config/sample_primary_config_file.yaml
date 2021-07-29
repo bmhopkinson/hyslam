@@ -8,7 +8,7 @@
 #	- ORB-SLAM camera axes are Right/Back/Down relative to left camera
 # 	- Used to calculate camera-relative coordinates from platform-relative coordinates
 # 	  and platform-origin-relative world coordinates from ORB-SLAM world coordinates
-Tracking_Config : /home/cv-bhlab/Documents/map_building/config/slam_tracking_config.yaml
+Tracking_Config : /home/cv-bhlab/Documents/map_building/config/slam_tracking_config_fewerpoints.yaml
 Mapping_Config : /home/cv-bhlab/Documents/map_building/config/slam_mapping_config.yaml
 Feature_Config : /home/cv-bhlab/Documents/map_building/config/slam_feature_config.yaml
 
@@ -48,7 +48,7 @@ Cameras:
             y:   0.20    #maging camera is approx 20 cm below zed (down is +y direction)
             z: -0.25     #imaging camera is approx 25 cm behind zed
             roll: 0.0    #about z-axis of SLAM camera, applied first
-            pitch: -90.0  #about x-axis of SLAM camera, applied second
+            pitch: -65.0  #about x-axis of SLAM camera, applied second
             yaw: 0.0     #about y-axis of SLAM camera, applied last
         calibration:   # Camera calibration and distortion parameters (OpenCV)  - for GoPro 8 in 2.7K 4:3 mode
             fx: 1829
@@ -81,8 +81,11 @@ Opt.Info_IMU: 1
 Opt.Info_Depth: 0.0001
 Opt.Info_GPS: 1 
 Opt.realtime: 0 #0 = not realtime; 1 = realtime
-Opt.GBAinterval: 40 #interval between Global BA - only conducted if not realtime
-
+Opt.GBAinterval: 700 #interval between Global BA - only conducted if not realtime
+Opt.Info_submap_tiepoint: 100000.0 #shouldn't need to be this large but it's b/c mpt->kf edges overwhelm all others
+Opt.Info_TrajTime: 100000
+Opt.Info_TrajTimeSE3: 100000
+Opt.Info_ImagingTcam: 100000
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters
 #--------------------------------------------------------------------------------------------

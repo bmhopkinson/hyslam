@@ -5,19 +5,22 @@ Cameras:
         Normal: Normal_default
         Initialize: Initialize_default
         Relocalize: Relocalize_default
+        ReInitialize: ReInitialize_default
     Imaging:
         Normal: Normal_track_lots
         Initialize: Initialize_default
         Relocalize: Relocalize_default
+        ReInitialize: ReInitialize_default
 
 States:
     Normal_default:
         thresh_init: 10
         thresh_refine: 30
-        N_tracked_target: 100
+        reset_interval: -1
+        N_tracked_target: 150
         N_tracked_variance: 25
         min_KF_interval: 0
-        max_KF_interval: 30
+        max_KF_interval: 60
         min_N_tracked_close: 100
         thresh_N_nontracked_close: 70
         min_frac_refKF_mono : 0.9
@@ -30,6 +33,7 @@ States:
     Normal_track_lots:
         thresh_init: 10
         thresh_refine: 30
+        reset_interval: -1
         N_tracked_target: 250
         N_tracked_variance: 50
         min_KF_interval: 0
@@ -43,10 +47,33 @@ States:
             TrackReferenceKeyFrame: ReferenceKeyFrame_default
             TrackLocalMap: LocalMap_default
             
+    Normal_track_few:
+        thresh_init: 10
+        thresh_refine: 30
+        reset_interval: -1
+        N_tracked_target: 75
+        N_tracked_variance: 20
+        min_KF_interval: 0
+        max_KF_interval: 60
+        min_N_tracked_close: 50
+        thresh_N_nontracked_close: 30
+        min_frac_refKF_mono : 0.9
+        min_frac_refKF_stereo : 0.5
+        Strategies:
+            TrackMotionModel: MotionModel_default
+            TrackReferenceKeyFrame: ReferenceKeyFrame_default
+            TrackLocalMap: LocalMap_default
+            
     Initialize_default:
         N_min_mpts_monoslam : 100 
         Strategies:
             Initialize: Initialize_default
+    
+    ReInitialize_default:
+        N_min_mpts_monoslam : 100 
+        Strategies:
+            ReInitialize: Initialize_default
+    
             
     Relocalize_default:
         thresh_init: 50
@@ -54,6 +81,7 @@ States:
         Strategies:
             TrackPlaceRecognition: PlaceRecognition_default
             TrackLocalMap : LocalMap_default
+            
             
         
 
@@ -106,7 +134,7 @@ Strategies:
              MaxIterations : 200
              match_nnratio : 0.9
         Stereo:
-             N_min_features : 200
+             N_min_features : 150
              new_mpt_protection : 5
     LocalMap_default:
         match_nnratio : 0.8
