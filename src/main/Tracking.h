@@ -137,7 +137,7 @@ public:
 
     // Lists used to recover the full camera trajectory at the end of the execution.
     // Basically we store the reference keyframe for each frame and its relative transformation
-    std::map< std::string, std::unique_ptr<Trajectory> > trajectories;
+    std::map< std::string, std::shared_ptr<Trajectory> > trajectories;
 
     //optimizer parameters
     optInfo optParams;

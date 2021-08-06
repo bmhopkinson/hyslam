@@ -4,6 +4,7 @@ HYSLAM_ADD_SOURCES(
   GenUtils.h GenUtils.cpp
   tinyxml2.h tinyxml2.cpp
         ThreadSafeQueue.h   ThreadSafeQueue.cpp
+        ImagingFramePlacer.h    ImagingFramePlacer.cpp
 )
 
 set(HYSLAM_PUBLIC_INCLUDE_DIRS ${HYSLAM_PUBLIC_INCLUDE_DIRS} 

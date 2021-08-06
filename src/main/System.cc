@@ -158,6 +158,17 @@ System::System( const std::string &strSettingsFile, const eSensor sensor,
         mptViewer = new std::thread(&Viewer::Run, mpViewer);
     }
 
+    //setup ImagingFramePlacer if needed;
+    for(auto it = maps.begin(); it != maps.end(); ++it){
+        std::string cam_name = it->first;
+        if(cam_name == "Imaging") {
+            imaging_frame_placer = std::make_shared<ImagingFramePlacer>(cam_data["Imaging"],
+                                                                        mpTracker->trajectories["SLAM"],
+                                                                        maps);
+            break;
+        }
+    }
+
     //Set pointers between threads
     mpLocalMapper->SetTracker(mpTracker);
     mpLoopCloser->SetTracker(mpTracker);
@@ -252,67 +263,71 @@ void System::RunImagingBundleAdjustment(){
 
     thread_status->mapping.setRelease(true);
 }
-
 bool System::placeImagingFrame(cv::Mat &img, const Imgdata &img_info) {
-
-    int min_mpts = 20; // minimum number of landmarks visible in frame needed to retain
-    //extract relevant info
-    double time_stamp = img_info.time_stamp;
-    Camera cam_img = cam_data["Imaging"];
-    bool is_stereo = false;
-    if(cam_data["Imaging"].sensor == 1){
-        is_stereo = true;
+    if(imaging_frame_placer){
+        imaging_frame_placer->placeImagingFrame(img, img_info);
     }
-
-    //create keyframe
-    //determine pose of imaging camera at this frame based on time and SLAM trajectory
-    cv::Mat Tslam;
-    if(!mpTracker->trajectories["SLAM"]->poseAtTime(time_stamp, Tslam)){
-        std::cout <<"not placing image b/c could not determine SLAM cam pose" << std::endl;
-      return false;
-    }
-    cv::Mat Timg = cam_img.Tcam.inv() * Tslam;
-
-    Frame frame(time_stamp, cam_img, img_info.name, is_stereo);
-    frame.SetPose(Timg); //need to have a pose or KeyFrame constructor will segfault
-    KeyFrame* pKF = new KeyFrame(frame); //shared_ptr would be preferrable
-
-    if(imaging_info.pKF_previous){
-        double overlap = overlapWithPreviousFrame(pKF,imaging_info.pKF_previous, imaging_info.mpts_previous);
-        if(overlap < imaging_info.overlap_threshold){
-             std::vector<MapPoint*> visible_mpts;
-             maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
-             if(visible_mpts.size() > min_mpts){
-                 imaging_info.pKF_previous = pKF;
-                 imaging_info.mpts_previous = visible_mpts;
-                 imaging_info.retained_keyframes.insert(pKF);
-                 maps["Imaging"]->AddKeyFrame(pKF); // for visualization
-                 std::cout << "placing imaging frame due to low overlap" << std::endl;
-                 return true;
-             } else {
-                 imaging_info.pKF_previous = nullptr;
-                 std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
-             }
-        } else {
-            std::cout << "not placing frame due to sufficient overlap: " << overlap << " , based on how many previous mappoints: " << imaging_info.mpts_previous.size() << std::endl;
-        }
-    } else {
-        std::vector<MapPoint*> visible_mpts;
-        maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
-        if(visible_mpts.size() > min_mpts){
-            imaging_info.pKF_previous = pKF;
-            imaging_info.mpts_previous = visible_mpts;
-            imaging_info.retained_keyframes.insert(pKF);
-            maps["Imaging"]->AddKeyFrame(pKF); // for visualization
-            std::cout << "placing imaging frame, no previous frame and sufficient mappoints visible " << std::endl;
-            return true;
-        } else {
-            std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
-        }
-    }
-
-    return false;
 }
+//bool System::placeImagingFrame(cv::Mat &img, const Imgdata &img_info) {
+//
+//    int min_mpts = 20; // minimum number of landmarks visible in frame needed to retain
+//    //extract relevant info
+//    double time_stamp = img_info.time_stamp;
+//    Camera cam_img = cam_data["Imaging"];
+//    bool is_stereo = false;
+//    if(cam_data["Imaging"].sensor == 1){
+//        is_stereo = true;
+//    }
+//
+//    //create keyframe
+//    //determine pose of imaging camera at this frame based on time and SLAM trajectory
+//    cv::Mat Tslam;
+//    if(!mpTracker->trajectories["SLAM"]->poseAtTime(time_stamp, Tslam)){
+//        std::cout <<"not placing image b/c could not determine SLAM cam pose" << std::endl;
+//      return false;
+//    }
+//    cv::Mat Timg = cam_img.Tcam.inv() * Tslam;
+//
+//    Frame frame(time_stamp, cam_img, img_info.name, is_stereo);
+//    frame.SetPose(Timg); //need to have a pose or KeyFrame constructor will segfault
+//    KeyFrame* pKF = new KeyFrame(frame); //shared_ptr would be preferrable
+//
+//    if(imaging_info.pKF_previous){
+//        double overlap = overlapWithPreviousFrame(pKF,imaging_info.pKF_previous, imaging_info.mpts_previous);
+//        if(overlap < imaging_info.overlap_threshold){
+//             std::vector<MapPoint*> visible_mpts;
+//             maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
+//             if(visible_mpts.size() > min_mpts){
+//                 imaging_info.pKF_previous = pKF;
+//                 imaging_info.mpts_previous = visible_mpts;
+//                 imaging_info.retained_keyframes.insert(pKF);
+//                 maps["Imaging"]->AddKeyFrame(pKF); // for visualization
+//                 std::cout << "placing imaging frame due to low overlap" << std::endl;
+//                 return true;
+//             } else {
+//                 imaging_info.pKF_previous = nullptr;
+//                 std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
+//             }
+//        } else {
+//            std::cout << "not placing frame due to sufficient overlap: " << overlap << " , based on how many previous mappoints: " << imaging_info.mpts_previous.size() << std::endl;
+//        }
+//    } else {
+//        std::vector<MapPoint*> visible_mpts;
+//        maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
+//        if(visible_mpts.size() > min_mpts){
+//            imaging_info.pKF_previous = pKF;
+//            imaging_info.mpts_previous = visible_mpts;
+//            imaging_info.retained_keyframes.insert(pKF);
+//            maps["Imaging"]->AddKeyFrame(pKF); // for visualization
+//            std::cout << "placing imaging frame, no previous frame and sufficient mappoints visible " << std::endl;
+//            return true;
+//        } else {
+//            std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
+//        }
+//    }
+//
+//    return false;
+//}
 
 void System::RequestReset() {
     std::lock_guard<std::mutex> lock(mMutexReset);
@@ -976,17 +991,17 @@ bool System::TrackingNeedImages() { return mpTracker->GetCurrentTrackingState() 
 bool System::TrackingInitialized() { return (mpTracker->GetCurrentTrackingState() == eTrackingState::NORMAL) or (mpTracker->GetCurrentTrackingState() ==  eTrackingState::RELOCALIZATION); }
 
 
-double System::overlapWithPreviousFrame(KeyFrame *pKF, KeyFrame *pKF_previous, std::vector<MapPoint*> mpts_previous) {
-    int n_vis = 0;
-    for(auto it = mpts_previous.begin(); it != mpts_previous.end(); ++it){
-        MapPoint* pMP = *it;
-        if(pKF->isLandMarkVisible(pMP)){
-            n_vis++;
-        }
-    }
-    double overlap = static_cast<double>(n_vis)/static_cast<double>(mpts_previous.size());
-    return overlap;
-}
+//double System::overlapWithPreviousFrame(KeyFrame *pKF, KeyFrame *pKF_previous, std::vector<MapPoint*> mpts_previous) {
+//    int n_vis = 0;
+//    for(auto it = mpts_previous.begin(); it != mpts_previous.end(); ++it){
+//        MapPoint* pMP = *it;
+//        if(pKF->isLandMarkVisible(pMP)){
+//            n_vis++;
+//        }
+//    }
+//    double overlap = static_cast<double>(n_vis)/static_cast<double>(mpts_previous.size());
+//    return overlap;
+//}
 
 
 

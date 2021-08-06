@@ -373,7 +373,7 @@ void Tracking::Reset()
 void Tracking::InitializeDataStructures(std::string cam_name){
   //  Trajectory trajectory;
   //trajectories.insert(std::make_pair( cam_name, trajectory) );
-  trajectories[cam_name] = std::make_unique<Trajectory>();
+  trajectories[cam_name] = std::make_shared<Trajectory>();
   mState.insert(std::make_pair(cam_name, eTrackingState::NO_IMAGES_YET) );
   init_data.insert(std::make_pair( cam_name, InitializerData() ) );
   mLastFrame.insert(std::make_pair(cam_name, Frame() ) );
