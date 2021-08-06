@@ -26,8 +26,8 @@ TrackingStateReInitialize::TrackingStateReInitialize(HYSLAM::optInfo optimizer_i
 }
 
 bool TrackingStateReInitialize::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF,
-                                                 Map *pMap,
-                                                 std::map<std::string, std::unique_ptr<Trajectory>> &trajectories){
+                                                      Map *pMap,
+                                                      std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
 //CURRENTLY ONLY WORKS FOR STEREOCAMERA
 
     success = (initializer->initialize(current_frame) == 0);
@@ -86,7 +86,7 @@ bool TrackingStateReInitialize::initialPoseEstimation(Frame &current_frame, cons
 
 bool TrackingStateReInitialize::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF,
                                                    Map *pMap,
-                                                   std::map<std::string, std::unique_ptr<Trajectory>> &trajectories) {
+                                                   std::map<std::string, std::shared_ptr<Trajectory>> &trajectories) {
     return success;
 }
 

@@ -18,7 +18,7 @@ TrackingStateNormal::TrackingStateNormal(optInfo optimizer_info_,StateNormalPara
     track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params, feature_factory);
 }
 
-bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
     n_calls++;
     std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
     int nmatches = 0;
@@ -62,7 +62,7 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
     return success;
 }
 
-bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
     std::chrono::steady_clock::time_point t_start = std::chrono::steady_clock::now();
 
     mnMatchesInliers =  track_local_map->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );

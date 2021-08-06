@@ -18,9 +18,9 @@ public:
     TrackingStateNull(std::ofstream &log, MainThreadsStatus *thread_status_);
 
     bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF, Map *pMap,
-                               std::map <std::string, std::unique_ptr<Trajectory>> &trajectories); //signature mimics TrackingStrategy
+                               std::map<std::string, std::shared_ptr<Trajectory>> &trajectories); //signature mimics TrackingStrategy
     bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF, Map *pMap,
-                            std::map <std::string, std::unique_ptr<Trajectory>> &trajectories);
+                            std::map<std::string, std::shared_ptr<Trajectory>> &trajectories);
 
     std::vector<KeyFrame *> newKeyFrame(Frame &current_frame, Map *pMap, unsigned int last_keyframe_id,
                                         bool force); //template method using needNewKeyFrame, createNewKeyFrame

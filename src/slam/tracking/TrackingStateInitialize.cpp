@@ -24,7 +24,7 @@ TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera
     }
 }
 
-bool TrackingStateInitialize::initialPoseEstimation( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+bool TrackingStateInitialize::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
     const Frame& last_frame = frames[0];
     const Frame& last_slamframe = frames[1];
 
@@ -63,7 +63,7 @@ bool TrackingStateInitialize::initialPoseEstimation( Frame &current_frame, const
 }
 
 //no-op
-bool TrackingStateInitialize::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+bool TrackingStateInitialize::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
     return success;
 }
 

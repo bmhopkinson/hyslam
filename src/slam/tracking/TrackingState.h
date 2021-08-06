@@ -40,8 +40,8 @@ class TrackingState{
 public:
     TrackingState(std::ofstream &log, MainThreadsStatus* thread_status_);
     virtual ~TrackingState(){};
-    virtual bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,   std::map< std::string, std::unique_ptr<Trajectory> > &trajectories) = 0; //signature mimics TrackingStrategy
-    virtual bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories) = 0;
+    virtual bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories) = 0; //signature mimics TrackingStrategy
+    virtual bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories) = 0;
     std::vector<KeyFrame*> newKeyFrame(Frame &current_frame, Map* pMap, unsigned int last_keyframe_id, bool force); //template method using needNewKeyFrame, createNewKeyFrame
     virtual void clear() =0;
 protected:

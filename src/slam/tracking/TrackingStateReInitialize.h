@@ -20,8 +20,8 @@ public:
             StateReInitializeParameters params_,  std::ofstream &log, MainThreadsStatus* thread_status_,
             FeatureFactory* factory);
 
-    bool initialPoseEstimation( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map< std::string, std::unique_ptr<Trajectory> > &trajectories); //signature mimics TrackingStrategy
-    bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map< std::string, std::unique_ptr<Trajectory> > &trajectories);
+    bool initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories); //signature mimics TrackingStrategy
+    bool refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories);
     void clear();
 
 private:

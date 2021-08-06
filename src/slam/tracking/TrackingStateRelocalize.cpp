@@ -11,13 +11,14 @@ TrackingState(log, thread_status_), params(params_), feature_factory(factory)
     track_local_map = std::make_unique<TrackLocalMap>(optimizer_info_, params.tlocalmap_params, feature_factory);
 }
 
-bool TrackingStateRelocalize::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+bool TrackingStateRelocalize::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,
+                                                    std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
     int nmatches = track_place_recognition->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );
     return nmatches > params.thresh_init;
 }
 
 
-bool TrackingStateRelocalize::refinePoseEstimate( Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap,  std::map< std::string, std::unique_ptr<Trajectory> > &trajectories){
+bool TrackingStateRelocalize::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame* pKF, Map* pMap, std::map<std::string, std::shared_ptr<Trajectory>> &trajectories){
     int nmatches =  track_local_map->track(current_frame, frames, pKF, pMap, trajectories.at("SLAM").get() );
     return nmatches > params.thresh_refine;
 }

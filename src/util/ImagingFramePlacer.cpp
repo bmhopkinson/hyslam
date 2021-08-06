@@ -9,20 +9,18 @@ namespace HYSLAM{
 
 ImagingFramePlacer::ImagingFramePlacer(Camera cam, std::shared_ptr<Trajectory> slam_trajectory_,
                                        std::map<std::string, std::shared_ptr<Map>> maps_):
-                                       cam_img(cam), slam_trajectory(slam_trajectory_), maps(maps_){
+                                       cam_img(cam), slam_trajectory(slam_trajectory_), maps(maps_)
+{
+    if(cam_img.sensor == 1){
+        is_stereo = true;
+    }
 
 }
 
 bool ImagingFramePlacer::placeImagingFrame(cv::Mat &img, const Imgdata &img_info) {
 
-    int min_mpts = 20; // minimum number of landmarks visible in frame needed to retain
     //extract relevant info
     double time_stamp = img_info.time_stamp;
-
-    bool is_stereo = false;
-    if(cam_img.sensor == 1){
-        is_stereo = true;
-    }
 
     //create keyframe
     //determine pose of imaging camera at this frame based on time and SLAM trajectory
@@ -43,10 +41,7 @@ bool ImagingFramePlacer::placeImagingFrame(cv::Mat &img, const Imgdata &img_info
             std::vector<MapPoint*> visible_mpts;
             maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
             if(visible_mpts.size() > min_mpts){
-                pKF_previous = pKF;
-                mpts_previous = visible_mpts;
-                retained_keyframes.insert(pKF);
-                maps["Imaging"]->AddKeyFrame(pKF); // for visualization
+                retainKeyFrame(pKF, visible_mpts);
                 std::cout << "placing imaging frame due to low overlap" << std::endl;
                 return true;
             } else {
@@ -60,10 +55,7 @@ bool ImagingFramePlacer::placeImagingFrame(cv::Mat &img, const Imgdata &img_info
         std::vector<MapPoint*> visible_mpts;
         maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
         if(visible_mpts.size() > min_mpts){
-            pKF_previous = pKF;
-            mpts_previous = visible_mpts;
-            retained_keyframes.insert(pKF);
-            maps["Imaging"]->AddKeyFrame(pKF); // for visualization
+            retainKeyFrame(pKF, visible_mpts);
             std::cout << "placing imaging frame, no previous frame and sufficient mappoints visible " << std::endl;
             return true;
         } else {
@@ -86,6 +78,20 @@ double ImagingFramePlacer::overlapWithPreviousFrame(KeyFrame *pKF, KeyFrame *pKF
     return overlap;
 }
 
+void ImagingFramePlacer::retainKeyFrame(KeyFrame *pKF, std::vector<MapPoint *> mpts_visible) {
+    pKF_previous = pKF;
+    mpts_previous = mpts_visible;
+    retained_keyframes.insert(pKF);
+    maps["Imaging"]->AddKeyFrame(pKF); //allows retained keyframes to be exported (colamp, agisoft) and KFs will be visualized
+}
+
+void ImagingFramePlacer::setOverlapThreshold(double overlapThreshold) {
+    overlap_threshold = overlapThreshold;
+}
+
+void ImagingFramePlacer::setMinMpts(int minMpts) {
+    min_mpts = minMpts;
+}
 
 
 }//close namespace

@@ -12,12 +12,12 @@ TrackingStateNull::TrackingStateNull(std::ofstream &log, MainThreadsStatus *thre
     }
 
 bool TrackingStateNull::initialPoseEstimation(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF, Map *pMap,
-                                              std::map <std::string, std::unique_ptr<Trajectory>> &trajectories) {
+                                              std::map<std::string, std::shared_ptr<Trajectory>> &trajectories) {
     return false;
 }
 
 bool TrackingStateNull::refinePoseEstimate(Frame &current_frame, const FrameBuffer &frames, KeyFrame *pKF, Map *pMap,
-                                           std::map <std::string, std::unique_ptr<Trajectory>> &trajectories) {
+                                           std::map<std::string, std::shared_ptr<Trajectory>> &trajectories) {
     return false;
 }
 
