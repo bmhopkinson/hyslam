@@ -204,7 +204,38 @@ g2o::Trajectory Trajectory::convertToG2O(){
     return g2o::Trajectory(poses_wc_i3, times, vtracking_good);
 }
 
+bool Trajectory::poseAtTime(double t, cv::Mat &T) { //pose at time t in world to camera convention
+    std::vector<TrajectoryElement>::iterator it;
+    it = std::lower_bound(trajectory_elements.begin(), trajectory_elements.end(), t, compareTrajectoryElementTime);
 
+    if(it ==trajectory_elements.begin()){ //time less than zero - shouldn't happen but could with optimization updates
+        T=(*it).Tcw; //initial position
+        return false;
+    }
+
+    cv::Mat Vscaled;
+    TrajectoryElement te_cur  = *it;
+    TrajectoryElement te_prev = *(it-1);
+
+    if(!te_cur.tracking_good || !te_prev.tracking_good){  //if tracking was bad abort. otherwise update poses and continue
+        return false;
+    }
+    te_cur.update();
+    te_prev.update();
+
+    double dt_interval = te_cur.time_stamp - te_prev.time_stamp;
+    double dt_target   = t - te_prev.time_stamp;
+    GenUtils::ScaleVelocity(te_cur.Vcw, dt_interval, dt_target, Vscaled);
+  //  std::cout << "in poseAtTime() for time: "  << t << std::endl;
+   // std::cout << "Vscaled: " << Vscaled << std::endl;
+   // std::cout << "Vcw: "  << te_cur.Vcw << std::endl;
+  //  std::cout << "dt_interval: " << dt_interval << std::endl;
+  //  std::cout << "dt_target: " << dt_target << std::endl;
+  //  std::cout << "te_prev.Tcw: " << te_prev.Tcw;
+    T = Vscaled * te_prev.Tcw;
+
+    return true;
+}
 
 int Trajectory::integrateVelocity(const double t_start, const double t_stop, cv::Mat &Vint) {
   cv::Mat vel_temp = cv::Mat::eye(4,4, CV_32F);
@@ -446,4 +477,13 @@ TrajectoryElement Trajectory::getLastTrackedElement() {
     }
 }
 
+
+bool compareTrajectoryElementTime(TrajectoryElement te, double time) {
+    if(te.time_stamp < time){
+        return true;
+    }
+    else  {
+        return false;
+    }
+}
 }

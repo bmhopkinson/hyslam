@@ -49,6 +49,8 @@ namespace HYSLAM{
 
 //typedef Eigen::Transform<double ,3,Eigen::Isometry,Eigen::ColMajor> Isometry3;
 
+
+
 class TrajectoryElement{
   public:
     TrajectoryElement();
@@ -86,6 +88,7 @@ public:
     TrajectoryElement getLastTrackedElement();
 
     g2o::Trajectory convertToG2O();
+    bool poseAtTime(double t, cv::Mat &T);  // in world to camera convention
     int integrateVelocity(const double t_start, const double t_stop, cv::Mat &Vint) ; //Vint is motion between t_start and t_stop in world to camera convention
     int timeRange(const double t_start, const double t_stop, std::vector<TrajectoryElement> &subtraj) const;
 
@@ -120,6 +123,8 @@ private:
 
  //   bool compareTrajectoryElementTime(TrajectoryElement* te, double time);
 };
+
+bool compareTrajectoryElementTime(TrajectoryElement te, double time);
 
 }
 

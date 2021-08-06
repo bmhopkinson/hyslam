@@ -70,6 +70,14 @@ class ImageProcessing;
 
 using KeyFrameExportData = std::vector< std::pair<int, std::string > >;
 
+class ImagingInfo{ //move this and all the imaging addition functions to another class
+public:
+    KeyFrame* pKF_previous = nullptr;
+    std::vector<MapPoint*> mpts_previous;
+    std::set<KeyFrame*> retained_keyframes;
+    double overlap_threshold = 0.8; //if fraction of mapts viewed between current frame and previous retained frame passes below this threshold, keep current frame
+};
+
 class System
 {
 public:
@@ -96,6 +104,7 @@ public:
     cv::Mat TrackMonocular(const cv::Mat &im, const Imgdata &img_info, const SensorData &sensor_data);
 
     void RunImagingBundleAdjustment(); //after completion of SLAM run call to align imaging cameras
+    bool placeImagingFrame(cv::Mat &img, const Imgdata &img_info );
 
     std::map<std::string, Camera>  getCameras(){return cam_data;};
 
@@ -156,6 +165,7 @@ public:
 
 
 private:
+    ImagingInfo imaging_info;
 
     // Input sensor
     eSensor mSensor;
@@ -217,6 +227,8 @@ private:
     std::vector<MapPoint*> mTrackedMapPoints;
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
+
+    double overlapWithPreviousFrame(KeyFrame* pKF, KeyFrame* pKF_previous, std::vector<MapPoint*> mpts_previous);
 };
 
 std::string createImageFileName(std::string cam_name, std::string img_id, std::string file_ext);

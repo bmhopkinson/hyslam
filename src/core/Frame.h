@@ -76,6 +76,7 @@ class Frame
 public:
     Frame();
     // Constructor
+    Frame(const double &timeStamp, const Camera &camdata, const std::string img_name, bool stereo);
     Frame(const double &timeStamp, FeatureViews views_, FeatureVocabulary* voc, const Camera &camdata,
           const std::string img_name, const  SensorData sensor_d, bool stereo);
 

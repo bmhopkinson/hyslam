@@ -33,7 +33,14 @@ Frame::Frame() : is_empty(true)
   //  std::cout << "in default frame constructor, is_empty:" << isEmpty() << std::endl;
 }
 
-//constructor
+//constructors
+Frame::Frame(const double &timeStamp, const Camera &camdata, const std::string img_name, bool stereo) :
+  mTimeStamp(timeStamp), camera(camdata), fimgName(img_name),
+  mpReferenceKF(static_cast<KeyFrame*>(NULL)), is_stereo(stereo), is_empty(false), is_tracked(false)
+{
+    mnId=nNextId++;
+    mThDepth = camdata.thDepth;
+}
 
 Frame::Frame(const double &timeStamp, FeatureViews views_, FeatureVocabulary* voc,
              const Camera &camdata, const std::string img_name, const  SensorData sensor_d, bool stereo)
@@ -609,6 +616,8 @@ int Frame::validateNewAssociations(std::vector<MapPoint*> mvpMapPoints) const {
     std::cout << "validating mvp simulated for Frame id: " << mnId << " errors, indexs don't match: " << errors_nm <<" , no assocation in new struct: "<< errors_na << "  , empty mappoint error: "  << errors_a << ", correct: " << correct<< std::endl;
     return errors_nm + errors_na + errors_a;
 }
+
+
 
 
 } //namespace ORB_SLAM
