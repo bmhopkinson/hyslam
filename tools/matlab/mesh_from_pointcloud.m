@@ -55,8 +55,8 @@ T = zeros(n_elm,3); %triangular vertex matrix
 elm = 1;
 for j = 1:grid_size_x-1
     for i = 1:grid_size_y-1
-        T(elm, :)   = [ (j-1)*grid_size_y + i     , (j-1)*grid_size_y + i + 1, j*grid_size_y + i     ];
-        T(elm+1, :) = [  j*grid_size_y + (i+1), j*grid_size_y + i        , (j-1)*grid_size_y + (i + 1) ];
+         T(elm, :)   = [  j*grid_size_y + i, (j-1)*grid_size_y + i + 1 , (j-1)*grid_size_y + i         ];
+         T(elm+1, :) = [  (j-1)*grid_size_y + (i + 1), j*grid_size_y + i       ,  j*grid_size_y + (i+1) ];
         elm = elm + 2;
     end
 end
