@@ -162,7 +162,6 @@ System::System( const std::string &strSettingsFile, const eSensor sensor,
     for(auto it = maps.begin(); it != maps.end(); ++it){
         std::string cam_name = it->first;
         if(cam_name == "Imaging") {
-            std::cout << "CREATING IMAGING FRAME PLACER !!!!!!!!!!!!!!!!!!!!! " << std::endl;
             imaging_frame_placer = std::make_shared<ImagingFramePlacer>(cam_data["Imaging"],
                                                                         mpTracker->trajectories["SLAM"],
                                                                         maps);

@@ -47,6 +47,7 @@ ${Pangolin_INCLUDE_DIRS}
 ${G2O_INCLUDE_DIR}
 )
 
+option(APRILTAG "APRILTAG capabilities" ON)
 
 add_subdirectory(src) #HYSLAM IS ADDED HERE
 

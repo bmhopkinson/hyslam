@@ -8,7 +8,10 @@ add_subdirectory(slam)
 add_subdirectory(util)
 add_subdirectory(viz)
 
-
+if(APRILTAG)
+	find_package(apriltag REQUIRED)
+	add_subdirectory(optional/apriltag)
+endif()
 #message(STATUS "HYSLAM_SOURCES" ${HYSLAM_SOURCES})
 #message(STATUS "HYSLAM_INCLUDES" ${HYSLAM_PUBLIC_INCLUDE_DIRS})
 set(CMAKE_SKIP_BUILD_RPATH FALSE)  #otherwise rpath is not properly set to run from build directory - expects install to default location
@@ -21,17 +24,25 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${HYSLAM_PUBLIC_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PRIVATE
 #dataproc
-${OpenCV_LIBS}
-${EIGEN3_LIBS}
-${Pangolin_LIBRARIES}
-${G2O_LIBS}
-${G2O_TYPES_SLAM3D}
+	${OpenCV_LIBS}
+	${EIGEN3_LIBS}
+	${Pangolin_LIBRARIES}
+	${G2O_LIBS}
+	${G2O_TYPES_SLAM3D}
 #${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.a
-/usr/local/lib/libDBoW2.so
-${CUDA_LIBRARIES}
+	/usr/local/lib/libDBoW2.so
+	${CUDA_LIBRARIES}
 )
+
+#optional components
+message(STATUS "APRILTAG ${APRILTAG}")
+if(APRILTAG)
+	target_link_libraries(${PROJECT_NAME} PRIVATE
+			apriltag::apriltag
+			)
+endif()
 
 #install
 set(INSTALL_LIBDIR "/usr/local/lib")

@@ -24,7 +24,7 @@ ImageProcessing::ImageProcessing(FeatureFactory* factory_, const std::string &st
    // FeatureExtractorSettings feature_extractor_settings;
    // LoadSettings(strSettingPath, feature_extractor_settings, feature_settings);
 
-    //setup extractors for various camears
+    //setup extractors for various cameras
     for(auto it = cam_data.begin(); it != cam_data.end(); ++it){
         std::string cam_name = (*it).first;
         extractors[cam_name] = Extractors();
