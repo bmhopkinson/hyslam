@@ -1,20 +1,20 @@
-##HySLAM Overview
+## HySLAM Overview
 hySLAM is a hybrid SLAM/SfM system designed for mapping. 
-The system is based on ORB-SLAM2 with some modification and refactoring.
+The system is based on ORB-SLAM2 with some modifications and refactoring.
 
 Raúl Mur-Artal and Juan D. Tardós. **ORB-SLAM2: an Open-Source SLAM System for Monocular, Stereo and RGB-D Cameras**. *IEEE Transactions on Robotics,* vol. 33, no. 5, pp. 1255-1262, 2017.
 
 ORB-SLAM2 original code: [ORB-SLAM2_repo](https://github.com/raulmur/ORB_SLAM2)
 
 ## Modifications:
-1. Support for multiple cameras
-2. Multi-map, recursive data structure: a recursive tree structure
+1. Support for multiple cameras.
+2. Addition of a Multi-map, recursive data structure: a recursive tree structure
    is used to handle sub-maps. Sub-maps can be optionally registered with their parent to
    make keyframes and map points accessible to the parent or
    the sub-map can be kept private
 3. Trajectory tracking: Per-frame camera trajectories are explicitly recorded as SE(3) transformations relative to reference keyframes, whose positions are
    continuously updated via optimization 
-4. Extensive code refactoring including converting tracking to a state-machine, conversion of mapping to a job based, parallel module, and addition of a separate feature extraction thread.
+4. Extensive code refactoring including converting *Tracking* to a state-machine, conversion of *Mapping* to a job based, parallel module, and addition of a separate *Feature Extraction* thread.
 
 ## Example Use
 hySLAM was used as the basis for a dual-camera SLAM system to map visually repetitive ecosystems such as grasslands, where conventional Strucuture from Motion techniques are unreliable.
