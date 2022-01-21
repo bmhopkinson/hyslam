@@ -70,7 +70,6 @@ void Tracking::LoadSettings(std::string settings_path){
         std::string cam_name  = (*it).name();
         cam_types.push_back((*it).name());
         mSensor[cam_name]  = cam_data[cam_name].sensor;
-        //LoadCalibration(*it, (*it).name());
         InitializeDataStructures((*it).name());
         std::cout << "tracking loadsettings: cameras: " << cam_name << std::endl;
     }
@@ -170,11 +169,9 @@ void Tracking::_Track_()
     frame_buf.push_back(mLastFrame[cam_cur]); //should probably pass pointers here
     frame_buf.push_back(mLastFrame["SLAM"]);
     mCurrentFrame.mpReferenceKF = mpReferenceKF[cam_cur];
-  //  std::cout << "about to call initialPoseEstimate for cam" << cam_cur << ", frame: " << mCurrentFrame.mnId << std::endl;
     bool bOK = state[cam_cur]->initialPoseEstimation(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur].get(), trajectories);
 
     if(bOK){
-  //      std::cout << "about to call refinePoseEstimate for cam" << cam_cur << ", frame: " << mCurrentFrame.mnId << std::endl;
         bOK = state[cam_cur]->refinePoseEstimate(mCurrentFrame, frame_buf, mpReferenceKF[cam_cur], maps[cam_cur].get(), trajectories);
     }
     mCurrentFrame.setTracked(bOK); //indicated frame was successfully tracked  - would probably be better to fold initialPoseEstimate, refinePoseEstiamte into a single method and set this value after taht combined method
@@ -182,20 +179,16 @@ void Tracking::_Track_()
     mCurrentFrame.mpReferenceKF = determineReferenceKeyFrame(&mCurrentFrame);
 
     if(mCurrentFrame.mpReferenceKF){
-        // std::cout << "determineReferenceKeyFrame: frame: " << mCurrentFrame.mnId << " ,refKF: " <<  mCurrentFrame.mpReferenceKF->mnId << std::endl;
         mpReferenceKF[cam_cur] = mCurrentFrame.mpReferenceKF;
     }
 
     // If tracking was good, check if we insert a keyframe
- //   std::cout << "tracking, finsihed setting ref keyframe, etc, is tracking ok: " << bOK << std::endl;
-
     std::vector<KeyFrame*> newKFs;
     if(bOK)
     {
         if(cam_cur == "SLAM" && !slam_ever_initialized){
             slam_ever_initialized= true; //first time through set this when initialized (in which case bOK = true)
         }
-       // std::cout << "tracking, about to HandlePostTrackingSuccess()"  << std::endl;
         HandlePostTrackingSuccess();
         bool force = false;
         thread_status->mapping.setStoppable(false);
@@ -242,13 +235,9 @@ void Tracking::_Track_()
     }
 
     //set next state
-   // std::cout << "tracking about to set next state" << std::endl;
-    //TransitionToNewState(mState, state, bOK, newKFs);
     tracking_state_transition->transitionToNewState(mState, state, bOK, cam_cur);
 
     ftracking << std::endl;
-   // mCurrentFrame.validateMatches();
-   // mLastFrame[cam_cur].validateMatches();
     mCurrentFrame.propagateTracking(mLastFrame[cam_cur]);
 
     // Update drawer
@@ -262,7 +251,6 @@ void Tracking::UpdateLastFrame()
     // Update pose according to reference keyframe whose position may be changed by local mapping/loop closing
     KeyFrame* pKFRef = mLastFrame[cam_cur].mpReferenceKF;
     if(pKFRef && !trajectories[cam_cur]->empty()) {
-  //      std::cout << "in UpdateLast frame, refKF is: " << pKFRef->mnId << std::endl;
         TrajectoryElement te_back = trajectories[cam_cur]->back();
         cv::Mat Tlr = te_back.Tcr;
         mLastFrame[cam_cur].SetPose(Tlr * pKFRef->GetPose());
@@ -334,7 +322,6 @@ bool Tracking::Stop()
     {
         thread_status->tracking.setIsStopped(true);
         return true;
-        std::cout << "stopping tracking" << std::endl;
     }
     return false;
 
@@ -371,8 +358,6 @@ void Tracking::Reset()
 }
 
 void Tracking::InitializeDataStructures(std::string cam_name){
-  //  Trajectory trajectory;
-  //trajectories.insert(std::make_pair( cam_name, trajectory) );
   trajectories[cam_name] = std::make_shared<Trajectory>();
   mState.insert(std::make_pair(cam_name, eTrackingState::NO_IMAGES_YET) );
   init_data.insert(std::make_pair( cam_name, InitializerData() ) );

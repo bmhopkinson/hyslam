@@ -62,7 +62,7 @@ void Mapping::Run()
         // Tracking will see that Local Mapping is busy
         SetAcceptKeyFrames(false);
 
-        //WOULD LIKE TO ENABLE true flushing of queue THIS BUT REQUIRES MORE WORK - CURRENTLY ONCE KEYFRAMES are passed ot mapping they must at least initially be incorporated into the map b/c KF,Frame,mpt assocaitons have been made - can later be culled, but must initially be incorporated
+        //WOULD LIKE TO ENABLE true flushing of queue THIS BUT REQUIRES MORE WORK - CURRENTLY ONCE KEYFRAMES are passed to mapping they must at least initially be incorporated into the map b/c KF,Frame,mpt assocaitons have been made - can later be culled, but must initially be incorporated
         if(clear_input_queue){  //clears all EXCEPT most recent keyframe - trigerred if optional jobs keep getting interrupted or input queue is too long
             std::cout << "clearing mapping queue" << std::endl;
             StopTracking(200);
@@ -78,12 +78,10 @@ void Mapping::Run()
                 std::thread job_thread(&MapJob::run, (*job).get());
                 job_thread.join();
             }
-        //    std::cout << "Mapping finished running mandatory jobs on KeyFrame"  << mpCurrentKeyFrame->mnId << std::endl;
+
             std::vector< std::unique_ptr<MapJob> > optional_jobs;
             SetupOptionalJobs(optional_jobs);
-         //   std::cout << "Mapping finished setting up optional jobs on KeyFrame"  << mpCurrentKeyFrame->mnId << std::endl;
             RunOptionalJobs(optional_jobs, false);
-         //   std::cout << "Mapping Finished Processing KeyFrame: " << mpCurrentKeyFrame->mnId << std::endl;
 
             if(!CheckNewKeyFrames() && !stopRequested())
             {
@@ -91,7 +89,6 @@ void Mapping::Run()
                  optInfo optpar = mpTracker->optParams;
                //periodically do a Global Bundle Adjustment
                bool time_for_GBA = (nKFs_created - lastGBAKF) > optpar.GBAinterval;
-            //   std::cout << "mapping: nKFs_created: " << nKFs_created << "\t lastGBAKF: " << lastGBAKF << "\t GBAinterval: " << optpar.GBAinterval << "\t time_for_GBA: " << time_for_GBA <<std::endl;
                if(!optpar.realtime && time_for_GBA ){
                   bNeedGBA = true;
                   std::cout << "need GBA = true" << std::endl;
@@ -173,8 +170,6 @@ void Mapping::SetupMandatoryJobs(std::vector< std::unique_ptr<MapJob> > &mandato
         thread_status->mapping.setQueueLength(input_queue->size());
         curKF_cam = mpCurrentKeyFrame->camera.camName;
         nKFs_created++;
-     //   std::cout << "Mapping working on KF: " << mpCurrentKeyFrame->mnId<< std::endl;
-      //  std::cout << "Mapping new mapping_queue size:  "<< input_queue->size() << std::endl;
 
     }
 
@@ -228,61 +223,61 @@ void Mapping::RunOptionalJobs(std::vector< std::unique_ptr<MapJob> >  &optional_
         // testing didn't show any advantage of multithreading right now - all jobs almost always finish before next keyframe arrives.
         // multithreading did seem to have somewhat more frequent segfaults but generally worked ok - so it could be possible to multithread if needed but will take some work
 
-bool completed_jobs = true; //will get set false if aborted
-if(multithreaded){
-    using JobThread = std::pair<MapJob *, std::thread>;
-    std::list<JobThread> active_jobs;
-
-    //launch threads
-    for (auto job = optional_jobs.begin(); job != optional_jobs.end(); ++job) {
-        active_jobs.emplace_back((*job).get(),
-                                 std::thread(&MapJob::run, (*job).get())
-        );
-    }
-
-    bool abort = false;
-    while (!active_jobs.empty()) {
-        if ( interruptJobs() ) {
-            abort = true;
-            completed_jobs = false;
-            //  std::cout << "attempting to abort jobs" << std::endl;
+    bool completed_jobs = true; //will get set false if aborted
+    if(multithreaded){
+        using JobThread = std::pair<MapJob *, std::thread>;
+        std::list<JobThread> active_jobs;
+    
+        //launch threads
+        for (auto job = optional_jobs.begin(); job != optional_jobs.end(); ++job) {
+            active_jobs.emplace_back((*job).get(),
+                                     std::thread(&MapJob::run, (*job).get())
+            );
         }
-        for (auto it = active_jobs.begin(); it != active_jobs.end(); ++it) {
-            MapJob *job = it->first;
-            if (abort) {
-                job->abort();
-            }
 
-            if (job->finished()) {   //if job is done remove it.
-                //   std::cout <<" job finished for KF: " << mpCurrentKeyFrame->mnId <<std::endl;
-                std::thread &job_thread = it->second;
+        bool abort = false;
+        while (!active_jobs.empty()) {
+            if ( interruptJobs() ) {
+                abort = true;
+                completed_jobs = false;
+                //  std::cout << "attempting to abort jobs" << std::endl;
+            }
+            for (auto it = active_jobs.begin(); it != active_jobs.end(); ++it) {
+                MapJob *job = it->first;
+                if (abort) {
+                    job->abort();
+                }
+
+                if (job->finished()) {   //if job is done remove it.
+                    //   std::cout <<" job finished for KF: " << mpCurrentKeyFrame->mnId <<std::endl;
+                    std::thread &job_thread = it->second;
+                    job_thread.join();
+                    it = active_jobs.erase(it);
+                }
+
+            }
+        }
+        thread_status->mapping.setInterrupt(false);
+    }
+    else {
+        for(auto job = optional_jobs.begin(); job != optional_jobs.end(); ++job){
+            if ( interruptJobs()) {
+                std::cout << "stopping optional jobs" << std::endl;
+                completed_jobs = false;
+               break;
+            } else {   //run job
+             //   std::cout << "Mapping running " << (*job)->name() << ", on KeyFrame: " << mpCurrentKeyFrame->mnId << std::endl;
+                std::thread job_thread(&MapJob::run, (*job).get());
                 job_thread.join();
-                it = active_jobs.erase(it);
             }
-
         }
+        thread_status->mapping.setInterrupt(false);
     }
-    thread_status->mapping.setInterrupt(false);
-}
-else {
-    for(auto job = optional_jobs.begin(); job != optional_jobs.end(); ++job){
-        if ( interruptJobs()) {
-            std::cout << "stopping optional jobs" << std::endl;
-            completed_jobs = false;
-           break;
-        } else {   //run job
-         //   std::cout << "Mapping running " << (*job)->name() << ", on KeyFrame: " << mpCurrentKeyFrame->mnId << std::endl;
-            std::thread job_thread(&MapJob::run, (*job).get());
-            job_thread.join();
-        }
+    if(completed_jobs){
+        N_optional_jobs_stopped = 0;
+    } else {
+        N_optional_jobs_stopped++;
     }
-    thread_status->mapping.setInterrupt(false);
-}
-if(completed_jobs){
-    N_optional_jobs_stopped = 0;
-} else {
-    N_optional_jobs_stopped++;
-}
 
 }
 
