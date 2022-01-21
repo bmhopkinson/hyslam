@@ -16,7 +16,6 @@ TrackingStatePostInitialization::TrackingStatePostInitialization(optInfo optimiz
 
 bool TrackingStatePostInitialization::needNewKeyFrame(Frame &current_frame, Map *pMap, unsigned int last_keyframe_id,
                                                  bool force) {
-    //std::cout << "forcing new keyframe due to recent initialization" <<std::endl;
     return true;
 }
 } //end namespace

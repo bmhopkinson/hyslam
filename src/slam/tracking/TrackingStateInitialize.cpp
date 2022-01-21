@@ -10,14 +10,10 @@ TrackingStateInitialize::TrackingStateInitialize(optInfo optimizer_info_, Camera
                                                  FeatureFactory* factory) :
     TrackingState(log, thread_status_), optimizer_info(optimizer_info_), camera(camera_), params(params_), feature_factory(factory)
 {
- //   cv::FileNode config_data_strategies =config_data["Strategies"];
- //   cv::FileNode config_init = config_data_strategies["Initialize"];
     init_data = &init_data_;
     if (camera.sensor == 1) {  //stereo camera
-       // StereoInitializerParameters siparams(config_init["Stereo"]);
         initializer = std::make_unique<StereoInitializer>(params.stereo_params );
     } else if (camera.sensor == 0){ //mono camera
-      //  MonoInitializerParameters miparams(config_init["Mono"]);
         initializer = std::make_unique<MonoInitializer>(params.mono_params , feature_factory);
     } else {
         std::cout << "no initializer available for requested camera type: "  << camera_.sensor << std::endl;
@@ -38,7 +34,6 @@ bool TrackingStateInitialize::initialPoseEstimation(Frame &current_frame, const 
         if((camera.sensor == 0) && camera.camName != "SLAM"){
             initializer->transformMap(trajectories.at("SLAM").get(), last_slamframe, camera.Tcam);
             std::shared_ptr<Map> submap = pMap->createSubMap(true);
-           // submap->registerWithParent();//temporary for vizualization and testing
             initializer->addToMap(submap.get());
 
         } else {
@@ -80,13 +75,6 @@ bool TrackingStateInitialize::needNewKeyFrame(Frame &current_frame, Map* pMap, u
 std::vector<KeyFrame*> TrackingStateInitialize::createNewKeyFrame(Frame &current_frame, Map* pMap){
     KeyFrame* pKFcur = initializer->getCurrentKF();
     current_frame =initializer->getInitializedFrame();
-/*
-    for(std::vector<KeyFrame*>::iterator vit = KFnew.begin(); vit != KFnew.end(); ++vit){
-        KeyFrame* pKF = *vit;
-       // pLocalMapper->InsertKeyFrame(pKF);
-       // pMap->getKeyFrameDB()->update(pKF);
-    }
-*/
     current_frame.SetPose(pKFcur->GetPose());  //think I should be able to move this up to initialPoseEstimation which seems more appropriate
     current_frame.mpReferenceKF = pKFcur;
     pMap->mvpKeyFrameOrigins.push_back(pKFcur);  //used in loop closing

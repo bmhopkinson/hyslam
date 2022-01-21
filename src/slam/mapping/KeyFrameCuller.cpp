@@ -54,7 +54,6 @@ void KeyFrameCuller::run(){
                     nMPs++;
                     if(pMP->Observations()>thObs)
                     {
-                        //const int &scaleLevel = pKF->mvKeysUn[i].octave;
                         const int &scaleLevel = KFviews.keypt(i).octave;
                         const std::map<KeyFrame*, size_t> observations = pMP->GetObservations();
                         int nObs=0;
@@ -64,7 +63,6 @@ void KeyFrameCuller::run(){
                             if(pKFi2==pKFi)
                                 continue;
 
-                            //const int &scaleLeveli = pKFi->mvKeysUn[mit->second].octave;
                             const FeatureViews& KF2views = pKFi2->getViews();
                             const int &scaleLeveli = KF2views.keypt(mit->second).octave;
 

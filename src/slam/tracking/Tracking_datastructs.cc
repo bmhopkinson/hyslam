@@ -73,8 +73,6 @@ TrackReferenceKeyFrameParameters::TrackReferenceKeyFrameParameters(cv::FileNode 
 StateNormalParameters::StateNormalParameters(){}
 
 StateNormalParameters::StateNormalParameters(cv::FileNode state_data,cv::FileNode strategy_data){
-  //  cv::FileNode state_data = data["States"]["Normal"];
-  //  cv::FileNode config_data_strategies =  data["Strategies"];
 
     tmomo_params = TrackMotionModelParameters(strategy_data[ state_data["Strategies"]["TrackMotionModel"].string() ]);
     trefkf_params = TrackReferenceKeyFrameParameters(strategy_data[ state_data["Strategies"]["TrackReferenceKeyFrame"].string() ]);
@@ -99,7 +97,6 @@ StateNormalParameters::StateNormalParameters(cv::FileNode state_data,cv::FileNod
 StateInitializeParameters::StateInitializeParameters(){}
 
 StateInitializeParameters::StateInitializeParameters(cv::FileNode state_data,cv::FileNode strategy_data){
- //   cv::FileNode state_data = data["States"]["Initialize"];
     cv::FileNode config_data_strategies =  strategy_data[ state_data["Strategies"]["Initialize"].string() ];
 
     mono_params = MonoInitializerParameters(config_data_strategies["Mono"]);
@@ -123,9 +120,6 @@ StateReInitializeParameters::StateReInitializeParameters(cv::FileNode state_data
 StateRelocalizeParameters::StateRelocalizeParameters(){}
 
 StateRelocalizeParameters::StateRelocalizeParameters(cv::FileNode state_data,cv::FileNode strategy_data){
- //   cv::FileNode state_data = data["States"]["Relocalize"];
-  //  cv::FileNode strategies =  data["Strategies"];
-
     tplacerecog_params = TrackPlaceRecognitionParameters(strategy_data[ state_data["Strategies"]["TrackPlaceRecognition"].string() ]) ;
     tlocalmap_params = TrackLocalMapParameters( strategy_data[ state_data["Strategies"]["TrackLocalMap"].string() ] ) ;
 
@@ -243,20 +237,15 @@ int Velocity::integrate(const double t_start, const double t_stop, cv::Mat &vel_
                 cv::Mat v_scaled;
                 double dt_vel = times[1] - times[0];
                 double dt_target = times[1] - _t_start;
-         //       std::cout << "dt_vel: " << dt_vel << " , dt_target: " << dt_target << std::endl;
                 ScaleVelocity(v, dt_vel, dt_target, v_scaled);
-          //      std::cout << "1st element scaled: " << v_scaled << std::endl;
                 v = v_scaled;
             }
             else if(std::next(vit,1) == vels.end()){ //last element- needs to be scaled
                 cv::Mat v_scaled;
                 double dt_vel = *(times.rbegin()) - *(times.rbegin()+1);
                 double dt_target = _t_stop - *(times.rbegin()+1);
-            //    std::cout << "dt_vel: " << dt_vel << " , dt_target: " << dt_target << std::endl;
                 ScaleVelocity(v, dt_vel, dt_target, v_scaled);
                 v = v_scaled;
-            //    std::cout << "last element scaled: " << v_scaled << std::endl;
-
             }
             vel_temp = v*vel_temp;
         }

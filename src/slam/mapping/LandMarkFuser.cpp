@@ -53,9 +53,6 @@ void LandMarkFuser::run(){
     for(std::set<KeyFrame*>::iterator vit=KF_fuse_targets.begin(), vend=KF_fuse_targets.end(); vit!=vend; vit++)
     {
         KeyFrame* pKFi = *vit;
-    //    std::map<std::size_t, MapPoint*> fuse_matches;
-      //  matcher.Fuse(pKFi,vpMapPointMatches, fuse_matches); //find fuse matches
-
         std::map<std::size_t, MapPoint*> fuse_matches;
         matcher->Fuse(pKFi,vpMapPointMatches, fuse_matches); //find fuse matches
         n_total_fused = fuse_mappoints(pKFi,  fuse_matches);
@@ -85,7 +82,6 @@ void LandMarkFuser::run(){
     std::map<std::size_t, MapPoint*> fuse_matches;
     matcher->Fuse(pKF,vlandmark_fuse_candidates, fuse_matches);  //would like to move the actual fusing out of the matchers - have matcher return landmarks for fusing and fuse here
     n_total_fused += fuse_mappoints(pKF,  fuse_matches);
-    // std::cout <<"finished Fuse in SearchInNeighbors for KF:" << mpCurrentKeyFrame->mnId << std::endl;
 
     // Update connections in covisibility graph
     pMap->update(pKF);

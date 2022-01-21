@@ -14,7 +14,6 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
 
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
-    //  vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectRelocalizationCandidates(&mCurrentFrame);
     std::set<KeyFrame*> vpCandidateKFs_set = pMap->detectRelocalizationCandidates(&current_frame);
     std::vector<KeyFrame*> vpCandidateKFs(vpCandidateKFs_set.begin(), vpCandidateKFs_set.end()); //shouldn't need to do this - rewrite below
     if(vpCandidateKFs.empty())
@@ -42,8 +41,6 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
 
     int nCandidates=0;
 
-    //int i = 0;
-    //for(auto it  = vpCandidateKFs.begin(); it != vpCandidateKFs.end(); ++it, i++)
     for(int i=0; i<nKFs; i++)
     {
         KeyFrame* pKF = vpCandidateKFs[i];
@@ -76,7 +73,6 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
                                              params.ransac.minSet,params.ransac.epsilon,params.ransac.th2);
                 vpPnPsolvers[i] = pSolver;
                 nCandidates++;
-              //  std::cout << "candidate KF detected by BoW search: " << pKF->mnId << std::endl;
             }
         }
     }
@@ -85,7 +81,6 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     // Until we found a camera pose supported by enough inliers
     int nGood = 0;
     bool bMatch = false;
-  //  FeatureMatcher matcher2(params.match_nnratio_2, true);
     fm_settings = feature_factory->getFeatureMatcherSettings();
     fm_settings.nnratio = params.match_nnratio_2;
     fm_settings.checkOri =true;
@@ -118,9 +113,7 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
             if(!Tcw.empty())
             {
 
-               // std::cout << "candidate KF has pose via PnP, try to optimize: " << vpCandidateKFs[i]->mnId << std::endl;
                 Tcw.copyTo(current_frame.mTcw);
-
                 std::set<MapPoint*> sFound;
 
                 const int np = vbInliers.size();
@@ -197,17 +190,6 @@ int TrackPlaceRecognition::track(Frame &current_frame, const FrameBuffer &frames
     }
 
     return nGood;
-/*
-    if(!bMatch)
-    {
-        return false;
-    }
-    else
-    {
-        mnLastRelocFrameId = mCurrentFrame.mnId;
-        return true;
-    }
-*/
 
 }
 

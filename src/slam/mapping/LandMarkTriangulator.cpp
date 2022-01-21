@@ -28,17 +28,15 @@ void LandMarkTriangulator::run() {
     FeatureExtractorSettings orb_params_KFcur = KFcur_views.orbParams();
     const Camera camera_KFcur = pKF->getCamera();
 
-  //  FeatureMatcher matcher(params.match_nnratio, false);
-  FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
-  fm_settings.nnratio = params.match_nnratio;
-  fm_settings.checkOri = false;
-  feature_factory->setFeatureMatcherSettings(fm_settings);
-  std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
+    FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
+    fm_settings.nnratio = params.match_nnratio;
+    fm_settings.checkOri = false;
+    feature_factory->setFeatureMatcherSettings(fm_settings);
+    std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
 
     cv::Mat Ow1 = pKF->GetCameraCenter();
 
     const float ratioFactor = params.ratio_factor;// *orb_params_KFcur.mfScaleFactor;
-   // std::cout << "ratioFactor: " << ratioFactor << std::endl;
 
     int nnew=0;
 
@@ -56,7 +54,7 @@ void LandMarkTriangulator::run() {
         FeatureExtractorSettings orb_params_KF2 = KF2views.orbParams();
         const Camera camera_KF2 = pKF2->getCamera();
 
-        // Check first that baseline is not too short
+        // first check that the baseline is not too short
         cv::Mat Ow2 = pKF2->GetCameraCenter();
         cv::Mat vBaseline = Ow2-Ow1;
         const float baseline = cv::norm(vBaseline);
@@ -81,7 +79,6 @@ void LandMarkTriangulator::run() {
 
         std::vector<std::pair<size_t,size_t> > vMatchedIndices;
         matcher->SearchForTriangulation(pKF,pKF2,F12,vMatchedIndices,false);
-   //     std::cout << "LMTriangulator: pKF1 " << pKF->mnId << " pKF2: " << pKF2->mnId << " ; matches: " << nmatches_search << std::endl;
 
         // Triangulate each match
         const int nmatches = vMatchedIndices.size();

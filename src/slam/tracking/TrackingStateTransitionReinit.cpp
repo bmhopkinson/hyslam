@@ -99,27 +99,6 @@ void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, e
         }
     }
     else if(mState[cam_cur] == eTrackingState::NORMAL) {
-/*
-        if((n_call % 300) == 0 && n_call>200){
-            if (cam_cur == "SLAM") {
-                pnext_track_state = state_options[cam_cur]["REINITIALIZE"];
-                next_state = eTrackingState::REINITIALIZE;
-                std::cout << "SLAM CAMERA LOST TRACKING, TRYING TO REINITIALIZE: n_calls: " << n_call <<  std::endl;
-
-                if(state.find("Imaging") != state.end()){ //if there's an imaging camera set it to NULL state b/c we can't track it if SLAM tracking is lost
-                    state["Imaging"]  = state_options["Imaging"]["NULL"];
-                    mState["Imaging"] = eTrackingState::NULL_STATE;
-                }
-
-            }
-        }
-*/
-        //   else
-        //    if (bOK) {
-        //        pnext_track_state = state_options[cam_cur]["NORMAL"];
-        //        next_state = eTrackingState::NORMAL;
-        //    } else {
-        //  else
         if (!bOK){
             state_options[cam_cur]["NORMAL"]->clear();
             if (cam_cur == "SLAM") {
@@ -141,7 +120,6 @@ void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, e
     }
     else if(mState[cam_cur] == eTrackingState::RELOCALIZATION){
         if(bOK){
-            //std::cout << "transitioning from relocation to normal tracking state" << std::endl;
             pnext_track_state = state_options[cam_cur]["NORMAL"];
             next_state = eTrackingState::NORMAL;
 
@@ -152,7 +130,6 @@ void TrackingStateTransitionReinit::transitionToNewState(std::map<std::string, e
         }
     } else if(mState[cam_cur] == eTrackingState::REINITIALIZE) {
         if (bOK) {
-            //  HandlePostInit(newKFs.back(), maps[cam_cur].get(),  cam_cur);
             next_state = eTrackingState::POSTINIT;
             pnext_track_state = state_options[cam_cur]["POSTINIT"];
             recent_init[cam_cur] = 5;

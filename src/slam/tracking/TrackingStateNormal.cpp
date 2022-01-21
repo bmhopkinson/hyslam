@@ -25,18 +25,14 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
     Camera camera = current_frame.getCamera();
     if(!trajectories.at(camera.camName)->getLastVelocityValid())
     {
-      // std::cout << "trying to track with reference keyframe w/ no valid velocity: pKF->mnId" << pKF->mnId << "\tnmatches: ";
       nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at(camera.camName).get() );
-      //  std::cout << nmatches << std::endl;
     }
     else     //track with motion model - default when tracking is going smoothly
     {
-     //  std::cout << "trying to track with motion model: " << std::endl;
      nmatches = track_motion_model->track(current_frame, frames, pKF, pMap,trajectories.at(camera.camName).get() );
 
         if(nmatches < params.thresh_init){
-     //       std::cout << "tracking with motion model failed...will need to track with reference key frame." << std::endl;
-     nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at(camera.camName).get() );
+            nmatches = track_reference_keyframe->track(current_frame, frames, pKF, pMap, trajectories.at(camera.camName).get() );
             (*pftracking) << "RefKF" << "\t";
         } else {
             (*pftracking) << "MoMo" << "\t";
@@ -48,10 +44,9 @@ bool TrackingStateNormal::initialPoseEstimation(Frame &current_frame, const Fram
         n_frames_tracked_consecutively = 0;
     }
 
-
     std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
     std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
-   // std::cout << "MoMo Init Pose estimation duration (ms):  " << t_elapsed.count() << std::endl;
+
 
     init_pose_duration+= t_elapsed;
  //   if(n_calls % 50 == 0){
@@ -69,14 +64,8 @@ bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBu
 
     std::chrono::steady_clock::time_point t_stop = std::chrono::steady_clock::now();
     std::chrono::duration<int, std::milli> t_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t_stop-t_start);
- //   std::cout << "MoMo Refine pose duration duration (ms):  " << t_elapsed.count() << std::endl;
 
     refine_pose_duration+= t_elapsed;
-
-  //  if(n_calls % 50 == 0){
-  //      std::cout << "avg refine_pose_est per frame (ms): " << static_cast<float>(refine_pose_duration.count())/static_cast<float>(n_calls) << std::endl;
-  //  }
-
     (*pftracking) <<  mnMatchesInliers << "\t";
 
     bool success = mnMatchesInliers > params.thresh_refine;
@@ -96,11 +85,8 @@ bool TrackingStateNormal::refinePoseEstimate(Frame &current_frame, const FrameBu
 }
 
 bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsigned int last_keyframe_id, bool force){
- //   if(mbOnlyTracking)
- //       return false;
 
-    // If Local Mapping is freezed by a Loop Closure do not insert keyframes
-   // if(pLocalMapper->isStopped() || pLocalMapper->stopRequested())
+    // If Local Mapping is stopped for a Loop Closure do not insert keyframes
    if(!force && (thread_status->mapping.isStopped() || thread_status->mapping.isStopRequested()) )
         return false;
 
@@ -163,12 +149,8 @@ bool TrackingStateNormal::needNewKeyFrame(Frame &current_frame, Map* pMap,  unsi
     bool insertKF = false;
     if(definite_insert || (optional_insert && local_mapping_idle))
     {
-      //  std::cout << "KF insert requested: definite: " << definite_insert << ", tracking_dire: "<< tracking_dire <<", optional: " << optional_insert
-       //         << ", tracking_weak: " << tracking_weak << ", mnMatchesInliers: " << mnMatchesInliers <<
-        //        ", N_target: "<< params.N_tracked_target  << ", variance: "<< params.N_tracked_variance <<std::endl;
-        // If the mapping accepts keyframes, insert keyframe.
-        // Otherwise send a signal to interrupt BA
-//        if(cam_cur != "SLAM") {std::cout << "attempting to insert keyframe" << std::endl;}
+
+        // If mapping accepts keyframes (idle or queue is short), insert keyframe.
         if(local_mapping_idle || force)
         {
             insertKF = true;

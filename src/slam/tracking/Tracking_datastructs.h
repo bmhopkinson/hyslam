@@ -151,7 +151,6 @@ public:
 
 class MonoInitialMatch
 {
-    //  std::vector<int> mvIniLastMatches;  //doesn't seem to be used
 public:
     void clear();
 

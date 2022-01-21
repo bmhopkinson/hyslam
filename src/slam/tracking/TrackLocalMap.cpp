@@ -37,11 +37,7 @@ int TrackLocalMap::track(Frame &current_frame, const FrameBuffer &frames, KeyFra
         }
     }
 
-    //   std::cout << "TrackLocalMap: num mps to track: " << local_map_points.size()
-     //      << "\t inliers: " << mnMatchesInliers << std::endl;
-
     return mnMatchesInliers;
-
 }
 
 void TrackLocalMap::UpdateLocalMap(){
@@ -70,17 +66,14 @@ void TrackLocalMap::SearchLocalPoints(){
         }
     }
 
-    //FeatureMatcher matcher(params.match_nnratio);
     FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
     fm_settings.nnratio = params.match_nnratio;
     feature_factory->setFeatureMatcherSettings(fm_settings);
     std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
 
-    //int th = 5;
     std::vector<MapPoint*> v_lmp(local_map_points.begin(), local_map_points.end());
     matcher->SearchByProjection(*pcurrent_frame, v_lmp, params.match_radius_threshold);
 
-//    std::cout << "tracklocal map, N_local_mpts: " << v_lmp.size() << ", matches SearchByProjection: "  << n_matches << std::endl;
 
 }
 
@@ -134,7 +127,6 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
     for(std::set<KeyFrame*>::const_iterator itKF=local_key_frames.begin(), itEndKF=local_key_frames.end(); itKF!=itEndKF; itKF++)
     {
         // Limit the number of keyframes
-        //if(local_key_frames.size()>80)
         if(local_key_frames.size()>params.N_max_local_keyframes) {
             break;
         }
@@ -154,20 +146,6 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
             }
         }
 
-        //can probably eliminate inclusion of children and parents  - seems like overkill and shouldn't they be in the covis graph if they're useful
-        //const set<KeyFrame*> spChilds = pKF->GetChilds();
-        /*
-        const std::set<KeyFrame*> spChilds = pMap->getKeyFrameDB()->getSpanningTreeChildren(pKF);
-        for(std::set<KeyFrame*>::const_iterator sit=spChilds.begin(), send=spChilds.end(); sit!=send; sit++)
-        {
-            KeyFrame* pChildKF = *sit;
-            if(!pChildKF->isBad())
-            {
-                local_key_frames.insert(pChildKF);
-                break;
-            }
-        }
-        */
         KeyFrame* pParent = pKF->GetParent();
         if(pParent)
         {
@@ -176,8 +154,6 @@ void TrackLocalMap::UpdateLocalKeyFrames(){
         }
 
     }
-
-  //  std::cout << "TrackLocalMap num local KFs: " << local_key_frames.size() << std::endl;
 
     if(pKFmax)
     {

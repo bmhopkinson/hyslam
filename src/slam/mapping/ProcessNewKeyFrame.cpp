@@ -13,7 +13,6 @@ void ProcessNewKeyFrame::run(){
 
     // Associate MapPoints to the new keyframe and update normal and descriptor
     const std::vector<MapPoint*> vpMapPointMatches = pKF->GetMapPointMatches();
- //   std::cout << "about to associate mappoint to new keyframe" << std::endl;
     for(size_t i=0; i<vpMapPointMatches.size(); i++)
     {
         MapPoint* pMP = vpMapPointMatches[i];

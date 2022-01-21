@@ -28,7 +28,6 @@ void LandMarkCuller::run(){
         MapPoint* pMP = *lit;
         if(pMP->Protected())
         {
-            //  std::cout << "lowering mp protection: " << pMP->mnId << std::endl;
             pMP->LowerProtection(nCurrentKFid);
             lit++;
             continue;
@@ -37,10 +36,9 @@ void LandMarkCuller::run(){
         {
             lit = new_mpts->erase(lit);
         }
-
+        //if mappoint has not been observed frequently after creation, erase it
         else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>= params.KF_grace_period && pMP->Observations()<=cnThObs)
         {
-           // std::cout << "deleting map_pt due to low observations: " << pMP->mnId <<std::endl;
             ++n_culled;
             pMap->eraseMapPoint(pMP);
             lit = new_mpts->erase(lit);

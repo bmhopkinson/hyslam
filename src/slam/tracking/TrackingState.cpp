@@ -88,9 +88,6 @@ std::vector<KeyFrame*>  TrackingState::createNewKeyFrame(Frame &current_frame, M
             (*pftracking) << new_mpts << "\t";
         }
     }
-    //std::cout << "inserting new KF into map: " << pKF->mnId << std::endl;
-  //  pLocalMapper->InsertKeyFrame(pKFnew);
-   // pLocalMapper->SetNotStop(false);
 
     return newKFs;
 }

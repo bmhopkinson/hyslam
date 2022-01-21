@@ -13,7 +13,6 @@ namespace HYSLAM{
         const Frame& last_frame = frames[0];
 
         // first try BoW feature match w/ reference keyframe, if successful optimize pose
-        //FeatureMatcher matcher(params.match_nnratio, false);
         FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
         fm_settings.nnratio = params.match_nnratio;
         fm_settings.checkOri = false;
@@ -28,7 +27,6 @@ namespace HYSLAM{
             return -1;
         }
 
-      //  current_frame.associateLandMarkVector(vpMapPointMatches, true);
         int n_successfully_associated = current_frame.associateLandMarks(matches_bow, true);
         std::cout << "TrackRef, BoW lms associated succesfully: " << n_successfully_associated << std::endl;
         current_frame.SetPose(last_frame.mTcw);
@@ -56,7 +54,6 @@ namespace HYSLAM{
             }
         }
 
-      //  std::cout << "TrackReferenceKeyFrame after PoseOptimization nmatchesMap: " << nmatchesMap <<std::endl;
         return nmatchesMap;
     }
 }
