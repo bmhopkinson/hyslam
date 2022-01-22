@@ -139,9 +139,6 @@ public:
     // Loop Edges
     void AddLoopEdge(KeyFrame* pKF);
     std::set<KeyFrame*> GetLoopEdges();
-
- //   std::vector<MapPoint*> replicatemvpMapPoints() const; // termporary for eliminating mvpMapPoints from KEyFrame
- //   int validateNewAssociations();
    
     bool isOutlier(int i) const ;
     int  setOutlier(int i, bool is_outlier);
@@ -178,8 +175,6 @@ public:
     const Camera& getCamera() const {return camera;}
     const FeatureViews& getViews() const {return views; }
     FeatureViews copyViews() const {return views;}
-    //  void setMap(Map* pMap_){pMap = pMap_;}
-  //  Map* getMap(){return pMap;}
 
     std::vector<MapPoint*> GetMapPointMatches();
     std::vector<MapPoint*> replicatemvpMapPoints() const; // termporary for eliminating mvpMapPoints from KEyFrame
@@ -268,7 +263,7 @@ protected:
 
     // sensor data
     SensorData sensor_data;
-	static std::vector<double> RefQuat;  //reference quaternion of first keyframe - used to calculate orientation of camera from IMU data relative to first keyframe
+    static std::vector<double> RefQuat;  //reference quaternion of first keyframe - used to calculate orientation of camera from IMU data relative to first keyframe
     static std::vector<double> RefGPS; //reference GPS position of first keyframe - origin for relative GPS positions
 
     // MapPoints associated to keypoints

@@ -109,8 +109,6 @@ public:
     long unsigned int mnId;
     static long unsigned int nNextId;
     long int mnFirstKFid;
- //   long int mnFirstFrame;
-
 
     // Variables used by the tracking
     long unsigned int mnTrackReferenceForFrame;
@@ -118,7 +116,6 @@ public:
 
     // Variables used by local mapping
     long unsigned int mnBALocalForKF;
- //   long unsigned int mnFuseCandidateForKF;
 
     // Variables used by loop closing
     long unsigned int mnLoopPointForKF;

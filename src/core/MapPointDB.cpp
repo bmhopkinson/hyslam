@@ -32,8 +32,6 @@ namespace HYSLAM{
 
         pMP_entry->setObservations(observations);
         pMP_entry->setNObs(n_obs);
-       // updateMeanDistance();
-        //updateSize();
         _updateEntry_();
 
     }
@@ -284,12 +282,10 @@ namespace HYSLAM{
             cv::Mat Pos_cam = Pos - Owi;
             float this_dist = cv::norm(Pos_cam);
             mean_dist  += this_dist;
-      //      std::cout << "lm dist: " << this_dist << "\t";
             n++;
         }
         mean_dist = mean_dist/static_cast<float>(n);
         _setMeanDistance_(mean_dist);
-     //   std::cout << ", mean dist: " << mean_dist << std::endl;
     }
 
     void MapPointDBEntry::_updateSize_(){
@@ -300,18 +296,15 @@ namespace HYSLAM{
             KeyFrame *pKF = mit->first;
             size_t idx = mit->second;
             float size_this = pKF->featureSizeMetric(idx);
-        //    std::cout << "size update got size" <<std::endl;
             if (size_this > 0.0) {
                 mean_size += size_this;
                 n++;
-           //     std::cout << "size: " << size_this << "\t";
             }
 
         }
 
         mean_size = mean_size/static_cast<float>(n);
         _setSize_(mean_size);
-       // std::cout << ", mean size: " << mean_size << std::endl;
     }
 
 
@@ -358,7 +351,6 @@ namespace HYSLAM{
         }
         else{
             {
-             //   std::cout << "adding to MapPointDB, pMP: "  << pMP->mnId << std::endl;
                 std::unique_lock<std::mutex> lock(db_mutex);
                 mappoint_db.insert({pMP, std::make_unique<MapPointDBEntry>(pMP, pKF_ref, idx)});
             }

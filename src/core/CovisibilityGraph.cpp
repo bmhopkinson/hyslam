@@ -11,14 +11,8 @@ namespace HYSLAM{
 
     void CovisNode::AddConnection(KeyFrame *pKF, const int &weight)
     {
-        //std::cout << "adding connection to : " << pKF->mnId << std::endl;
         {
             std::unique_lock<std::mutex> lock(node_mutex);
-            /*  do this check at at higher level - probably in Map or KeyframeDB
-            if(pKF->camera.camName != camera.camName){  //only connect keyframes from the same camera
-                return;
-            }
-             */
             if(!mConnectedKeyFrameWeights.count(pKF))
                 mConnectedKeyFrameWeights[pKF]=weight;
             else if(mConnectedKeyFrameWeights[pKF]!=weight)
@@ -26,7 +20,6 @@ namespace HYSLAM{
             else
                 return;
         }
-//  std::cout << "about to updatebest covisibles for : " << mnId << std::endl;
         UpdateBestCovisibles();
     }
 
@@ -48,7 +41,6 @@ namespace HYSLAM{
 
     void CovisNode::UpdateConnections(std::map<KeyFrame*, int> &symmetric_updates ) //"updates" are for other nodes and need to be handled by the CovisGraph
     {
-//	std::cout << "in update connections for KF: " << mnId << ", camera: " <<camera.camName << std::endl;
         std::map<KeyFrame*,int> KFcounter;
 
         std::set<MapPoint*>  spMP;
@@ -71,18 +63,17 @@ namespace HYSLAM{
                 if(pKF_obs->mnId==pKF_node->mnId)
                     continue;
                if(pKF_obs->isBad()){
-                 //  std::cout << "attempt to add bad KF: " << pKF_obs->mnId << ", via mpt: " << pMP->mnId << std::endl;
+
                     continue;
                }
                 KFcounter[mit->first]++;
             }
         }
-        //  std::cout << "finished counting keyframe shared mpts: counter size " << KFcounter.size() << std::endl;
-        // This should not happen
-        if(KFcounter.empty())
-            return;
 
-//    std::cout << "counter was not empty, it's size is: " << KFcounter.size() <<  std::endl;
+        // This should not happen
+        if(KFcounter.empty()) {
+            return;
+        }
 
         //If the counter is greater than threshold add connection
         //In case no keyframe counter is over threshold add the one with maximum counter
@@ -92,10 +83,8 @@ namespace HYSLAM{
 
         std::vector<std::pair<int,KeyFrame*> > vPairs;
         vPairs.reserve(KFcounter.size());
-        //  std::cout << "about to enter loop to add connections" << std::endl;
         for(std::map<KeyFrame*,int>::iterator mit=KFcounter.begin(), mend=KFcounter.end(); mit!=mend; mit++)
         {
-            //	std::cout << "assessing connection for pKFi: " << mit->first->mnId << std::endl;
             if(mit->second>nmax)
             {
                 nmax=mit->second;
@@ -105,14 +94,12 @@ namespace HYSLAM{
             {
                 vPairs.push_back(std::make_pair(mit->second,mit->first));
                 symmetric_updates.insert(*mit);
-              //  (mit->first)->AddConnection(pKF_node,mit->second);
             }
         }
-        //   std::cout << "finished adding connections" << std::endl;
+
         if(vPairs.empty())  //none passed threshold but need some connection so choose KF with maximum shared landmarks
         {
             vPairs.push_back(std::make_pair(nmax,pKFmax));
-            //pKFmax->AddConnection(pKF_node ,nmax);
             symmetric_updates.insert({pKFmax, nmax});
         }
 
@@ -127,15 +114,13 @@ namespace HYSLAM{
 
         {
             std::unique_lock<std::mutex> lockCon(node_mutex);
-
-            // mspConnectedKeyFrames = spConnectedKeyFrames;
             mConnectedKeyFrameWeights = KFcounter;
             mvpOrderedConnectedKeyFrames = std::vector<KeyFrame*>(lKFs.begin(),lKFs.end());
             pKF_node->setCovisibleKeyFrames(mvpOrderedConnectedKeyFrames); //push down to keyframes where the data is needed sometimes
             mvOrderedWeights = std::vector<int>(lWs.begin(), lWs.end());
 
         }
-        //  std::cout << "finished updating connections" << std::endl;
+
     }
 
     void CovisNode::UpdateBestCovisibles()
@@ -214,7 +199,6 @@ namespace HYSLAM{
     // COVISIBILITY GRAPH FUNCTIONS ///
     bool CovisibilityGraph::inGraph(KeyFrame* pKF){
         CovisibilityGraph_t::const_iterator it;
-       // std::map<KeyFrame*, CovisNode>::const_iterator it;
         it = covis_graph.find(pKF);
         if(it != covis_graph.end()){
             return true;

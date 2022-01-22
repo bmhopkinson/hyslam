@@ -28,8 +28,6 @@
  * most functions calls are simply propagated to KeyFrameDB or MapPointDB
  *
  * KeyFrames are never really deleted from memory they're just removed from the KeyFrameDB - this should be fixed
- *  have an idea of making this a recursive data structure so we can have submaps of finite size related to each other by rigid transforms
- *   would enable easier reinitialization when tracking is lost (simply create new submap), breaking up enormously large maps that take forever for global bundle adjustment, etc
  *
  * The Map is recurvise (tree) and can hold submaps as children (which can themselves have submaps). Only one submap in the entire tree can be active at any time (setActive(), isActive). new keyframes and mappoints
  *  are added to the active map. a submap can be "registered" with the parent map when it's position is determined sufficiently such that it's keyframes and mappoints should be available to the parent map (registerWithParentMap()).

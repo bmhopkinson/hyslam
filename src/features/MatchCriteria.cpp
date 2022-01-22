@@ -20,12 +20,10 @@ std::vector<MapPoint*> ProjectionCriterion::apply(Frame &frame, std::vector<MapP
 
         cv::Mat uv;
         bool valid = frame.ProjectLandMark(lm, uv);
-       // std::cout << "frame projected pos: u,v " << uv.at<float>(0) << "\t"  << uv.at<float>(1) << std::endl;
         if(valid){
             lms_passed.push_back(lm);
         }
     }
-  //  std::cout << "new SearchByProjection, n_projected: " << lms_passed.size() << std::endl;
     return lms_passed;
 }
 
@@ -42,7 +40,6 @@ std::vector<MapPoint*> ProjectionCriterion::apply(KeyFrame* pKF,  std::vector<Ma
             lms_passed.push_back(lm);
         }
     }
-    //  std::cout << "new SearchByProjection, n_projected: " << lms_passed.size() << std::endl;
     return lms_passed;
 }
 
@@ -142,7 +139,7 @@ std::vector<size_t> PreviouslyMatchedCriterionCore(const LandMarkMatches &lm_mat
         }
 
     }
-    //  std::cout << "new SearchByProjection, n_notpreviously_matched: " << views_passed.size() << std::endl;
+
     return views_passed;
 }
 
@@ -465,7 +462,7 @@ MatchesFound GlobalBestScoreCriterion::apply(MatchesFound current_matches, Frame
 
         }
     }
-   // std::cout << "applied GlobalBestScoreCriterion  " << matches_passed.size() << " passed out of " << current_matches.size()  <<std::endl;
+
     return matches_passed;
 }
 
@@ -493,7 +490,6 @@ std::vector<size_t> MonoInitBestScore::apply( std::vector<size_t> &candidate_mat
     float bestDist2 = std::numeric_limits<float>::max();
     int bestIdx = -1;
     FeatureDescriptor d1 = data.getDescriptor();
-   // size_t idx1 = data.getIndex();
 
     for(std::vector<size_t>::iterator vit=candidate_matches.begin(); vit!=candidate_matches.end(); vit++)
     {
@@ -530,7 +526,6 @@ std::vector<size_t> MonoInitScoreExceedsPrevious::apply( std::vector<size_t> &ca
     std::vector<size_t> views_passed;
 
     FeatureDescriptor d1 = data.getDescriptor();
- //   size_t idx1 = data.getIndex();
 
     for (std::vector<size_t>::iterator vit = candidate_matches.begin(); vit != candidate_matches.end(); vit++) {
         size_t i2 = *vit;

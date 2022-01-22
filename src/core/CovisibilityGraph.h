@@ -77,7 +77,6 @@ namespace HYSLAM{
     private:
     
         CovisibilityGraph_t covis_graph;
-       // std::map<KeyFrame*, CovisNode> covis_graph;
         std::mutex graph_mutex;
 
   };

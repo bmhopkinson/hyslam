@@ -134,8 +134,6 @@ public:
     //clear all mappoint to keypoint associations
     int clearAssociations();
     int validateNewAssociations(std::vector<MapPoint*> mvpMapPoints) const;//debugging
-    
-   // int predictScale(const float &currentDist, MapPoint* pMP);
 
     bool isOutlier(int i) const ;
     int  setOutlier(int i, bool is_outlier);

@@ -7,7 +7,7 @@
  * TrajectoryElement:
  *  data:
  *     Tcr - incremental transformation from ref keyframe to this frame; in world to camera format
- *     pRefKF - refrence keyframe. world position of camera can be found from Tcr and pRefKF->GetPose();
+ *     pRefKF - reference keyframe. world position of camera can be found from Tcr and pRefKF->GetPose();
  *     Tcw - pose in world to camera convention
  *     Vcw - NOT SET PROPERLY RIGHT NOW - DO NOT USE - "Velocity" incremental transformation from previous frame's pose to this frame's pose (Twc); in world to camera format
  *     time data: time_stamp, dt - interval between previous frame and this frame
@@ -48,8 +48,6 @@
 namespace HYSLAM{
 
 //typedef Eigen::Transform<double ,3,Eigen::Isometry,Eigen::ColMajor> Isometry3;
-
-
 
 class TrajectoryElement{
   public:

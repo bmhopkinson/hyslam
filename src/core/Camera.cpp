@@ -114,11 +114,9 @@ int Camera::loadData(const cv::FileNode &data_node){
 }
 
 bool Camera::Project(cv::Mat Pc, cv::Mat &uv) const {
-  //linear camera model right now - assume distorion has been removed from images
+  //linear camera model right now - assume distortion has been removed from images
   //update to accept more complicated camera models at some point
   // will always provide projected point in uv (can be useful), returns whether this point is valid or not
-    //linear camera model right now - assume distorion has been removed from images
-    //update to accept more complicated camera models at some point
 
     float PcZ = Pc.at<float>(2);
     float invz = 1.0f/PcZ;

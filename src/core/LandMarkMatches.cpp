@@ -17,7 +17,6 @@ MapPoint*  LandMarkMatches::hasAssociation(int i) const{
 int LandMarkMatches::hasAssociation(MapPoint* pMP) const {
     for(auto it = views_to_landmarks.cbegin(); it != views_to_landmarks.cend(); ++it ){
         if(it->second == pMP){
-         //   std::cout << "found existing assocaition: idx: " << it->first << " , pMP: " << pMP->mnId << " to : " << it->second->mnId << std::endl;
             return it->first;
         }
     }
@@ -46,7 +45,6 @@ int LandMarkMatches::associateLandMark(int i, MapPoint* pMP, bool replace){
     } else {
         views_to_landmarks.insert({i, pMP});
         outliers.insert({i, false});
-       // std::cout << "no existing associations, so associating idx: " << i << " , pMP: " << pMP->mnId << std::endl;
         ++n_matches;
         return 0;
     }
@@ -69,7 +67,6 @@ int LandMarkMatches::removeLandMarkAssociation(MapPoint* pMP){
     int n = 0;
     for(auto it = views_to_landmarks.cbegin(); it != views_to_landmarks.cend(); ){
         if(it->second == pMP){
-  //          std::cout <<"erasing assocaiton between pMP: " <<pMP << " and keypt: " << it->first << std::endl;
             outliers.erase(it->first);
             it = views_to_landmarks.erase(it);
             --n_matches;
@@ -132,10 +129,9 @@ int LandMarkMatches::numValidMatches() const {
     int n_matches = 0;
     for(auto it = views_to_landmarks.cbegin(); it != views_to_landmarks.cend(); ++it) {
         int LMid = it->first;
-    //    MapPoint* pMP = it->second;
+
         if(!isOutlier(LMid))
         {
-           // if(pMP->Observations()>0)
             ++n_matches;
         }
     }

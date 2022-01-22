@@ -69,7 +69,7 @@ using namespace std;
 
 namespace HYSLAM
 {
-//const int N_CELLS = 30;
+
 const int PATCH_SIZE = 31;
 const int EDGE_THRESHOLD = 19;
 
@@ -115,8 +115,6 @@ ORBExtractor::ORBExtractor(std::unique_ptr<FeatureFinder> feature_finder_, std::
         nDesiredFeaturesPerScale *= factor;
     }
     mnFeaturesPerLevel[nlevels-1] = std::max(nfeatures - sumFeatures, 0);
-
-   // feature_finder = std::make_unique<ORBFinder>(iniThFAST, true);
 
 }
 
@@ -451,16 +449,11 @@ void ORBExtractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
                 std::vector<cv::KeyPoint> vKeysCell;
                 feature_finder->setThreshold(iniThFAST);
                 feature_finder->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
-              //  FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-              //       vKeysCell,iniThFAST,true);
 
                 if(vKeysCell.empty())
                 {
-                   // std::cout << "no features found reducing threshold" << std::endl;
                     feature_finder->setThreshold(minThFAST);
                     feature_finder->detect(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),vKeysCell);
-                  //  FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                 //        vKeysCell,minThFAST,true);
                 }
 
                 if(!vKeysCell.empty())
@@ -525,7 +518,6 @@ void ORBExtractor::operator()(InputArray _image, InputArray _mask, vector<KeyPoi
     else
     {
         descriptors_raw.create(nkeypoints, feature_finder->descriptor_cols(), feature_finder->descriptor_mat_type() );
-      //  descriptors = descriptors_raw.getMat();
     }
 
     _keypoints.clear();
@@ -547,8 +539,6 @@ void ORBExtractor::operator()(InputArray _image, InputArray _mask, vector<KeyPoi
         // Compute the descriptors
         cv::Mat desc = descriptors_raw.rowRange(offset, offset + nkeypointsLevel);
         feature_finder->compute(workingMat, keypoints,desc);
-
-        //computeDescriptors(workingMat, keypoints, desc, pattern);
 
         offset += nkeypointsLevel;
 

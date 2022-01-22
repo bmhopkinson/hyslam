@@ -24,7 +24,6 @@
 
 #include <mutex>
 
-//using namespace std;
 
 namespace HYSLAM
 {
@@ -82,7 +81,6 @@ void PlaceRecognizer::clear()
 std::vector<KeyFrame*> PlaceRecognizer::detectLoopCandidates(KeyFrame* pKF, float minScore)
 {
     std::set<KeyFrame*> spConnectedKeyFrames = pKF->GetConnectedKeyFrames(); //will be excluded from candidates
-    //std::set<KeyFrame*> spConnectedKeyFrames = KFs_excluded;
     std::list<KeyFrame*> lKFsSharingWords;
     std::map<KeyFrame*, int> shared_words;
 

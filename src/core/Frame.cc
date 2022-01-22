@@ -80,7 +80,6 @@ Frame::Frame(const Frame &frame)
       is_stereo(frame.is_stereo), views(frame.views), matches(frame.matches), sensor_data(frame.sensor_data), is_empty(frame.is_empty),
       is_tracked(frame.is_tracked)
 {
-//    std::cout << "in frame copy const" <<std::endl;
     for(int i=0;i<FRAME_GRID_COLS;i++){
         for(int j=0; j<FRAME_GRID_ROWS; j++){
             mGrid[i][j]=frame.mGrid[i][j];
@@ -171,15 +170,12 @@ void Frame::UpdatePoseMatrices()
 bool Frame::ProjectLandMark(MapPoint* pMP, cv::Mat &uv_ur){
   // 3D in absolute coordinates
   cv::Mat P = pMP->GetWorldPos();
-  //std::cout << "world pos: " << P << std::endl;
   return ProjectLandMark(P, uv_ur);
 }
 
 bool Frame::ProjectLandMark(cv::Mat P, cv::Mat &uv_ur){
     const cv::Mat Pc = mRcw*P+mtcw; //rotation into camera coordinates
-   // std::cout << "camera pos: " << Pc << std::endl;
     bool valid =  camera.Project(Pc, uv_ur);
-  //  std::cout << "frame projected pos: u,v " << uv_ur.at<float>(0) << "\t"  << uv_ur.at<float>(1) << std::endl;
     return valid;
 }
 float Frame::ReprojectionError(cv::Mat P, int idx){
@@ -221,40 +217,6 @@ int Frame::associateLandMark(int i, MapPoint* pMP, bool replace)
 {
   return matches.associateLandMark(i, pMP, replace);
 
-//below is old code for a bidirectional map (two maps) but this structure is not appropriate b/c multiple keypoints can be associated w/ the same mappoint
-/*   int idx_old = hasAssociation(pMP);
-   std::cout << "mpt_old: " << mpt_old << ", idx_old: " << idx_old;
-   if( (mpt_old != nullptr) || (idx_old >= 0 )){
-     if(replace){
-       std::cout << "   replacing  " <<std::endl;
-       views_to_mpts[i] = pMP;
-       mpts_to_views[pMP] = i;
-
-       //erase dangling associations.
-       if(mpt_old!=nullptr){
-         if( mpt_old != pMP){  //if replacing index but not mappoint don't erase mappoint
-          mpts_to_views.erase(mpt_old);
-         }
-       }
-
-       if(idx_old >= 0){
-         if(idx_old != i){   //if replacing  mpt but not index - don't erase index
-           views_to_mpts.erase(idx_old);
-         }
-       }
-
-       return 0;
-     }
-     else {  //not allowed to replacereplacing
-       return -1;
-     }
-   } else {
-            std::cout << "   inserting  " <<std::endl;
-     views_to_mpts.insert({i, pMP});
-     mpts_to_views.insert({pMP, i});
-     return 0;
-   }
-*/
 }
 int  Frame::associateLandMarks(std::map<size_t, MapPoint*> associations, bool replace){
     int n_associated;
@@ -284,7 +246,6 @@ int Frame::associateLandMarkVector(std::vector<MapPoint*> vpMapPointMatches, boo
    }
    if(errors == 0){
      return 0;
-    // std::cout << "succesfully associated mappoint vector" <<std::endl;
    }
    else{
      return -1;
@@ -298,14 +259,13 @@ int Frame::removeLandMarkAssociation(int i){
 }
 
 int Frame::getAssociatedLandMarks(std::vector<cv::KeyPoint> &features, std::vector<MapPoint*> &landmarks ){
-   // std::vector<MapPoint*> tempvec;
     for(auto it = matches.cbegin(); it != matches.cend(); ++it){
         int LMid = it->first;
         cv::KeyPoint keypt = views.keypt(LMid);
         features.push_back(keypt);
         landmarks.push_back(it->second);
     }
-  //  landmarks = tempvec;
+
     return 0;
 }
 
@@ -344,20 +304,13 @@ float Frame::landMarkSizePixels(MapPoint* lm){
         Pw_left_edge.at<float>(0,0) = Pw_left_edge.at<float>(0,0) - lm->getSize()/2;
         cv::Mat Pw_right_edge = Pw.clone();
         Pw_right_edge.at<float>(0,0) = Pw_right_edge.at<float>(0,0) + lm->getSize()/2;
-      //  std::cout << "lm size: " << lm->getSize() << std::endl;
-       // std::cout << "Pw_left_edge: " << Pw_left_edge << std::endl;
-       // std::cout << "Pw_right_edge: " << Pw_right_edge << std::endl;
 
         cv::Mat uv_left;
         ProjectLandMark(Pw_left_edge,  uv_left);
         cv::Mat uv_right;
         ProjectLandMark(Pw_right_edge,  uv_right);
 
-      //  std::cout << "uv_left: " << uv_left << std::endl;
-      //  std::cout << "uv_right: " << uv_right << std::endl;
-
         float size_pixels  = uv_right.at<float>(0,0)- uv_left.at<float>(0,0);
-       // std::cout << "size_pixels: " << size_pixels << std::endl;
         return size_pixels;
 
     }
@@ -385,18 +338,17 @@ std::vector<MapPoint*>  Frame::replicatemvpMapPoints() const
     for(int i = 0; i < N; ++i){
         mvp_sim.push_back(matches.hasAssociation(i));
     }
- //   validateNewAssociations(mvp_sim);
     return mvp_sim;
 }
 
 void Frame::CalcRelativeQuat()
 {
     if(sensor_data.isImuValid()){
-	   std::vector<double> vqref = KeyFrame::GetRefQuat();
-	   Eigen::Quaterniond q = Converter::toQuatEigen(sensor_data.getQuat() );
-	   Eigen::Quaterniond qref  = Converter::toQuatEigen(vqref);
-	   Eigen::Quaterniond quatRel = qref.inverse()*q;
-	   ImuData imud = sensor_data.getImu();
+       std::vector<double> vqref = KeyFrame::GetRefQuat();
+       Eigen::Quaterniond q = Converter::toQuatEigen(sensor_data.getQuat() );
+       Eigen::Quaterniond qref  = Converter::toQuatEigen(vqref);
+       Eigen::Quaterniond quatRel = qref.inverse()*q;
+       ImuData imud = sensor_data.getImu();
        imud.quat_rel = Converter::toQuatStdvec(quatRel);
        imud.quat_origin = vqref;
        sensor_data.setImu(imud);
@@ -521,7 +473,6 @@ void Frame::ComputeBoW()
 {
     if(mBowVec.empty())
     {
-     //   std::vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(views.getDescriptors());
         std::vector<FeatureDescriptor> descriptors =  views.getDescriptors();
         feature_vocabulary->transform(descriptors, mBowVec, mFeatVec, 4);
     }
@@ -542,20 +493,6 @@ cv::Mat Frame::UnprojectStereo(const int &i) //move into camera class
         return cv::Mat();
 }
 
-/*
-int Frame::predictScale(const float &currentDist, MapPoint* pMP){
-
-    float ratio = pMP->GetMaxDistanceInvariance()/(1.2*currentDist);  //(1.2 factor is oddity from GetMaxDistanceInvariance())
-    int nScale_this = ceil(log(ratio)/views.orbParams().mfLogScaleFactor);
-    int nScales = views.orbParams().mnScaleLevels;
-    if(nScale_this <0)
-        nScale_this = 0;
-    else if(nScale_this >=nScales)
-        nScale_this = nScales-1;
-
-    return nScale_this;
-}
-*/
 void Frame::validateMatches(){
     std::map<MapPoint*, int> counts;
     for(auto it = matches.begin(); it != matches.end(); ++it){
@@ -583,16 +520,7 @@ int Frame::validateNewAssociations(std::vector<MapPoint*> mvpMapPoints) const {
     for(int i  = 0; i < N; ++i){
         MapPoint* pMP = mvpMapPoints[i];
         if(pMP){
-            /*
-            int cor_idx= hasAssociation(pMP);
-            if( cor_idx < 0 ){
-              ++errors_na;
-            }
-            if(cor_idx != i){
-        //      std::cout << "new association validation, expected idx: " << i << ", got: " << cor_idx << std::endl;
-              ++errors_nm;
-            }
-            */
+
             MapPoint* mpt_cor = hasAssociation(i);
             if(!mpt_cor){
                 ++errors_na;
@@ -600,10 +528,8 @@ int Frame::validateNewAssociations(std::vector<MapPoint*> mvpMapPoints) const {
             else if(mpt_cor->mnId != pMP->mnId)
             {
                 ++errors_nm;
-                //    std::cout << "expected mpt id: " << pMP->mnId << ", instead got: " << mpt_cor->mnId << std::endl;
             }
             else{
-                //     std::cout << "matched: " << pMP->mnId << ", to: " << mpt_cor->mnId << std::endl;
                 ++correct;
             }
         } else {
@@ -616,8 +542,6 @@ int Frame::validateNewAssociations(std::vector<MapPoint*> mvpMapPoints) const {
     std::cout << "validating mvp simulated for Frame id: " << mnId << " errors, indexs don't match: " << errors_nm <<" , no assocation in new struct: "<< errors_na << "  , empty mappoint error: "  << errors_a << ", correct: " << correct<< std::endl;
     return errors_nm + errors_na + errors_a;
 }
-
-
 
 
 } //namespace ORB_SLAM

@@ -43,12 +43,6 @@ void KeyFrameDB::add(KeyFrame *pKF)
 
      KeyFrame* parent = spanning_tree.parentForNewKeyFrame();
      spanning_tree.addNode(pKF, parent);
-  //   if(parent) {  //will be empty for keyframe 0
-  //       spanning_tree.addNode(pKF, parent);
-  //   } else {
-  //      spanning_tree.addNode(pKF, nullptr);
-  //   }
-
      place_recog.add(pKF);
 }
 
@@ -69,22 +63,20 @@ bool KeyFrameDB::_erase_(KeyFrame *pKF, std::string option) {
             std::unique_lock<std::mutex> lock(kfdb_mutex);
             //set bad and set mTcp which is an incremental motion between parent and KF
             pKF->mbBad = true;
-            //KeyFrame *mpParent = spanning_tree.getParent(pKF);
             KeyFrame *mpParent = getSpanningTreeParent(pKF);
             if (mpParent) {
                 pKF->mTcp = pKF->GetPose() * mpParent->GetPoseInverse();  //would be good to eliminate the need to do this
             }
-
-            //       std::cout << "updateSpanningTreeforKeyFrameRemoval" << std::endl;
             updateSpanningTreeforKeyFrameRemoval(pKF);
             eraseSpanningTreeNode(pKF);
             _eraseKFDBset_(pKF);
 
             _eraseCovisGraph_(pKF);
-            //  place_recog.erase(pKF);  //for consistency w/ ORB_SLAM implementation - on the other hand i dont' see any point in keeping bad keyframes in the place recognition candiate list
-        } else if (option == "Covis") {
+        }
+        else if (option == "Covis") {
             _eraseCovisGraph_(pKF);
-        } else {
+        }
+        else {
             std::cout << "KeyFrameDB::erase option: " << option << " does not exist" << std::endl;
         }
         return true;
@@ -166,65 +158,6 @@ bool KeyFrameDB::updateSpanningTreeforKeyFrameRemoval(KeyFrame* pKF){
         }
     }
     return true;
-
-    /*
-        sParentCandidates.insert(mpParent);
-    }
-
-    std::set<KeyFrame*> children = spanning_tree.getSpanningTreeChildren(pKF);
-    while(!children.empty() ) { //reassign children to new parents
-        bool bContinue = false;
-
-        int max = -1;
-        KeyFrame* pC;
-        KeyFrame* pP;
-
-        for(auto sit = children.begin(); sit!=children.end(); sit++)
-        {
-            KeyFrame* pKF_child = *sit;
-            if( pKF_child->isBad())
-                continue;
-
-            // Check if a parent candidate is connected to the keyframe
-            std::vector<KeyFrame*> vpConnected = covis_graph.GetVectorCovisibleKeyFrames( pKF_child);
-            for(size_t i=0, iend=vpConnected.size(); i<iend; i++)
-            {
-                for(std::set<KeyFrame*>::iterator spcit=sParentCandidates.begin(), spcend=sParentCandidates.end(); spcit!=spcend; spcit++)
-                {
-                    if(vpConnected[i]->mnId == (*spcit)->mnId)
-                    {
-                        int w =  covis_graph.GetWeight(pKF_child, vpConnected[i]);
-                        if(w>max)
-                        {
-                            pC =  pKF_child;
-                            pP = vpConnected[i];
-                            max = w;
-                            bContinue = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        if(bContinue)
-        {
-            spanning_tree.changeParent(pC, pP);
-            sParentCandidates.insert(pC);
-            children.erase(pC);
-        }
-        else
-            break;
-    }
-
-    // If a child has no covisibility links with any parent candidate, assign to the original parent of this KF
-    if(children.empty()) {
-        for (std::set<KeyFrame *>::iterator sit =children.begin(); sit != children.end(); sit++) {
-           // if(mpParent) {
-                spanning_tree.changeParent(*sit, mpParent);
-         //   }
-        }
-    }
-*/
 
 }
 
@@ -536,8 +469,6 @@ long unsigned int KeyFrameDB::getNumberOfKeyFrames() {
     }
     return n_kfs;
 }
-
-
 
 
 } //namespace ORB_SLAM

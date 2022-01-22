@@ -79,16 +79,11 @@ void SURFExtractor::operator()( cv::InputArray _image, cv::InputArray mask,
             for(auto it = keypoints_bylevel.begin(); it != keypoints_bylevel.end(); ++it) {
                 keypoints.insert(keypoints.end(), it->begin(), it->end());
             }
-
-
-
-           // keypoints_raw.insert(keypoints_raw.end(), keypoints_patch.begin(), keypoints_patch.end());
         }
     }
 
     cv::Mat descriptors_raw;
     feature_finder->compute(image, keypoints, descriptors_raw); //compute descriptors
-
 
     //reformat descriptors
     int nkeypoints = keypoints.size();

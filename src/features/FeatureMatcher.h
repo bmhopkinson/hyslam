@@ -150,9 +150,6 @@ public:
     int SearchBySim3(KeyFrame* pKF1, KeyFrame* pKF2, std::vector<MapPoint *> &vpMatches12, const float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th);
 
 public:
-
-//    static const int TH_LOW;
-//    static const int TH_HIGH;
     static const int HISTO_LENGTH;
 
 

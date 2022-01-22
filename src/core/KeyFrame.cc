@@ -76,7 +76,6 @@ void KeyFrame::ComputeBoW()
 {
     if(mBowVec.empty() || mFeatVec.empty())
     {
-     //   std::vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(views.getDescriptors());
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
         std::vector<FeatureDescriptor> descriptors =  views.getDescriptors();
@@ -140,18 +139,7 @@ cv::Mat KeyFrame::getCameraMatrix(){
     cv::Mat P = camera.K * Tcw.rowRange(0,3);
     return P.clone();
 }
-/*
-Eigen::Quaterniond KeyFrame::GetQuat()
-{
-    if(imud.valid){
-       Eigen::Quaterniond quatRel  = Converter::toQuatEigen(imud.quat);
-	   return quatRel; // currently this is data that will not be updated so no need for mutex protection
-    }
-    else {
-       std::cout << "no valid imu data, cannot KeyFrame::GetQuat()" << std::endl;
-    }
-}
-*/
+
 void KeyFrame::storePose(){
   Tcw_prev = Tcw.clone();
 }
@@ -166,11 +154,11 @@ void KeyFrame::setSensorData(SensorData s){
 }
 
 std::vector<double> KeyFrame::GetRefQuat(){
-	return RefQuat;
+    return RefQuat;
 }
 
 void KeyFrame::SetRefQuat(SensorData s){
-	RefQuat =  s.getQuat();
+    RefQuat =  s.getQuat();
 }
 
 void  KeyFrame::SetRefGPS(SensorData s){
@@ -242,20 +230,7 @@ bool KeyFrame::isMapPointMatched(MapPoint* pMP){
       return true;
   }
 }
-/*
-int KeyFrame::predictScale(const float &currentDist, MapPoint* pMP){
 
-    float ratio = pMP->GetMaxDistanceInvariance()/(1.2*currentDist);  //(1.2 factor is oddity from GetMaxDistanceInvariance())
-    int nScale_this = ceil(log(ratio)/views.orbParams().mfLogScaleFactor);
-    int nScales = views.orbParams().mnScaleLevels;
-    if(nScale_this <0)
-        nScale_this = 0;
-    else if(nScale_this >=nScales)
-        nScale_this = nScales-1;
-
-    return nScale_this;
-}
-*/
 float KeyFrame::featureSizeMetric(int idx){ //consider each feature to be a square associated with a mappoint  normal to camera line of sight
     MapPoint* lm = hasAssociation(idx);
     if(!lm){
@@ -291,20 +266,13 @@ float KeyFrame::landMarkSizePixels(MapPoint* lm){
         Pw_left_edge.at<float>(0,0) = Pw_left_edge.at<float>(0,0) - lm->getSize()/2;
         cv::Mat Pw_right_edge = Pw.clone();
         Pw_right_edge.at<float>(0,0) = Pw_right_edge.at<float>(0,0) + lm->getSize()/2;
-        //  std::cout << "lm size: " << lm->getSize() << std::endl;
-        // std::cout << "Pw_left_edge: " << Pw_left_edge << std::endl;
-        // std::cout << "Pw_right_edge: " << Pw_right_edge << std::endl;
 
         cv::Mat uv_left;
         ProjectLandMark(Pw_left_edge,  uv_left);
         cv::Mat uv_right;
         ProjectLandMark(Pw_right_edge,  uv_right);
 
-        //  std::cout << "uv_left: " << uv_left << std::endl;
-        //  std::cout << "uv_right: " << uv_right << std::endl;
-
         float size_pixels  = uv_right.at<float>(0,0)- uv_left.at<float>(0,0);
-        // std::cout << "size_pixels: " << size_pixels << std::endl;
         return size_pixels;
 
     }
@@ -505,7 +473,6 @@ int KeyFrame::associateLandMark(int i, MapPoint* pMP, bool replace, MapPoint* &p
    }
    if(errors == 0){
      return 0;
-     std::cout << "succesfully associated mappoint vector" <<std::endl;
    }
    else{
      return -1;
@@ -619,13 +586,10 @@ std::vector<MapPoint*>  KeyFrame::replicatemvpMapPoints() const
     return mvp_sim;
 }
 
-
 std::vector<MapPoint*> KeyFrame::GetMapPointMatches()
 {
     std::unique_lock<std::mutex> lock(mMutexFeatures);
     return replicatemvpMapPoints();
 }
-
-
 
 } //namespace ORB_SLAM

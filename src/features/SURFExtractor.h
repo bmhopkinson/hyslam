@@ -45,10 +45,7 @@ private:
     std::shared_ptr<DescriptorDistance> dist_func;
     FeatureExtractorSettings settings;
 
- //   int nlevels;
-
     std::vector<float> mvScaleFactor;
-
 
 };
 }

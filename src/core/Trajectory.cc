@@ -119,13 +119,11 @@ int Trajectory::push_back(Frame &current_frame){
                 }
                 pRefKF = pKF;
                 Trw = Trw*pKF->GetPose();
-              //  Tcw = Trw;
                 Tcr = current_frame.mTcw * Trw.inv();
             }
             else{
                 pRefKF = current_frame.mpReferenceKF;
                 Tcr = current_frame.mTcw*current_frame.mpReferenceKF->GetPoseInverse();
-            //    Tcw = current_frame.mTcw;
             }
             //velocity
 
@@ -137,7 +135,6 @@ int Trajectory::push_back(Frame &current_frame){
             te.Tcw = current_frame.mTcw.clone();
             te.pRefKF = pRefKF;
             te.Vcw = velCur.clone();
-            //std::cout << "TE for frame: " << current_frame.fimgName << ", velocity: "  << te.Vcw << std::endl;
             te.dt_vel = velocity_dt;
         }
         else
@@ -226,12 +223,6 @@ bool Trajectory::poseAtTime(double t, cv::Mat &T) { //pose at time t in world to
     double dt_interval = te_cur.time_stamp - te_prev.time_stamp;
     double dt_target   = t - te_prev.time_stamp;
     GenUtils::ScaleVelocity(te_cur.Vcw, dt_interval, dt_target, Vscaled);
-  //  std::cout << "in poseAtTime() for time: "  << t << std::endl;
-   // std::cout << "Vscaled: " << Vscaled << std::endl;
-   // std::cout << "Vcw: "  << te_cur.Vcw << std::endl;
-  //  std::cout << "dt_interval: " << dt_interval << std::endl;
-  //  std::cout << "dt_target: " << dt_target << std::endl;
-  //  std::cout << "te_prev.Tcw: " << te_prev.Tcw;
     T = Vscaled * te_prev.Tcw;
 
     return true;
@@ -260,7 +251,7 @@ int Trajectory::integrateVelocity(const double t_start, const double t_stop, cv:
   if(_timeRange_(_t_start, _t_stop,  subtraj) == 0){
       //do integration
 
-      //ALTERNATE - More correct but admittely confusing method
+      //ALTERNATE - More correct but admittedly confusing method
       //basic logic is scale velocities at beginning and end of time frame (t_start to t_stop)
       // and simply compute one transform over interval that spans integer number of frames from first frame to last frame
       // have to handle edge cases first (1: time frame is entirely between two frames; 2: time frame falls in interval that includes one frame but doesn't include entire frame interval)
@@ -304,19 +295,15 @@ int Trajectory::integrateVelocity(const double t_start, const double t_stop, cv:
           }
 
       }
-  //    std::cout << "vel_temp: " << vel_temp << std::endl;
-  //    std::cout << "v_alt: " << v_alt << std::endl;
   }
   else {
       return -1;
   }
 
   if(invert){
-  //    vel_temp = vel_temp.inv();
       v_alt = v_alt.inv();
   }
 
-  //Vint = vel_temp.clone();
   Vint = v_alt.clone();
   return 0;
 

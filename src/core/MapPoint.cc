@@ -29,12 +29,10 @@ std::mutex MapPoint::mGlobalMutex;
 std::mutex MapPoint::mpt_creation_mutex;
 
 MapPoint::MapPoint(const cv::Mat &Pos):
-  //  mnFirstKFid(pRefKF->mnId), //mnFirstFrame(pRefKF->mnFrameId), 
     nObs(0), mnTrackReferenceForFrame(0),
     mnLastFrameSeen(0), mnBALocalForKF(0),  mnLoopPointForKF(0), mnCorrectedByKF(0),
     mnCorrectedReference(0), mnBAGlobalForKF(0), mpRefKF(nullptr),  mbBad(false),
     mpReplaced(static_cast<MapPoint*>(NULL)), mfMinDistance(0), mfMaxDistance(0)
- //   ,mnFuseCandidateForKF(0)
 {
     Pos.copyTo(mWorldPos);
     mNormalVector = cv::Mat::zeros(3,1,CV_32F);
@@ -74,8 +72,6 @@ int MapPoint::applyTransform(cv::Mat T){  //transfrom world position and normal 
   //update normal vector;
   cv::Mat R = T.rowRange(0,3).colRange(0,3);
   mNormalVector = R * mNormalVector;  //validated this
-
- // Thorn_applied = true;
 
   return 0;
 }

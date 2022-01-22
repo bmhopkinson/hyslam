@@ -29,10 +29,6 @@ ORBFactory::ORBFactory(std::string settings_path_) : settings_path(settings_path
     LoadSettings(settings_path, "SLAM");
 }
 
-//FeatureExtractor* ORBFactory::getExtractor(){
-//    return getExtractor(extractor_settings);
-//}
-
 std::shared_ptr<FeatureExtractor> ORBFactory::getExtractor(std::string type) {
     LoadSettings(settings_path, type);
     return getExtractor(extractor_settings);
@@ -42,10 +38,6 @@ std::shared_ptr<FeatureExtractor> ORBFactory::getExtractor(FeatureExtractorSetti
     std::shared_ptr<DescriptorDistance> dist_func = std::make_shared<ORBDistance>();
     return std::make_shared<ORBExtractor>(std::make_unique<ORBFinder>(20.0, true), dist_func, settings);
 }
-
-//FeatureVocabulary* ORBFactory::getVocabulary(std::string file_name){
-// return new ORBVocabulary(file_name);
-//}
 
 FeatureVocabulary* ORBFactory::getVocabulary(std::string type){
     LoadSettings(settings_path, type);

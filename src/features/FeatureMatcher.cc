@@ -104,7 +104,6 @@ int FeatureMatcher::_SearchByProjection_(Frame &frame, const std::vector<MapPoin
             matches.insert(std::make_pair(lm, match_data) );
         }
     }
-   // std::cout << "total cand_views checked: " << nn << std::endl;
 
     //APPLY GLOBAL CRITERIA and remove matches that don't pass from "matches"
     for(auto criterion  = global_criteria.begin(); criterion != global_criteria.end(); ++criterion ){
@@ -160,7 +159,6 @@ int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFra
 
     std::vector< std::unique_ptr<LandMarkCriterion> >     landmark_criteria;
     landmark_criteria.push_back( std::make_unique<ProjectionCriterion>() );
-   // landmark_criteria.push_back( std::make_unique<DistanceCriterion>() );
 
     std::vector< std::unique_ptr<LandMarkViewCriterion> > landmarkview_criteria;
     landmarkview_criteria.push_back( std::make_unique<PreviouslyMatchedCriterion>() );
@@ -170,7 +168,6 @@ int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFra
 
     std::vector< std::unique_ptr<GlobalCriterion> >       global_criteria;
     global_criteria.push_back( std::make_unique<RotationConsistencyCriterion>() );
-  //  global_criteria.push_back( std::make_unique<GlobalBestScoreCriterion>(false) );//in practice this didn't seem necessary
 
     int nmatches = _SearchByProjection_(CurrentFrame, vpMapPoints, th,
                                          landmark_criteria, landmarkview_criteria, global_criteria, criteria_data );
@@ -203,7 +200,6 @@ int FeatureMatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame* pKF, const
     std::vector< std::unique_ptr<LandMarkViewCriterion> > landmarkview_criteria;
     landmarkview_criteria.push_back( std::make_unique<PreviouslyMatchedCriterion>() );
     landmarkview_criteria.push_back( std::make_unique<FeatureSizeCriterion>(0.5,1.5) );
-    //   landmarkview_criteria.push_back( std::make_unique<StereoConsistencyCriterion>(th) );
     landmarkview_criteria.push_back( std::make_unique<BestScoreCriterion>( ORBdist ,1.00) ); //don't impose constraint that best is substantially better than 2nd best
 
     std::vector< std::unique_ptr<GlobalCriterion> >       global_criteria;
@@ -490,13 +486,11 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
                                     });
     cand_lms.erase(new_first, cand_lms.end());
 
-   // std::cout << "Fuser: candidates passing pre_screen: " << cand_lms.size() << std::endl;
-
     //apply landmark criteria
     for(auto criterion = landmark_criteria.begin(); criterion != landmark_criteria.end(); ++criterion){//winnow down potential landmark matches
         cand_lms = (*criterion)->apply(pKF, cand_lms, criteria_data);
     }
-  // std::cout << "post landmark_criteria: " << cand_lms.size() << std::endl;
+
     //apply keypoint criteria to all passing landmarks
     for(auto it = cand_lms.begin(); it != cand_lms.end(); ++it ) {
         MapPoint* lm = *it;
@@ -517,7 +511,6 @@ int FeatureMatcher::Fuse(KeyFrame *pKF, const std::vector<MapPoint *> &vpMapPoin
             cand_lmviews = (*criterion)->apply(pKF, lm, cand_lmviews, criteria_data);
         }
 
-       // std::cout << "n_lmviews post criteria: " << cand_lmviews.size() << std::endl;
         if(!cand_lmviews.empty()){  //at this point should have match or not
             size_t idx = cand_lmviews[0];
             fuse_matches.insert(std::make_pair(idx, lm) );

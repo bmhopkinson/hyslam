@@ -65,7 +65,6 @@ void SURFFactory::LoadSettings(std::string settings_path, std::string type)
     matcher_settings.TH_HIGH = match["threshold_high"];
     matcher_settings.TH_LOW  = match["threshold_low"];
 
-
     vocab_path = fSettings["SURF"][type]["Vocabulary"].string();
 
     std::cout << std::endl  << "SURF Extractor Parameters: " << std::endl;
@@ -80,7 +79,5 @@ void SURFFactory::LoadSettings(std::string settings_path, std::string type)
     fSettings.release();
 
 }
-
-
 
 }

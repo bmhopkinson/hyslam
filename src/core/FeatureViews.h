@@ -21,8 +21,6 @@ class FeatureViews{
 //ORB keypoints in a frame
 public:
   FeatureViews(){};
- // FeatureViews(const FeatureViews &views);
-//  FeatureViews& operator=(const FeatureViews&);
   FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<FeatureDescriptor> mDescriptors_, FeatureExtractorSettings orb_params_ );  // mono constructor
   FeatureViews(std::vector<cv::KeyPoint> mvKeys_, std::vector<cv::KeyPoint> mvKeysRight_,
                std::vector<FeatureDescriptor> mDescriptors_, std::vector<FeatureDescriptor> mDescriptorsRight_, FeatureExtractorSettings orb_params_);  //stereo constructor - partial data
@@ -36,7 +34,6 @@ public:
   cv::KeyPoint keypt(int i ) const {return mvKeys[i];  }
   cv::KeyPoint keyptR(int i ) const;
   const FeatureDescriptor& descriptor(int i ) const {return mDescriptors[i];  }
-//  const FeatureDescriptor&  descriptorR(int i ) const;
   float uR(int i) const;
   float depth(int i) const;
   FeatureExtractorSettings orbParams() const { return orb_params; }
@@ -56,8 +53,6 @@ public:
   void setKeysR(std::vector<cv::KeyPoint> keyptsR) { mvKeysRight = keyptsR; }
   void setuRs(std::vector<float> uRs ) { mvuRight = uRs; }
   void setDepths(std::vector<float> depths)  {mvDepth = depths; }
-//  void setDescriptors(cv::Mat descriptors)  {  mDescriptors = descriptors.clone(); }
- // void setDescriptorsR(cv::Mat descriptorsR) { mDescriptorsRight = descriptorsR.clone();}
 
 private:
 
