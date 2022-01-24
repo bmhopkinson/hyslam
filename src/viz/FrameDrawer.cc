@@ -89,8 +89,6 @@ cv::Mat FrameDrawer::DrawFrame()
     else if(state==eTrackingState::NORMAL) //TRACKING
     {
         mnTracked=0;
-       // const float r = 5;
-     //   for(int i=0;i<N;i++)
         for(auto it = lm_matches_current.begin(); it != lm_matches_current.end(); ++it)
         {
             size_t idx = it->first;

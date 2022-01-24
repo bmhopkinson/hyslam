@@ -64,7 +64,6 @@ public:
     }
 
     void push(const T &item) {
-      //  std::cout << "item pushed to queue" << std::endl;
         std::lock_guard<std::mutex> lock(mutex_);
         queue_.push(item);
     }

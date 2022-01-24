@@ -223,14 +223,12 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
             if(chi2>chi2Mono[it])
             {
                 pFrame->setOutlier(idx,true);
-                //pFrame->mvbOutlier[idx]=true;
                 e->setLevel(1);
                 nBad++;
             }
             else
             {
                 pFrame->setOutlier(idx,false);
-               // pFrame->mvbOutlier[idx]=false;
                 e->setLevel(0);
             }
 
@@ -244,7 +242,6 @@ int Optimizer::PoseOptimization(Frame* pFrame, optInfo optParams)
 
             const size_t idx = vnIndexEdgeStereo[i];
 
-            //if(pFrame->mvbOutlier[idx])
             if(pFrame->isOutlier(idx))
             {
                 e->computeError();

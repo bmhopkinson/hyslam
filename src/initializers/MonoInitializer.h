@@ -9,7 +9,7 @@
  *
  * key functionality:
  * int initialize(Frame &frame) - pass frame to attempt to initialize on return zero if initialization in successful.
- *  internally, if there is no first reference frame the function firstFrame() is called which creates a new MonoInitializer.
+ *  internally, if there is no first reference frame the function firstFrame() is called which creates a new MonoEstimator.
  *  if there is a first reference frame then "frame" is instead passed to secondFrame(), which finds matches to features in the first
  *  frame using FeatureMatcher->SearchforInitialization and then passes feature matches into MonoInitializer to attempt to geometrically
  *  verify the matches and possibly triangulate the matches to 3D points in space. if initialization on second frame is successful

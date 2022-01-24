@@ -153,12 +153,10 @@ void Viewer::Run()
 
         if(Stop())
         {
-          //  std::cout << "Viewer stopping " << std::endl;
             while(isStopped())
             {
                 usleep(3000);
             }
-         //   std::cout << "Viewer restarting " << std::endl;
         }
 
         if(CheckFinish()) {

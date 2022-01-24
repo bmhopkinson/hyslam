@@ -34,13 +34,12 @@ void GenUtils::ScaleVelocity(cv::Mat mVel, double vel_dt, double target_dt, cv::
     if(w_v>1.0000000000000){ //can get extremely small rotations and numerical problems result with w_v exceeding 1 and then everything goes haywire
         w = 1.00000000000000000;
         ang_v_scaled = 0.000000000000000000000000000;
-        //std::cout << "ScaleVelocity caught w_v >1.0 error" << std::endl;
     } else {
         double ang_v = 2*acos(w_v);
         ang_v_scaled = ang_v * scale;
         w = cos(ang_v_scaled/2);
     }
-    //std::cout << std::fixed << std::setprecision(9) << "w_v: " << w_v << ", ang_v_scaled: " << ang_v_scaled << ", w: " << w << std::endl;
+
     Eigen::Vector3d axis;
     axis << qbase.x() , qbase.y() , qbase.z() ;
     axis.normalize();
@@ -103,7 +102,6 @@ bool GenUtils::PointHasPositiveDepth(cv::Mat ProjectionMatrix, cv::Mat point){
     }
     //cv::Mat
     float z = ProjectionMatrix.row(2).dot(point.t());
-   // std::cout << "z_alt: " << z <<std::endl;
     return z >= 0.000;
 
 }
@@ -128,11 +126,9 @@ void GenUtils::pauseUntilReady(KeyFrame *pKF) {
     bool paused = false;
     while(!pKF->isReady()){
         std::this_thread::sleep_for(std::chrono::microseconds(100));
-       // std::cout << "!!!!!!!!!!!!!!!!paused for keyframe to be ready!!!!!!!!!!!!!!!!!!: " << pKF->mnId << std::endl;
         paused = true;
     }
     if(paused){
-    //    std::cout <<"!!!!!!!!!!!!!!!!paused for keyframe to be ready!!!!!!!!!!!!!!!!!!: " << pKF->mnId << std::endl;
     }
 }
 

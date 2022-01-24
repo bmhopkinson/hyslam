@@ -75,7 +75,6 @@ int MonoInitializer::secondFrame(Frame &frame){//,  MonoInitialMatch &match_data
     }
 
     // Find correspondences
-   // FeatureMatcher matcher(params.match_nnratio, true);
     FeatureMatcherSettings fm_settings = feature_factory->getFeatureMatcherSettings();
     fm_settings.nnratio = params.match_nnratio;
     fm_settings.checkOri = true;
@@ -208,7 +207,6 @@ int MonoInitializer::transformMap(Trajectory* trajectory, const Frame &F_ref, cv
         cv::Mat Tv_img_inv   = Twc_img_cur.inv() * Twc_img_ini;  // Tv_img_inv goes from the velocity based position of the imaging camera at the current from to the initial frame
         cv::Mat tv_img_inv   = Tv_img_inv.rowRange(0,3).col(3);
         tv_img_inv.copyTo( Tdel_2to1.rowRange(0,3).col(3) ); //this step isn't really necessary could just copy position from Twc_img_ini to temp vector and then plug it back in after rotation but this is conceptually what's happening
-//        fout << "trans: " << tv_img_inv.at<float>(0,0) << " " << tv_img_inv.at<float>(1,0) << " " << tv_img_inv.at<float>(2,0)   << "\t";
         Twc_img_ini = Twc_img_cur * Tdel_2to1;
         pKFfirst->SetPose( Twc_img_ini.inv() );
         std::cout << "map transform, new position for KFfirst: " <<  pKFfirst->GetPose() << std::endl;
@@ -216,7 +214,6 @@ int MonoInitializer::transformMap(Trajectory* trajectory, const Frame &F_ref, cv
         //correct mappoints using new, properly scaled mono-baseline and world positions
         double baseline_metric_norm = norm(tv_img_inv);
         scale = baseline_metric_norm/baseline_arb_norm;
-//        std::cout << "finished seting init keyframe poses w/ metric baseline" <<std::endl;
         std::cout << "transforming map, scale: " << scale << std::endl;
     } else {
         return -1;
@@ -243,12 +240,8 @@ int MonoInitializer::transformMap(Trajectory* trajectory, const Frame &F_ref, cv
 }
 
 int MonoInitializer::addToMap(Map* pMap){
-  //  pKFfirst->setMap(pMap);
-  //  pKFsecond->setMap(pMap);
-    std::cout << "adding to Map KeyFrame: " << pKFfirst->mnId <<std::endl;
-    pMap->AddKeyFrame(pKFfirst);
 
-    std::cout << "adding to Map KeyFrame: " << pKFsecond->mnId <<std::endl;
+    pMap->AddKeyFrame(pKFfirst);
     pMap->AddKeyFrame(pKFsecond);
     
     //mappoint

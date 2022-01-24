@@ -82,9 +82,8 @@ cv::Mat ComputeSim3_Horn(cv::Mat &P1, cv::Mat &P2, bool FixScale, cv::Mat &R)
 
     cv::Rodrigues(vec,mR12i); // computes the rotation matrix from angle-axis
     R = mR12i.clone(); //output rotation matrix
- //   cout << "Horn Rotation: " << mR12i << endl;
-    // Step 5: Rotate set 2
 
+    // Step 5: Rotate set 2
     cv::Mat P3 = mR12i*Pr2;
 
     // Step 6: Scale
@@ -110,13 +109,10 @@ cv::Mat ComputeSim3_Horn(cv::Mat &P1, cv::Mat &P2, bool FixScale, cv::Mat &R)
     else
         ms12i = 1.0f;
 
-  //  std::cout << "Horn Scale: " << ms12i << std::endl;
-
     // Step 7: Translation
     cv::Mat mt12i;
     mt12i.create(1,3,P1.type());
     mt12i = O1 - ms12i*mR12i*O2;
-   // cout << "Horn Translation" << mt12i << endl;
 
     // Step 8: Transformation
 
@@ -150,10 +146,6 @@ cv::Mat PoseAlignmentTransform(std::vector<cv::Mat> &T1, std::vector<cv::Mat> &T
     bool FixScale = true;
     cv::Mat R;
     cv::Mat Thorn = ComputeSim3_Horn(P1, P2, FixScale, R);
-
-
-  //  cv::Mat Trotonly = cv::Mat::eye(4,4,R.type());
- //   R.copyTo(Trotonly.rowRange(0,3).colRange(0,3));
 
     return Thorn.clone();
 

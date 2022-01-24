@@ -42,24 +42,24 @@ bool ImagingFramePlacer::placeImagingFrame(cv::Mat &img, const Imgdata &img_info
             maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
             if(visible_mpts.size() > min_mpts){
                 retainKeyFrame(pKF, visible_mpts);
-                std::cout << "placing imaging frame due to low overlap" << std::endl;
+               // std::cout << "placing imaging frame due to low overlap" << std::endl;
                 return true;
             } else {
                 pKF_previous = nullptr;
-                std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
+              //  std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
             }
         } else {
-            std::cout << "not placing frame due to sufficient overlap: " << overlap << " , based on how many previous mappoints: " << mpts_previous.size() << std::endl;
+            //std::cout << "not placing frame due to sufficient overlap: " << overlap << " , based on how many previous mappoints: " << mpts_previous.size() << std::endl;
         }
     } else {
         std::vector<MapPoint*> visible_mpts;
         maps["SLAM"]->visibleMapPoints(pKF, visible_mpts);
         if(visible_mpts.size() > min_mpts){
             retainKeyFrame(pKF, visible_mpts);
-            std::cout << "placing imaging frame, no previous frame and sufficient mappoints visible " << std::endl;
+            //std::cout << "placing imaging frame, no previous frame and sufficient mappoints visible " << std::endl;
             return true;
         } else {
-            std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
+            //std::cout << "not placing imaging frame due to low # visible mappoints" << std::endl;
         }
     }
 
@@ -92,6 +92,5 @@ void ImagingFramePlacer::setOverlapThreshold(double overlapThreshold) {
 void ImagingFramePlacer::setMinMpts(int minMpts) {
     min_mpts = minMpts;
 }
-
 
 }//close namespace

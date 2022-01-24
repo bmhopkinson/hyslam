@@ -28,23 +28,12 @@ int LocalBundleAdjustment::ncalls = 0;  //initialize static member valiable
 
 LocalBundleAdjustment::LocalBundleAdjustment( KeyFrame *pCentralKF_,  bool* pbStopFlag_, Map* pMap_, g2o::Trajectory &trajectory_, optInfo optParams_) :
   pCentralKF(pCentralKF_), pbStopFlag(pbStopFlag_), BundleAdjustment( pMap_, trajectory_, optParams_ )
-//LocalBundleAdjustment::LocalBundleAdjustment( KeyFrame *pCentralKF_,  bool* pbStopFlag_, Map* pMap_,  optInfo optParams_) :
-//  pCentralKF(pCentralKF_), pbStopFlag(pbStopFlag_), BundleAdjustment( pMap_, optParams_ )
 {
   typedef g2o::BlockSolver< g2o::BlockSolverTraits<Eigen::Dynamic, Eigen::Dynamic> >  MyBlockSolver;
   typedef g2o::LinearSolverEigen<MyBlockSolver::PoseMatrixType> MyLinearSolver;
- // std::unique_ptr< MyBlockSolver::LinearSolverType> linearSolver;
 
   g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(
        g2o::make_unique<MyBlockSolver>(g2o::make_unique<MyLinearSolver>()));
-//  optimizer->setAlgorithm(solver);
-
-//    std::unique_ptr<g2o::BlockSolver_6_3::LinearSolverType> linearSolver;
-
-//    linearSolver = g2o::make_unique<g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>>();
-//    g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(
-//          g2o::make_unique<g2o::BlockSolver_6_3>(std::move(linearSolver))
-//    );
 
     optimizer.setAlgorithm(solver);
 
@@ -53,20 +42,17 @@ LocalBundleAdjustment::LocalBundleAdjustment( KeyFrame *pCentralKF_,  bool* pbSt
 
      setOptimizer(&optimizer);  //pass to base class BundleAdjustment
 
-
 }
 
 void LocalBundleAdjustment::Run(){
-	ncalls++;
+    ncalls++;
     const double chi2_thresh_mono = 5.991;   //outlier thresholds
     const double chi2_thresh_stereo = 7.815;
- //  std::cout << "running localBA w centralKF" << pCentralKF->mnId << std::endl;
 
     //collect local keyframes and mappoints
     std::list<KeyFrame*> lLocalKeyFrames = FindLocalKFs( pCentralKF );
     std::list<MapPoint*>  lLocalMapPoints  = FindLocalMapPoints( lLocalKeyFrames, pCentralKF );
     std::list<KeyFrame*> lFixedKeyFrames = FindFixedKFs( lLocalMapPoints, pCentralKF);
-   // std::cout << "LBA: finished finding keyframes" << pCentralKF->mnId << std::endl;
 
     std::list<Tse3Parent> submap_tiepoints = FindSubmapTiepoints(lLocalKeyFrames);
     std::set<KeyFrame*> allKFs(lLocalKeyFrames.begin(), lLocalKeyFrames.end());
@@ -77,44 +63,33 @@ void LocalBundleAdjustment::Run(){
     //check if there's imaging cam data in the local KeyFrames
     imaging_camera_exists = CheckForImagingCamera(lLocalKeyFrames);
 
-
- //   std::cout << "found Keyframes" << std::endl;
-  //  std::cout << "in LocalBundleAdjustment() " << std::endl;
     std::list<KeyFrame*>::iterator lit = lLocalKeyFrames.begin();
     while( lit != lLocalKeyFrames.end()) {
         KeyFrame *pKFi = *lit;
-        //      std::cout << "local KF: "<< pKFi->mnId << std::endl;
         if (pKFi->mnId == 0) {   //fix keyframe =0; not sure this is necessary but preserving behavior right now
-     //  if(!pMap->isKFErasable(pKFi)){ //short cut for first map keyframe - refine this
             lFixedKeyFrames.push_back(pKFi);
             lit = lLocalKeyFrames.erase(lit);
         } else {
             lit++;
         }
 
-      //  pKFi->validateNewAssociations();
     }
 
     //set optimizer KeyFrame vertices
     SetKeyFrameVertices( lLocalKeyFrames, false);      // Set Local KeyFrame vertices
     SetKeyFrameVertices( lFixedKeyFrames, true );       // Set Fixed KeyFrame vertices
-  //  std::cout << "LBA: finished setting keyframe vertices" << pCentralKF->mnId << std::endl;
+
     // set optimizer unary edges (sensor data -> keyframes)
     SetIMUEdges( lLocalKeyFrames );         //IMU quaternion measurement constraint
     SetDepthEdges( lLocalKeyFrames );      // add depth constraints
     SetGPSEdges( lLocalKeyFrames ) ;  //add GPS constraints
- //    std::cout << "set kf vertices and unary edges" << std::endl;
+
     // Set MapPoint vertices and edges
-
-
     SetSubMapOriginEdges(submap_tiepoints);
-  //  std::cout << "LBA: finished setting accessory edges" << pCentralKF->mnId << std::endl;
     if(imaging_camera_exists){
       SetImagingVertices(lLocalKeyFrames);
       SetImagingEdges(lLocalKeyFrames);
     }
-
-
 
     const int nExpectedSize = (lLocalKeyFrames.size()+lFixedKeyFrames.size())*lLocalMapPoints.size();
     vpEdgesMono.reserve(nExpectedSize);
@@ -127,8 +102,7 @@ void LocalBundleAdjustment::Run(){
    bool trackEdges = true;
    bool bRobust = true;
    SetMapPointVerticesEdges(  lLocalMapPoints, trackEdges, bRobust );
- //    std::cout << "set mappoint vertices and edges" << std::endl;
-   // std::cout << "LBA: finished setting mappoint edges" << pCentralKF->mnId << std::endl;
+
     //run optimization
     if(pbStopFlag)
         if(*pbStopFlag) {
@@ -139,7 +113,6 @@ void LocalBundleAdjustment::Run(){
     optimizer.initializeOptimization();
     optimizer.optimize(5);
 
-  //  std::cout << "finished initial 5 optimizations" << std::endl;
     bool bDoMore= true;
 
     if(pbStopFlag)
@@ -147,40 +120,37 @@ void LocalBundleAdjustment::Run(){
             std::cout << "in LocalBA: aborting" <<std::endl;
             bDoMore = false;
         }
- //    std::cout << "finished first round of optimization" << std::endl;
+
     if(bDoMore)
     {
+        // Check outlier observations
+        std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
+        std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
 
-    // Check outlier observations
+        for(std::vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
+             g2o::EdgeSE3ProjectXYZ* e = (*vit).e;
+             e->setLevel(1); //remove outliers from optimization
+        }
 
-    std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
-    std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
+        for(std::vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
+             g2o::EdgeStereoSE3ProjectXYZ* e = (*vit).e;
+             e->setLevel(1); //remove outliers from optimization
+        }
 
-    for(std::vector<OutlierMono>::iterator vit = vpOutliersMono.begin(); vit !=vpOutliersMono.end(); ++vit){
-         g2o::EdgeSE3ProjectXYZ* e = (*vit).e;
-         e->setLevel(1); //remove outliers from optimization
+        for(size_t i=0, iend=vpEdgesMono.size(); i<iend;i++)
+        {
+            g2o::EdgeSE3ProjectXYZ* e = vpEdgesMono[i];
+            MapPoint* pMP = vpMapPointEdgeMono[i];
+            if(pMP->isBad())
+                continue;
+            e->setRobustKernel(0);
+        }
+
+        // Optimize again without the outliers
+        optimizer.initializeOptimization(0);
+        optimizer.optimize(10);
     }
 
-    for(std::vector<OutlierStereo>::iterator vit = vpOutliersStereo.begin(); vit !=vpOutliersStereo.end(); ++vit){
-         g2o::EdgeStereoSE3ProjectXYZ* e = (*vit).e;
-         e->setLevel(1); //remove outliers from optimization
-    }
-
-    for(size_t i=0, iend=vpEdgesMono.size(); i<iend;i++)
-    {
-        g2o::EdgeSE3ProjectXYZ* e = vpEdgesMono[i];
-        MapPoint* pMP = vpMapPointEdgeMono[i];
-        if(pMP->isBad())
-            continue;
-        e->setRobustKernel(0);
-    }
-   //  std::cout << "removed outliers" << std::endl;
-    // Optimize again without the outliers
-    optimizer.initializeOptimization(0);
-    optimizer.optimize(10);
-
-    }
-   //    std::cout << "finished 2nd round of optimization" << std::endl;
     //find outliers after 2nd round of optimization and erase those observations
     std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
     std::vector<OutlierStereo> vpOutliersStereo = FindOutliersStereo(chi2_thresh_stereo);
@@ -202,7 +172,6 @@ void LocalBundleAdjustment::Run(){
          pMap->eraseAssociation(pKFi, pMPi);
 
     }
-   //      std::cout << "removed outliers" << std::endl;
 
     // Recover optimized data
     //Keyframes
@@ -213,28 +182,22 @@ void LocalBundleAdjustment::Run(){
         g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(vertex_map[vertex_name] ));
         g2o::SE3Quat SE3quat = vSE3->estimate();
         pKFi->SetPose(Converter::toCvMat(SE3quat));
-   //std::cout << "set keyframe" << std::endl;
     }
 
     //Points
     for(std::list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
     {
         MapPoint* pMP = *lit;
-    //    unsigned long id = pMP->mnId+maxKFid+1;
         std::string vertex_name = "VertexSBAPointXYZ" + std::to_string(pMP->mnId);
         if(sExcludedMPs.find( vertex_name ) != sExcludedMPs.end()) //test if mappoint is in the set that was excluded from optimization - if so, skip it
             continue;
 
         g2o::VertexSBAPointXYZ* vPoint = static_cast<g2o::VertexSBAPointXYZ*>(optimizer.vertex(vertex_map[vertex_name] ) );
-       //  std::cout << "retrieved vPoint" << std::endl;
         pMP->SetWorldPos(Converter::toCvMat(vPoint->estimate()));
-        //std::cout << "set world position" << std::endl;
         pMap->update(pMP);
     }
 
     ClearLBAFlags(lLocalKeyFrames, lFixedKeyFrames, lLocalMapPoints);
-
-   // std::cout << "finished run local ba" << pCentralKF->mnId << std::endl;
 
 }
 
@@ -274,9 +237,6 @@ std::list<MapPoint*> LocalBundleAdjustment::FindLocalMapPoints(const std::list<K
                 if(!pMP->isBad())
                     if(pMP->mnBALocalForKF!=pCentralKF->mnId)
                     {
-                //        if(i %100 == 0){
-                 //         std::cout << "adding mp to localmpslist: " << pMP->mnId <<std::endl;
-                  //      }
                         lLocalMapPoints.push_back(pMP);
                         pMP->mnBALocalForKF=pCentralKF->mnId;
                         i++;
@@ -339,7 +299,7 @@ std::list<KeyFrame *> LocalBundleAdjustment::FindAdditionalParentSubmapKFs(const
 
 
 void LocalBundleAdjustment::ClearLBAFlags(const std::list<KeyFrame*> &lLocalKeyFrames, const std::list<KeyFrame*> &lFixedKeyFrames, const std::list<MapPoint*> lLocalMapPoints){
-//clear mnBALocalForKF and mnBAFixedForKF flags
+//clear mnBALocalForKF and mnBAFixedForKF flags - these should be eliminated, can just track this locally, no need to append info to keyframes and mappoints cluttering their implementations
    for(std::list<KeyFrame*>::const_iterator lit=lLocalKeyFrames.begin() , lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
          KeyFrame* pKFi = *lit;

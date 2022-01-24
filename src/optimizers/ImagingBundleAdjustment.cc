@@ -62,10 +62,11 @@ void ImagingBundleAdjustment::Run(){
   SetKeyFrameVertices(KFs_to_optimize, false);
   std::cout << "set keyframe vertices" << std::endl;
   SetImagingVertices(KFs_to_optimize);
-    std::cout << "set imaging vertices" << std::endl;
+  std::cout << "set imaging vertices" << std::endl;
   SetImagingEdges(KFs_to_optimize);
-    std::cout << "set imaging edges" << std::endl;
-  //find total mappoint observations for preallocation of edges vector // should put this in a funciton
+  std::cout << "set imaging edges" << std::endl;
+
+  //find total mappoint observations for preallocation of edges vector // should put this in a function
   int totalMPobs = 0;
   for(std::list<KeyFrame*>::iterator kfit = KFs_to_optimize.begin(); kfit != KFs_to_optimize.end(); ++kfit){
     KeyFrame* pKFi = *kfit;
@@ -86,10 +87,10 @@ void ImagingBundleAdjustment::Run(){
   bool trackEdges = true;
   bool bRobust = true;
   SetMapPointVerticesEdges(  mpts_to_optimize, trackEdges, bRobust );
-    std::cout << "set mappoint edges/vertices" << std::endl;
+  std::cout << "set mappoint edges/vertices" << std::endl;
   optimizer.initializeOptimization();
   optimizer.optimize(5);
-    std::cout << "finished first optimization" << std::endl;
+  std::cout << "finished first optimization" << std::endl;
   // Check outlier observations and remove from BA
 
   std::vector<OutlierMono> vpOutliersMono = FindOutliersMono(chi2_thresh_mono);
@@ -117,7 +118,7 @@ void ImagingBundleAdjustment::Run(){
   int optLevel = 0; //only optimize with inliers (level 0)
   optimizer.initializeOptimization(optLevel);
   optimizer.optimize(10);   
-   std::cout << "finished second optimization" << std::endl;
+  std::cout << "finished second optimization" << std::endl;
 
    ExportBAResultsForDebugging();//DO this before setting new KF poses and landmark positions so we can compare before and after optimization
 
@@ -130,7 +131,6 @@ void ImagingBundleAdjustment::Run(){
     g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(vertex_map[vertex_name] ));
     g2o::SE3Quat SE3quat = vSE3->estimate();
     pKFi->SetPose(Converter::toCvMat(SE3quat));
-   // std::cout << "set keyframe" << std::endl;
   }
 
   //Tcam - optimized SLAM camera to imaging camera transform
@@ -150,10 +150,7 @@ void ImagingBundleAdjustment::Run(){
     MapPoint* pMP = *lit;
     std::string vertex_name = "VertexSBAPointXYZ" + std::to_string(pMP->mnId);
     g2o::VertexSBAPointXYZ* vPoint = static_cast<g2o::VertexSBAPointXYZ*>(optimizer.vertex(vertex_map[vertex_name] ) );
-       //  std::cout << "retrieved vPoint" << std::endl;
     pMP->SetWorldPos(Converter::toCvMat(vPoint->estimate()));
-     //     std::cout << "set world position" << std::endl;
-    //    pMP->UpdateNormalAndDepth();
   }
 
 
@@ -209,7 +206,6 @@ void ImagingBundleAdjustment::DetermineSimilarityTransforms(){
                 submap_datum.Tsim = Thorn.clone();
                 submap_datum.Rsim = Rhorn.clone();
                 submap_data[submap] = submap_datum;
-                //transforms.push_back( std::make_pair(Thorn.clone(), Rhorn.clone()) );
             } else {
                 SubmapData submap_datum;
                 cv::Mat emptyMat;
@@ -272,7 +268,6 @@ void ImagingBundleAdjustment::ApplySimilarityTransforms(){ //KFs and mpts to whi
 
         for (auto mpit = mpts_submap.begin(); mpit != mpts_submap.end(); ++mpit) {
             MapPoint *mpt = *mpit;
-//      std::cout << "mpt->mnId: " << mpt->mnId << std::endl;
             if (!mpt->Thorn_applied) {
                 mpt->applyTransform(Thorn);
                 mpt->flagTransformApplied();
@@ -285,7 +280,7 @@ void ImagingBundleAdjustment::ApplySimilarityTransforms(){ //KFs and mpts to whi
 
 void ImagingBundleAdjustment::RotatePosestoAlign(){
     std::cout << "RotatePosesToAlign()"  << std::endl;
-  //first clear all Thorn_applied flags for key_frames, mappts have been exclusively assigned to segments so shouldn't be an issue
+    //first clear all Thorn_applied flags for key_frames, mappts have been exclusively assigned to segments so shouldn't be an issue
     for(auto it = KFs_to_optimize.begin(); it != KFs_to_optimize.end(); ++it){
         (*it)->Thorn_applied = false;
     }
@@ -386,7 +381,6 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
         }
       }
 
-    //  std::cout << "found fuse candidate mappts for KF: " << pKFi->mnId << ", N candidates: " << fuse_candidates.size() <<std::endl;
       //determine fuse candidates by excluding any mappoints already tracked in keyframe
       std::unique_ptr<FeatureMatcher> matcher = feature_factory->getFeatureMatcher();
       float search_radius_thresh = 5.0; //larger than default of 3.00
@@ -403,7 +397,6 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
         {
             if(!lm_current->isBad())
             {
-                //std::cout << "Fusing mappoint" << std::endl;
                 if(lm_current->Observations() > lm_fuse->Observations()){
 
                     pMap->replaceMapPoint(lm_fuse, lm_current);
@@ -419,8 +412,6 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
         }
       }
 
-
-	// std::cout << "fused visible mappts for KF: " << pKFi->mnId << " , N_mpts fused: " << fuse_matches.size() <<  std::endl;
       // Update points - this is done in LocalMapping after fusing - seems like it should be embeded in the fuse routine
       std::vector<MapPoint*> vpMapPointMatches = pKFi->GetMapPointMatches();
       for(size_t i=0, iend=vpMapPointMatches.size(); i<iend; i++)
@@ -437,7 +428,6 @@ void ImagingBundleAdjustment::FindAdditionalMapPointMatches(){
       }
 
       // Update connections in covisibility graph- this is done in LocalMapping after fusing - seems like it should be embeded in the fuse routine
-     // std::cout << "about to update connections for KF: " << pKFi->mnId <<std::endl;
       pMap->update(pKFi);
 
 
@@ -483,7 +473,6 @@ void ImagingBundleAdjustment::ExportBAResultsForDebugging() {
         outfile << "pose original: " << pKFi->GetPose() << std::endl;
         outfile << "pose slam_est: " << T_imgfromslam.inv() << std::endl;
         outfile << "pose optimized: " << pose_opt << std::endl;
-        // std::cout << "set keyframe" << std::endl;
     }
 
     outfile.close();

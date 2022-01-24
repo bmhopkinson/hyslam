@@ -12,7 +12,7 @@
  * pMap: map containting data (KeyFrames, Landmarks, etc) to optimize
  * trajectory: trajectory of localization (SLAM) camera
  * optimizer: g2o graph optimizer - holds vertices, edges, and performs optimizations
- * vertex_map: maps between vertex names (in a standard format) and their integer id in the optimzer - for recovery post optimization
+ * vertex_map: maps between vertex names (in a standard format) and their integer id in the optimizer - for recovery post optimization
  *
  * Key Functions:
  * SetKeyFrameVertices(const std::list<KeyFrame*> &lKeyFrames, bool fixed) - adds keyframes in the list to the optimizer. if fixed = true optimizer

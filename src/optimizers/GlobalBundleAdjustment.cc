@@ -47,7 +47,7 @@ vpKFfix(vpKFfix_) , nLoopKF(nLoopKF_), nIterations(nIterations_), bRobust(bRobus
 
 
 void GlobalBundleAdjustment::Run(){
-	ncalls++;
+    ncalls++;
 
     std::vector<KeyFrame*> vpAllKFs = pMap->GetAllKeyFrames();
     std::vector<MapPoint*> vpAllMPs = pMap->GetAllMapPoints();

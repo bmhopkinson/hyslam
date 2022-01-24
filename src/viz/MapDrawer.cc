@@ -146,7 +146,6 @@ void MapDrawer::DrawKeyFrames(KeyFrameDrawData draw_data )
         {
 
             cv::Mat Ow = vpKFs[i]->GetCameraCenter();
-       //     std::cout << "Map " << cam_name << ", pKF: " << vpKFs[i]->mnId << std::endl;
             // Connectivity Graph
             if(draw_data.connectivity_graph) {
                 glColor4f(0.0f, 1.0f, 0.0f, 0.6f);

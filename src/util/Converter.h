@@ -27,7 +27,6 @@ public:
     static std::vector<cv::Mat> toDescriptorVector(const std::vector<FeatureDescriptor> &Descriptors);
 
     static g2o::SE3Quat toSE3Quat(const cv::Mat &cvT);  //converts from cv::Mat transform matrix to g2o::SE3Quat, translation + rotation in quaternion form.
-   // static g2o::SE3Quat toSE3Quat(const g2o::Sim3 &gSim3);
     static Isometry3 cvMatToIso3(cv::Mat m); //converts cv::Mat transform into Eigen Isometry3
     static cv::Mat   Iso3tocvMat(Isometry3 Teig);//converts Eigen Isometry3  into  cv::Mat transform
 

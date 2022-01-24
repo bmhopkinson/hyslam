@@ -129,9 +129,8 @@ bool MonoEstimator::Initialize(const Frame &CurrentFrame, const std::vector<int>
     if(RH>0.40)
          return ReconstructH(vbMatchesInliersH,H,mK,R21,t21,vP3D,vbTriangulated,1.0,minTriangulated);
     else //if(pF_HF>0.6)
-	     return ReconstructF(vbMatchesInliersF,F,mK,R21,t21,vP3D,vbTriangulated,1.0,minTriangulated);
+         return ReconstructF(vbMatchesInliersF,F,mK,R21,t21,vP3D,vbTriangulated,1.0,minTriangulated);
 
-   // return false;
 }
 
 
@@ -488,7 +487,7 @@ bool MonoEstimator::ReconstructF(std::vector<bool> &vbMatchesInliers, cv::Mat &F
     for(size_t i=0, iend = vbMatchesInliers.size() ; i<iend; i++)
         if(vbMatchesInliers[i])
             N++;
-  //  std::cout << "F inliers: " << N << std::endl;
+
     // Compute Essential Matrix from Fundamental Matrix
     cv::Mat E21 = K.t()*F21*K;
 
@@ -512,12 +511,6 @@ bool MonoEstimator::ReconstructF(std::vector<bool> &vbMatchesInliers, cv::Mat &F
 
     int maxGood = std::max(nGood1,std::max(nGood2,std::max(nGood3,nGood4)));
     
- //   std::cout << "F maxGood: " << maxGood << std::endl;
- //   std::cout << "F nGood1: " << nGood1 << std::endl;
- //   std::cout << "F nGood2: " << nGood2 << std::endl;
- //   std::cout << "F nGood3: " << nGood3 << std::endl;
-  //  std::cout << "F nGood4: " << nGood4 << std::endl;
-    
     R21 = cv::Mat();
     t21 = cv::Mat();
 
@@ -536,7 +529,6 @@ bool MonoEstimator::ReconstructF(std::vector<bool> &vbMatchesInliers, cv::Mat &F
     // If there is not a clear winner or not enough triangulated points reject initialization
     if(maxGood<nMinGood || nsimilar>1)
     {
-//		std::cout << "no clear winner or insufficent good points: mono init failed" << std::endl;
         return false;
     }
 
@@ -586,7 +578,6 @@ bool MonoEstimator::ReconstructF(std::vector<bool> &vbMatchesInliers, cv::Mat &F
             return true;
         }
     }
- //   std::cout << "not enough parallax: mono init failed" << std::endl;
 
     return false;
 }
@@ -598,7 +589,6 @@ bool MonoEstimator::ReconstructH(std::vector<bool> &vbMatchesInliers, cv::Mat &H
     for(size_t i=0, iend = vbMatchesInliers.size() ; i<iend; i++)
         if(vbMatchesInliers[i])
             N++;
- //   std::cout << "H inliers: " << N << std::endl;
 
     // We recover 8 motion hypotheses using the method of Faugeras et al.
     // Motion and structure from motion in a piecewise planar environment.
@@ -725,8 +715,6 @@ bool MonoEstimator::ReconstructH(std::vector<bool> &vbMatchesInliers, cv::Mat &H
         std::vector<bool> vbTriangulatedi;
         int nGood = CheckRT(vR[i],vt[i],mvKeys1,mvKeys2,mvMatches12,vbMatchesInliers,K,vP3Di, 4.0*mSigma2, vbTriangulatedi, parallaxi);
         
-  //      std::cout << "H: nGood" << i << ": " << nGood << std::endl;
-        
         if(nGood>bestGood)
         {
             secondBestGood = bestGood;
@@ -741,7 +729,6 @@ bool MonoEstimator::ReconstructH(std::vector<bool> &vbMatchesInliers, cv::Mat &H
             secondBestGood = nGood;
         }
     }
-   // std::cout << "H: bestGood: " << bestGood << " ,2ndbestGood: " << secondBestGood << " , bestParallax: " << bestParallax << std::endl;
 
     if(secondBestGood<0.75*bestGood && bestParallax>=minParallax && bestGood>minTriangulated && bestGood>minFracTriangulated*N)
     {
@@ -917,7 +904,7 @@ int MonoEstimator::CheckRT(const cv::Mat &R, const cv::Mat &t, const std::vector
         if(cosParallax<0.99998){
             vbGood[vMatches12[i].first]=true;
             nGood++;
-		}
+        }
     }
 
     if(nGood>0)

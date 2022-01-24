@@ -29,8 +29,6 @@ namespace HYSLAM
 
 BundleAdjustment::BundleAdjustment(Map* pMap_, g2o::Trajectory &trajectory_, optInfo optParams_ ) :
             pMap(pMap_) , trajectory(trajectory_), optParams(optParams_){}
-//BundleAdjustment::BundleAdjustment(Map* pMap_, optInfo optParams_ ) :
-//            pMap(pMap_) ,optParams(optParams_){}
 
 BundleAdjustment::~BundleAdjustment()
 {}
@@ -68,8 +66,6 @@ void BundleAdjustment::SetIMUEdges( const std::list<KeyFrame*> &lKeyFrames ){
             continue;
 
         if(pKFi->getSensorData().isImuValid()){  //if valid imu data is available - set constraint
-      //      std::cout << "incorporating imu" << "\t";
-           // ImuData imu_data = pKFi->getSensorData().getImu();
             Eigen::Quaterniond _q = Converter::toQuatEigen(pKFi->getSensorData().getQuat());
             Eigen::Matrix<double, 4, 1> q;
             q <<  _q.x() , _q.y() , _q.z(), _q.w();   //double check this convention
@@ -95,7 +91,6 @@ void BundleAdjustment::SetDepthEdges( const std::list<KeyFrame*> &lKeyFrames ){
             continue;
 
         if(pKFi->getSensorData().isDepthValid()){  //if valid depth data is available - set constraint
-       //     std::cout << "incorporating depth" << "\t";
             g2o::Vector1d depthData;
             depthData << pKFi->getSensorData().getDepth();
 
@@ -140,9 +135,6 @@ void BundleAdjustment::SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames ){
       bool FixScale = 0; //fixed scale = 1; variable scale = 0
       cv::Mat Rhorn; //rotation matrix computed by ComputeSim3_Horn
       cv::Mat Thorn = ComputeSim3_Horn( Porb, Pgps, FixScale, Rhorn);
-  //    if(ncalls % 20 == 0){
-   //      std::cout << "sim3 transform: " << Thorn << endl;
-   //   }
 
       bool validSim3 = 1;
       for(int i = 0; i < Thorn.cols; i++){    //ensure sim3 is valid - with few gps locations early in SLAM it may not be
@@ -164,7 +156,6 @@ void BundleAdjustment::SetGPSEdges( const std::list<KeyFrame*> &lKeyFrames ){
               if(pKFi->getSensorData().isGPSValid()){ //if valid GPS data is available - set constraint
                  //transform gps data
                 std::vector<double> relpos = pKFi->getSensorData().getGPSRel();
-              //  std::cout << "gps pos: "  << relpos[0] << " " << relpos[1] << std::endl;
                 cv::Mat p(4,1,CV_32F);
                 p.at<float>(0,0) = relpos[0];
                 p.at<float>(1,0) = relpos[1];
@@ -193,15 +184,12 @@ void BundleAdjustment::SetSubMapOriginEdges(const std::list<Tse3Parent> &submap_
         Tse3Parent tiepoint = *it;
         std::string vertex_name0 = "VertexSE3Expmap" + std::to_string(tiepoint.pKFref_parent->mnId);
         std::string vertex_name1 = "VertexSE3Expmap" + std::to_string(tiepoint.pKFref_this->mnId);
-    //    std::cout << "setting submap tiepoint edge between: parent: "  << tiepoint.pKFref_parent->mnId << " vertexid: " << vertex_map[vertex_name0]<<
-     //   ", and child: " << tiepoint.pKFref_this->mnId<< " vertexid: "<< vertex_map[vertex_name1]<< std::endl;
 
         g2o::EdgeSE3Expmap *eSE3 = new g2o::EdgeSE3Expmap();
         eSE3->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex(vertex_map[vertex_name0]) ) );
         eSE3->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex(vertex_map[vertex_name1]) ) );
 
         eSE3->setMeasurement(Converter::toSE3Quat(tiepoint.Tse3));
-        //double inv_std_error = 10000;
         if(optParams.Info_submap_tiepoint < 0.1){
             std::cout << "Warning: optParams.Info_submap_tiepoint is low, <0.1" <<std::endl;
         }
@@ -225,7 +213,6 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
         g2o::VertexSBAPointXYZ* vPoint = new g2o::VertexSBAPointXYZ();
         vPoint->setEstimate(Converter::toVector3d(pMP->GetWorldPos()));
 
-        //unsigned long id = pMP->mnId+maxKFid+1;
         vPoint->setId(vertex_id);
         std::string vertex_name_mp = "VertexSBAPointXYZ" + std::to_string(pMP->mnId);
         vertex_map.insert(std::make_pair(vertex_name_mp, vertex_id));
@@ -235,8 +222,8 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
         optimizer->addVertex(vPoint);
 
         const std::map<KeyFrame*,size_t> observations = pMP->GetObservations();
-		int n_mono = 0;
-		int n_stereo = 0;
+        int n_mono = 0;
+        int n_stereo = 0;
         int nEdges = 0;
         //Set edges
         for(std::map<KeyFrame*,size_t>::const_iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
@@ -256,7 +243,7 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
             const cv::KeyPoint kpUn = views.keypt(mit->second);
             if(views.uR(mit->second)<0) //not all stereo keypoints have a stereomatch
             {
-				n_mono++;
+                n_mono++;
                 Eigen::Matrix<double,2,1> obs;
                 obs << kpUn.pt.x, kpUn.pt.y;
 
@@ -342,7 +329,6 @@ void BundleAdjustment::SetMapPointVerticesEdges( const std::list<MapPoint*> lMap
         }
 
         i++;
-      //  std::cout << "MP: " << pMP->mnId <<", n_mono: " << n_mono <<" , n_stereo: " << n_stereo << std::endl ;
     } //end loop on mappoints
 
 }
@@ -389,7 +375,6 @@ void BundleAdjustment::SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames){
 
   for(std::list<KeyFrame*>::const_iterator lit = lKeyFrames.begin(); lit != lKeyFrames.end(); lit++){
     KeyFrame* pKFi = *lit;
-//    std::cout << "pKFi->mnId: " << pKFi->mnId << std::endl;
     if(pKFi->camera.camName == "Imaging"){
       if(!Tcam_set){ //estiamted transform constraint
         g2o::EdgeTcam* eTcam = new g2o::EdgeTcam();
@@ -410,7 +395,6 @@ void BundleAdjustment::SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames){
       et->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex( vertex_map[vertex_name]) ) );
       g2o::Vector1d t_est = g2o::Vector1d(pKFi->mTimeStamp);
       et->setMeasurement(t_est);
-     // std::cout << "optParams.Info_TrajTime: " << optParams.Info_TrajTime << std::endl;
       et->setInformation(optParams.Info_TrajTime*g2o::Matrix1d::Identity() );
       et->setLevel(0);
       optimizer->addEdge(et);
@@ -425,7 +409,6 @@ void BundleAdjustment::SetImagingEdges(const std::list<KeyFrame*> &lKeyFrames){
       e_traj->setVertex(2, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer->vertex( vertex_map[vertex_name_2]) ) );
 
       e_traj->setInformation(optParams.Info_TrajTimeSE3*g2o::Matrix7d::Identity() );
-      //  std::cout << "optParams.Info_TrajTimeSE3: " << optParams.Info_TrajTimeSE3 << std::endl;
       e_traj->setLevel(0);
       optimizer->addEdge(e_traj);
 
@@ -492,8 +475,6 @@ bool BundleAdjustment::CheckForImagingCamera(const std::list<KeyFrame*> &lKeyFra
 
   return img_cam_exists;
 }
-
-
 
 
 } //end ORBSLAM2 namespace

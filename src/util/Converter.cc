@@ -32,10 +32,6 @@ std::vector<cv::Mat> Converter::toDescriptorVector(const std::vector<FeatureDesc
         vDesc.push_back(it->rawDescriptor());
     }
 
-    /*
-    for (int j=0;j<Descriptors.rows;j++)
-        vDesc.push_back(Descriptors.row(j));
-*/
     return vDesc;
 }
 
